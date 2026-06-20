@@ -7,9 +7,11 @@ Repository: <https://github.com/UDteach/DeguDesktop>
 ## Features
 
 - Transparent always-on-top pet layer above the Windows taskbar
-- Tray menu and Japanese/English settings window for speed, count, coat color, wheel motion, mode, and exit
+- Tray menu and Japanese/English settings window for names, speed, count, coat color, wheel motion, mode, updates, and exit
 - Modes: keyboard reaction / random stroll
-- Degu count: 1, 2, 3, or 5
+- Degu count: 1, 2, 3, 5, or 10
+- Optional per-pet names can be enabled in settings; when enabled, names appear above a degu while the cursor hovers over it
+- Startup tray notification and GitHub Release based update checking from the tray menu
 - Social behavior: nearby degus can walk together and pause for grooming
 - Foraging behavior: hay, twigs, and low-key seed-like bits appear near the taskbar for sniffing, eating, digging, gnawing, and carrying
 - Wheel motion: in keyboard mode, a degu runs inside the wheel only while you are typing, then scurries away
@@ -41,6 +43,14 @@ assets/source/coat-guides/<coat_id>.png
 ```
 
 The importer normalizes each guide and transfers its irregular white patch map across every runtime motion frame for the matching pied coat.
+
+The tray/app icon is also an ImageGen source:
+
+```text
+assets/source/imagegen-icon.png
+```
+
+The importer normalizes it into `assets/tray.ico`.
 
 Fallback ImageGen action sheets are also supported:
 
@@ -80,7 +90,9 @@ go build -ldflags="-H=windowsgui" -o dist/DeguDesktop.exe ./cmd/degu
 
 ## Release
 
-Push a `v*` tag to build `DeguDesktop-windows-amd64.zip` and attach it to a GitHub Release. GitHub Pages publishes `docs/`.
+Push a `v*` tag to build `DeguDesktop-windows-amd64.zip` and `DeguDesktop-windows-386.zip` and attach them to a GitHub Release. GitHub Pages publishes `docs/`.
+
+Release builds embed the tag into `main.appVersion` and publish both `DeguDesktop-windows-amd64.zip` and `DeguDesktop-windows-386.zip`. The app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, stage a temporary updater script, exit, replace `DeguDesktop.exe`, and restart.
 
 ## Cloudflare Pages
 

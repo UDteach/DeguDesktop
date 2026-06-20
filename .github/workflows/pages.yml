@@ -33,10 +33,14 @@ jobs:
         shell: bash
         run: |
           mkdir -p docs/download dist
-          GOOS=windows GOARCH=amd64 go build -buildvcs=false -ldflags="-H=windowsgui -s -w" -o dist/DeguDesktop.exe ./cmd/degu
+          GOOS=windows GOARCH=amd64 go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=pages-${{ github.sha }}" -o dist/DeguDesktop.exe ./cmd/degu
           cp README.md dist/README.md
           (cd dist && zip -q DeguDesktop-windows-amd64.zip DeguDesktop.exe README.md)
           cp dist/DeguDesktop-windows-amd64.zip docs/download/DeguDesktop-windows-amd64.zip
+          rm -f dist/DeguDesktop.exe
+          GOOS=windows GOARCH=386 go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=pages-${{ github.sha }}" -o dist/DeguDesktop.exe ./cmd/degu
+          (cd dist && zip -q DeguDesktop-windows-386.zip DeguDesktop.exe README.md)
+          cp dist/DeguDesktop-windows-386.zip docs/download/DeguDesktop-windows-386.zip
       - uses: actions/configure-pages@v5
         with:
           enablement: true

@@ -22,11 +22,21 @@ jobs:
       - name: Test
         run: go test -buildvcs=false ./...
       - name: Build
+        shell: pwsh
         run: |
           New-Item -ItemType Directory -Force dist | Out-Null
-          go build -buildvcs=false -ldflags="-H=windowsgui -s -w" -o dist/DeguDesktop.exe ./cmd/degu
+          $env:GOOS = "windows"
+          $env:GOARCH = "amd64"
+          go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=${{ github.ref_name }}" -o dist/DeguDesktop.exe ./cmd/degu
           Compress-Archive -Path dist/DeguDesktop.exe,README.md -DestinationPath dist/DeguDesktop-windows-amd64.zip -Force
+          Remove-Item dist/DeguDesktop.exe -Force
+          $env:GOARCH = "386"
+          go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=${{ github.ref_name }}" -o dist/DeguDesktop.exe ./cmd/degu
+          Compress-Archive -Path dist/DeguDesktop.exe,README.md -DestinationPath dist/DeguDesktop-windows-386.zip -Force
+          Remove-Item dist/DeguDesktop.exe -Force
       - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/DeguDesktop-windows-amd64.zip
+          files: |
+            dist/DeguDesktop-windows-amd64.zip
+            dist/DeguDesktop-windows-386.zip

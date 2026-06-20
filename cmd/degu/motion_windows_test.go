@@ -120,6 +120,8 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 		variant:       4,
 		coatMode:      coatSelected,
 		selectedCoats: [maxPetCount]int{1, 3, 5, 7, 9, 0, 2, 4, 6, 8},
+		petNames:      [maxPetCount]string{"モカ", "Sora", "  Nagi  ", "", "", "", "", "", "", ""},
+		nameLabels:    true,
 		speed:         5,
 		mode:          modeKeyboard,
 		petCount:      10,
@@ -145,6 +147,15 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	if saved.Version != 1 || saved.PetCount != 10 || saved.Mode != int(modeKeyboard) {
 		t.Fatalf("saved settings = %+v, want version 1 petCount 10 keyboard mode", saved)
 	}
+	if !saved.NameLabels {
+		t.Fatalf("saved NameLabels = false, want true")
+	}
+	if got := saved.PetNames[0]; got != "モカ" {
+		t.Fatalf("saved pet name 0 = %q, want モカ", got)
+	}
+	if got := saved.PetNames[2]; got != "Nagi" {
+		t.Fatalf("saved pet name 2 = %q, want sanitized Nagi", got)
+	}
 
 	b := &petApp{
 		variant:       0,
@@ -168,10 +179,16 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	if b.wheelEnabled != a.wheelEnabled || b.bidirectional != a.bidirectional || b.lang != a.lang {
 		t.Fatalf("loaded flags = wheel:%v bidirectional:%v lang:%d", b.wheelEnabled, b.bidirectional, b.lang)
 	}
+	if b.nameLabels != a.nameLabels {
+		t.Fatalf("loaded nameLabels = %v, want %v", b.nameLabels, a.nameLabels)
+	}
 	for i := 0; i < maxPetCount; i++ {
 		if b.selectedCoats[i] != a.selectedCoats[i] {
 			t.Fatalf("selectedCoats[%d] = %d, want %d", i, b.selectedCoats[i], a.selectedCoats[i])
 		}
+	}
+	if b.petNames[0] != "モカ" || b.petNames[1] != "Sora" || b.petNames[2] != "Nagi" {
+		t.Fatalf("loaded pet names = %#v", b.petNames[:3])
 	}
 }
 
@@ -190,6 +207,55 @@ func TestPetVariantRectsFitTenPetsInSettingsWindow(t *testing.T) {
 			t.Fatalf("pet variant button %d duplicates another rect: %+v", i, buttonRect)
 		}
 		seen[key] = true
+	}
+}
+
+func TestPetNameRectsFitTenPetsWithCoatPicker(t *testing.T) {
+	for i := 0; i < maxPetCount; i++ {
+		numberRect, nameRect := settingsPetNameRects(i)
+		_, coatRect := settingsPetVariantRects(i)
+		if nameRect.Right >= coatRect.Left {
+			t.Fatalf("pet %d name rect overlaps coat rect: name=%+v coat=%+v", i, nameRect, coatRect)
+		}
+		if numberRect.Left < 238 || nameRect.Left <= numberRect.Right || coatRect.Right > 708 || nameRect.Bottom > 502 {
+			t.Fatalf("pet %d name/coat row escapes panel: number=%+v name=%+v coat=%+v", i, numberRect, nameRect, coatRect)
+		}
+	}
+}
+
+func TestUpdateVersionComparison(t *testing.T) {
+	tests := []struct {
+		latest  string
+		current string
+		want    bool
+	}{
+		{"v1.2.0", "v1.1.9", true},
+		{"v1.2.0", "1.2.0", false},
+		{"v1.2.0", "v1.3.0", false},
+		{"v2.0.0", "dev", true},
+		{"v2.0.0", "pages-abc123", true},
+		{"not-semver", "v1.0.0", false},
+	}
+	for _, tt := range tests {
+		if got := isNewerVersion(tt.latest, tt.current); got != tt.want {
+			t.Fatalf("isNewerVersion(%q, %q) = %v, want %v", tt.latest, tt.current, got, tt.want)
+		}
+	}
+}
+
+func TestSelectUpdateAssetFindsWindowsZip(t *testing.T) {
+	rel := &githubRelease{Assets: []githubReleaseAsset{
+		{Name: "notes.txt", BrowserDownloadURL: "https://example.test/notes.txt"},
+		{Name: "DeguDesktop-windows-amd64.zip", BrowserDownloadURL: "https://example.test/app.zip"},
+		{Name: "DeguDesktop-windows-386.zip", BrowserDownloadURL: "https://example.test/app-x86.zip"},
+	}}
+	asset := selectUpdateAsset(rel, "amd64")
+	if asset == nil || asset.BrowserDownloadURL != "https://example.test/app.zip" {
+		t.Fatalf("selectUpdateAsset(amd64) = %+v", asset)
+	}
+	asset = selectUpdateAsset(rel, "386")
+	if asset == nil || asset.BrowserDownloadURL != "https://example.test/app-x86.zip" {
+		t.Fatalf("selectUpdateAsset(386) = %+v", asset)
 	}
 }
 

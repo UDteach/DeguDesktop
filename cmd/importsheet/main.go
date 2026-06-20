@@ -150,6 +150,7 @@ func main() {
 	wheelSource := flag.String("wheel-source", filepath.FromSlash("assets/source/imagegen-wheel.png"), "single ImageGen wheel PNG")
 	forageDir := flag.String("forage-dir", filepath.FromSlash("assets/source/forage"), "directory containing ImageGen forage prop PNGs")
 	coatGuideDir := flag.String("coat-guide-dir", filepath.FromSlash("assets/source/coat-guides"), "directory containing ImageGen coat guide PNGs")
+	iconSource := flag.String("icon-source", filepath.FromSlash("assets/source/imagegen-icon.png"), "single ImageGen app/tray icon PNG")
 	flag.Parse()
 
 	must(os.MkdirAll(*outDir, 0o755))
@@ -209,7 +210,7 @@ func main() {
 
 	writePreview(*preview, sheets)
 	if wild := sheets["wild_agouti"]; wild != nil {
-		writeICO(filepath.FromSlash("assets/tray.ico"), firstFrame(wild))
+		writeTrayIcon(*iconSource, filepath.FromSlash("assets/tray.ico"), firstFrame(wild))
 	}
 	writeWheelSprite(*wheelSource, filepath.Join(*outDir, "wheel.png"))
 	writeForageSprites(*forageDir, *outDir)
@@ -1733,6 +1734,34 @@ func writeJSON(path string, value any) {
 	enc := json.NewEncoder(f)
 	enc.SetIndent("", "  ")
 	must(enc.Encode(value))
+}
+
+func writeTrayIcon(sourcePath, outPath string, fallback *image.RGBA) {
+	icon := fallback
+	if src, err := openPNG(sourcePath); err == nil {
+		icon = normalizeIconSource(src)
+	}
+	writeICO(outPath, icon)
+}
+
+func normalizeIconSource(src image.Image) *image.RGBA {
+	cell := imageToCleanFrame(src)
+	cell = keepPrimaryArtwork(cell)
+	content := alphaBounds(cell)
+	if content.Empty() {
+		return image.NewRGBA(image.Rect(0, 0, 64, 64))
+	}
+	const iconSize = 64
+	const iconPad = 5
+	dst := image.NewRGBA(image.Rect(0, 0, iconSize, iconSize))
+	cropped := image.NewRGBA(image.Rect(0, 0, content.Dx(), content.Dy()))
+	draw.Draw(cropped, cropped.Bounds(), cell, content.Min, draw.Src)
+	scale := math.Min(float64(iconSize-iconPad*2)/float64(content.Dx()), float64(iconSize-iconPad*2)/float64(content.Dy()))
+	outW := max(1, int(math.Round(float64(content.Dx())*scale)))
+	outH := max(1, int(math.Round(float64(content.Dy())*scale)))
+	target := image.Rect((iconSize-outW)/2, (iconSize-outH)/2, (iconSize+outW)/2, (iconSize+outH)/2)
+	xdraw.CatmullRom.Scale(dst, target, cropped, cropped.Bounds(), draw.Over, nil)
+	return dst
 }
 
 func writeICO(path string, src *image.RGBA) {

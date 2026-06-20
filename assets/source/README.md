@@ -3,8 +3,8 @@
 Preferred source is one ImageGen PNG per runtime frame:
 
 - path: `assets/source/frames/<coat_id>/<frame>_<action>_<step>.png`
-- 32 files per coat
-- actions: idle, walk, scurry, nibble, hop
+- 56 files for the canonical `wild_agouti` motion set
+- actions: idle, walk, scurry, nibble, hop, turn, eat, dig, stand, groomface
 - transparent background or simple checker background
 - one complete degu per file, with ears, whiskers, feet, and tail fully inside the image
 
@@ -19,6 +19,7 @@ Fallback ImageGen sheets are still supported:
 Extra ImageGen source assets:
 
 - `assets/source/imagegen-wheel.png` - transparent pixel-art exercise wheel source
+- `assets/source/imagegen-icon.png` - square pixel-art degu icon source
 
 Importer:
 
@@ -29,6 +30,7 @@ go run ./cmd/importsheet
 The importer writes:
 
 - `assets/sprites/degu_*.png`
+- `assets/tray.ico`
 - `docs/assets/degu-preview.png`
 - `assets/source/import-report.json`
 

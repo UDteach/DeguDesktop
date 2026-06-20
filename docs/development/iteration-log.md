@@ -295,3 +295,47 @@ The previous Pages copy was English-first. The old generated thumbnail rendered 
 - Visual QA screenshots:
   - `.codex/qa/degu-pages-ja-white-desktop.png`
   - `.codex/qa/degu-pages-ja-white-mobile.png`
+
+## Iteration 9 - Updates, Icon, And Pet Names
+
+Date: 2026-06-20
+
+### Target
+
+Add a practical Windows update path, improve tray identity with an ImageGen icon, show startup tray notification, and let users name visible degus from settings.
+
+### App Pass
+
+- Added GitHub Release based update checking against `UDteach/DeguDesktop` latest release.
+- Added tray menu entries for update check and install when the matching Windows zip is available.
+- Added x64/x86 release artifacts and updater asset selection based on the running Go architecture.
+- Added a staged updater flow: download release zip, extract `DeguDesktop.exe`, start a temporary PowerShell updater, exit, replace the running exe, and restart.
+- Added startup tray balloon notification.
+- Added `main.appVersion` injection in Release and Pages workflows.
+- Added optional per-pet names to settings persistence.
+- Added a `名前を付ける` toggle, name buttons, and a focused rename dialog for up to ten pets.
+- Added a hover name popup above the degu under the cursor only when names are enabled.
+- Recorded future art-style selection as a roadmap item; the latest natural illustrated degu-sheet reference is a strong target style, but style profiles are not implemented yet.
+- Added an ImageGen source icon at `assets/source/imagegen-icon.png` and regenerated `assets/tray.ico` from it.
+- Added tests for version comparison, release asset selection, pet-name persistence, and settings row layout.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go cmd\importsheet\main.go cmd\importsheet\main_test.go`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- Built local x64 and x86 ZIPs:
+  - `dist\DeguDesktop-windows-amd64.zip`
+  - `dist\DeguDesktop-windows-386.zip`
+  - `docs\download\DeguDesktop-windows-amd64.zip`
+  - `docs\download\DeguDesktop-windows-386.zip`
+- Verified each ZIP contains `DeguDesktop.exe` and `README.md`.
+- `git diff --check`
+- Visual QA screenshots:
+  - `.codex/qa/tray-icon-preview.png`
+  - `.codex/qa/settings-names-toggle-off.png`
+  - `.codex/qa/settings-names-toggle-on.png`
+  - `.codex/qa/rename-dialog-over-settings.png`
+  - `.codex/qa/settings-name-button-after-dialog.png`

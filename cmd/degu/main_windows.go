@@ -3,6 +3,7 @@
 package main
 
 import (
+	"archive/zip"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -10,12 +11,17 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
+	"io"
 	"io/fs"
 	"math"
 	"math/rand"
+	"net/http"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
+	"sync"
 	"sync/atomic"
 	"syscall"
 	"time"
@@ -26,33 +32,37 @@ import (
 )
 
 const (
-	appName                = "Degu Desktop"
-	windowClass            = "DeguDesktopPetWindow"
-	wmTray                 = win.WM_APP + 1
-	wmTyping               = win.WM_APP + 2
-	wmMouseClick           = win.WM_APP + 3
-	timerID                = 42
-	timerInterval          = 55
-	frameW                 = 96
-	frameH                 = 64
-	frameCount             = 56
-	motionSets             = 10
-	scale                  = 1
-	spriteW                = frameW * scale
-	spriteH                = frameH * scale
-	forageW                = 32
-	forageH                = 24
-	sceneH                 = 92
-	wheelSize              = 72
-	maxPetCount            = 10
-	maxForage              = 5
-	wheelKeyHold           = 18
-	turnTicks              = 16
-	reactionTicks          = 54
-	settingsClientW  int32 = 760
-	settingsClientH  int32 = 560
-	settingsDirName        = "DeguDesktop"
-	settingsFileName       = "settings.json"
+	appName                    = "Degu Desktop"
+	windowClass                = "DeguDesktopPetWindow"
+	wmTray                     = win.WM_APP + 1
+	wmTyping                   = win.WM_APP + 2
+	wmMouseClick               = win.WM_APP + 3
+	wmUpdateReady              = win.WM_APP + 4
+	wmUpdateFailed             = win.WM_APP + 5
+	wmUpdateInstallReady       = win.WM_APP + 6
+	timerID                    = 42
+	timerInterval              = 55
+	frameW                     = 96
+	frameH                     = 64
+	frameCount                 = 56
+	motionSets                 = 10
+	scale                      = 1
+	spriteW                    = frameW * scale
+	spriteH                    = frameH * scale
+	forageW                    = 32
+	forageH                    = 24
+	sceneH                     = 92
+	wheelSize                  = 72
+	maxPetCount                = 10
+	maxForage                  = 5
+	wheelKeyHold               = 18
+	turnTicks                  = 16
+	reactionTicks              = 54
+	settingsClientW      int32 = 760
+	settingsClientH      int32 = 560
+	settingsDirName            = "DeguDesktop"
+	settingsFileName           = "settings.json"
+	updateAPIURL               = "https://api.github.com/repos/UDteach/DeguDesktop/releases/latest"
 )
 
 const (
@@ -96,23 +106,25 @@ var (
 )
 
 const (
-	menuExit         uint16 = 100
-	menuModeKeyboard uint16 = 101
-	menuModeRandom   uint16 = 102
-	menuSpeedSlow    uint16 = 110
-	menuSpeedNormal  uint16 = 111
-	menuSpeedFast    uint16 = 112
-	menuCount1       uint16 = 120
-	menuCount2       uint16 = 121
-	menuCount3       uint16 = 122
-	menuCount5       uint16 = 123
-	menuCount10      uint16 = 124
-	menuWheelToggle  uint16 = 130
-	menuCoatFixed    uint16 = 131
-	menuCoatSelected uint16 = 132
-	menuCoatRandom   uint16 = 133
-	menuSettings     uint16 = 140
-	menuVariantBase  uint16 = 200
+	menuExit          uint16 = 100
+	menuModeKeyboard  uint16 = 101
+	menuModeRandom    uint16 = 102
+	menuSpeedSlow     uint16 = 110
+	menuSpeedNormal   uint16 = 111
+	menuSpeedFast     uint16 = 112
+	menuCount1        uint16 = 120
+	menuCount2        uint16 = 121
+	menuCount3        uint16 = 122
+	menuCount5        uint16 = 123
+	menuCount10       uint16 = 124
+	menuWheelToggle   uint16 = 130
+	menuCoatFixed     uint16 = 131
+	menuCoatSelected  uint16 = 132
+	menuCoatRandom    uint16 = 133
+	menuSettings      uint16 = 140
+	menuCheckUpdate   uint16 = 150
+	menuInstallUpdate uint16 = 151
+	menuVariantBase   uint16 = 200
 )
 
 const (
@@ -135,8 +147,15 @@ const (
 	ctrlReset          int32 = 1041
 	ctrlClose          int32 = 1042
 	ctrlTopClose       int32 = 1043
+	ctrlNameLabels     int32 = 1044
 	ctrlPetVariantBase int32 = 1050
+	ctrlPetNameBase    int32 = 1070
+	ctrlRenameEdit     int32 = 1100
+	ctrlRenameOK       int32 = 1101
+	ctrlRenameCancel   int32 = 1102
 )
+
+var appVersion = "dev"
 
 type behaviorMode int
 
@@ -240,6 +259,28 @@ type petReaction struct {
 	ticks int
 }
 
+type githubRelease struct {
+	TagName    string               `json:"tag_name"`
+	HTMLURL    string               `json:"html_url"`
+	Draft      bool                 `json:"draft"`
+	Prerelease bool                 `json:"prerelease"`
+	Assets     []githubReleaseAsset `json:"assets"`
+}
+
+type githubReleaseAsset struct {
+	Name               string `json:"name"`
+	BrowserDownloadURL string `json:"browser_download_url"`
+	Size               int64  `json:"size"`
+}
+
+type updateState struct {
+	mu         sync.Mutex
+	latest     *githubRelease
+	lastError  string
+	checking   atomic.Bool
+	installing atomic.Bool
+}
+
 type mouseHookStruct struct {
 	pt          win.POINT
 	mouseData   uint32
@@ -265,6 +306,8 @@ type petApp struct {
 	variant            int
 	coatMode           coatMode
 	selectedCoats      [maxPetCount]int
+	petNames           [maxPetCount]string
+	nameLabels         bool
 	speed              int
 	mode               behaviorMode
 	petCount           int
@@ -281,6 +324,13 @@ type petApp struct {
 	settingsX          int32
 	settingsY          int32
 	settingsSaveFailed bool
+	update             updateState
+	nameHwnd           win.HWND
+	nameText           string
+	hoverPet           int
+	renameHwnd         win.HWND
+	renameEdit         win.HWND
+	renameIndex        int
 	wheelX             int
 	sceneW             int
 	tickCount          int
@@ -288,18 +338,20 @@ type petApp struct {
 }
 
 type appSettings struct {
-	Version       int   `json:"version"`
-	Variant       int   `json:"variant"`
-	CoatMode      int   `json:"coatMode"`
-	SelectedCoats []int `json:"selectedCoats"`
-	Speed         int   `json:"speed"`
-	Mode          int   `json:"mode"`
-	PetCount      int   `json:"petCount"`
-	WheelEnabled  bool  `json:"wheelEnabled"`
-	Bidirectional bool  `json:"bidirectional"`
-	Language      int   `json:"language"`
-	SettingsX     int32 `json:"settingsX"`
-	SettingsY     int32 `json:"settingsY"`
+	Version       int      `json:"version"`
+	Variant       int      `json:"variant"`
+	CoatMode      int      `json:"coatMode"`
+	SelectedCoats []int    `json:"selectedCoats"`
+	Speed         int      `json:"speed"`
+	Mode          int      `json:"mode"`
+	PetCount      int      `json:"petCount"`
+	WheelEnabled  bool     `json:"wheelEnabled"`
+	Bidirectional bool     `json:"bidirectional"`
+	Language      int      `json:"language"`
+	SettingsX     int32    `json:"settingsX"`
+	SettingsY     int32    `json:"settingsY"`
+	NameLabels    bool     `json:"nameLabels"`
+	PetNames      []string `json:"petNames,omitempty"`
 }
 
 var app *petApp
@@ -344,6 +396,8 @@ func main() {
 		lang:          langJapanese,
 		settingsX:     120,
 		settingsY:     120,
+		hoverPet:      -1,
+		renameIndex:   -1,
 	}
 	_ = app.loadSettings()
 
@@ -375,6 +429,8 @@ func main() {
 
 	app.resetPosition()
 	app.installTray()
+	app.showStartupToast()
+	app.startUpdateCheck(false)
 	app.installKeyboardHook()
 	app.installMouseHook()
 	win.ShowWindow(app.hwnd, win.SW_SHOWNOACTIVATE)
@@ -393,6 +449,12 @@ func main() {
 }
 
 func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
+	if app != nil && hwnd == app.nameHwnd {
+		return app.nameWndProc(hwnd, msg, wParam, lParam)
+	}
+	if app != nil && hwnd == app.renameHwnd {
+		return app.renameWndProc(hwnd, msg, wParam, lParam)
+	}
 	if app != nil && hwnd == app.settingsHwnd {
 		return app.settingsWndProc(hwnd, msg, wParam, lParam)
 	}
@@ -415,6 +477,15 @@ func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 		x := int(int32(uint32(wParam)))
 		y := int(int32(uint32(lParam)))
 		app.onMouseClick(x, y)
+		return 0
+	case wmUpdateReady:
+		app.onUpdateReady(wParam != 0)
+		return 0
+	case wmUpdateFailed:
+		app.onUpdateFailed(wParam != 0)
+		return 0
+	case wmUpdateInstallReady:
+		app.onUpdateInstallReady()
 		return 0
 	case win.WM_COMMAND:
 		id := uint16(wParam & 0xffff)
@@ -472,11 +543,18 @@ func (a *petApp) loadSettings() error {
 		}
 		a.selectedCoats[i] = clamp(variant, 0, len(variants)-1)
 	}
+	for i, name := range settings.PetNames {
+		if i >= len(a.petNames) {
+			break
+		}
+		a.petNames[i] = sanitizePetName(name)
+	}
 	a.speed = normalizeSpeed(settings.Speed)
 	a.mode = normalizeBehaviorMode(settings.Mode)
 	a.petCount = clamp(settings.PetCount, 1, maxPetCount)
 	a.wheelEnabled = settings.WheelEnabled
 	a.bidirectional = settings.Bidirectional
+	a.nameLabels = settings.NameLabels
 	a.lang = normalizeLanguage(settings.Language)
 	if settings.SettingsX != 0 || settings.SettingsY != 0 {
 		a.settingsX = settings.SettingsX
@@ -496,6 +574,10 @@ func (a *petApp) saveSettings() error {
 	}
 	coats := make([]int, len(a.selectedCoats))
 	copy(coats, a.selectedCoats[:])
+	names := make([]string, len(a.petNames))
+	for i := range a.petNames {
+		names[i] = sanitizePetName(a.petNames[i])
+	}
 	settings := appSettings{
 		Version:       1,
 		Variant:       clamp(a.variant, 0, len(variants)-1),
@@ -509,6 +591,8 @@ func (a *petApp) saveSettings() error {
 		Language:      int(normalizeLanguage(int(a.lang))),
 		SettingsX:     a.settingsX,
 		SettingsY:     a.settingsY,
+		NameLabels:    a.nameLabels,
+		PetNames:      names,
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
@@ -585,6 +669,7 @@ func (a *petApp) tick() {
 	}
 	work := workArea()
 	a.syncScene(work)
+	a.updateHoverName()
 	a.ensureForageItems()
 	for i := range a.pets {
 		a.tickPet(i, &a.pets[i])
@@ -904,6 +989,111 @@ func scenePointInPet(p deguPet, sceneX, sceneY int) bool {
 	}
 	y := sceneH - spriteH - p.laneOffset
 	return sceneX >= p.x+6 && sceneX <= p.x+spriteW-6 && sceneY >= y+8 && sceneY <= y+spriteH-4
+}
+
+func (a *petApp) updateHoverName() {
+	if !a.nameLabels {
+		a.hoverPet = -1
+		a.hideNameWindow()
+		return
+	}
+	var pt win.POINT
+	if !win.GetCursorPos(&pt) {
+		a.hideNameWindow()
+		return
+	}
+	index := a.petAtScreenPoint(int(pt.X), int(pt.Y))
+	if index < 0 || index >= len(a.pets) {
+		a.hoverPet = -1
+		a.hideNameWindow()
+		return
+	}
+	a.hoverPet = index
+	a.showNameWindow(index)
+}
+
+func (a *petApp) showNameWindow(index int) {
+	if index < 0 || index >= len(a.pets) {
+		a.hideNameWindow()
+		return
+	}
+	name := a.petDisplayName(index)
+	if name == "" {
+		a.hideNameWindow()
+		return
+	}
+	work := workArea()
+	p := a.pets[index]
+	runes := []rune(name)
+	w := clamp(34+len(runes)*12, 72, 220)
+	h := 30
+	baseY := sceneH - spriteH - p.laneOffset
+	x := int(work.Left) + p.x + spriteW/2 - w/2
+	y := int(work.Bottom) - sceneH + baseY - h - 8
+	x = clamp(x, int(work.Left), int(work.Right)-w)
+	y = clamp(y, int(work.Top), int(work.Bottom)-h)
+	if a.nameHwnd == 0 {
+		a.nameHwnd = win.CreateWindowEx(
+			win.WS_EX_TOOLWINDOW|win.WS_EX_TOPMOST|win.WS_EX_NOACTIVATE|win.WS_EX_TRANSPARENT,
+			syscall.StringToUTF16Ptr(windowClass),
+			syscall.StringToUTF16Ptr(name),
+			win.WS_POPUP,
+			int32(x), int32(y), int32(w), int32(h),
+			a.hwnd, 0, a.hinst, nil,
+		)
+	}
+	if a.nameHwnd == 0 {
+		return
+	}
+	if a.nameText != name {
+		a.nameText = name
+		setWindowText(a.nameHwnd, name)
+		win.InvalidateRect(a.nameHwnd, nil, true)
+	}
+	win.SetWindowPos(a.nameHwnd, win.HWND_TOPMOST, int32(x), int32(y), int32(w), int32(h), win.SWP_NOACTIVATE|win.SWP_SHOWWINDOW)
+}
+
+func (a *petApp) hideNameWindow() {
+	if a.nameHwnd != 0 {
+		win.ShowWindow(a.nameHwnd, win.SW_HIDE)
+	}
+}
+
+func (a *petApp) nameWndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
+	switch msg {
+	case win.WM_PAINT:
+		a.paintNameWindow(hwnd)
+		return 0
+	case win.WM_ERASEBKGND:
+		return 1
+	case win.WM_NCHITTEST:
+		return ^uintptr(0)
+	case win.WM_DESTROY:
+		if hwnd == a.nameHwnd {
+			a.nameHwnd = 0
+			a.nameText = ""
+		}
+		return 0
+	}
+	return win.DefWindowProc(hwnd, msg, wParam, lParam)
+}
+
+func (a *petApp) paintNameWindow(hwnd win.HWND) {
+	a.ensureSettingsFonts()
+	var ps win.PAINTSTRUCT
+	hdc := win.BeginPaint(hwnd, &ps)
+	if hdc == 0 {
+		return
+	}
+	defer win.EndPaint(hwnd, &ps)
+	var rect win.RECT
+	win.GetClientRect(hwnd, &rect)
+	drawRectFill(hdc, rect, rgb(255, 255, 248))
+	body := win.RECT{Left: 1, Top: 1, Right: rect.Right - 1, Bottom: rect.Bottom - 1}
+	drawRoundFill(hdc, body, rgb(255, 255, 248), 14)
+	drawRoundOutline(hdc, body, rgb(64, 91, 72), 14)
+	textRect := win.RECT{Left: 10, Top: 1, Right: rect.Right - 10, Bottom: rect.Bottom - 1}
+	drawTextLine(hdc, a.nameText, textRect, a.settingsSmallFont, rgb(27, 36, 32), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
 }
 
 func (a *petApp) syncScene(work win.RECT) {
@@ -1357,7 +1547,7 @@ func (a *petApp) showSettings() {
 func (a *petApp) createSettingsWindow() {
 	title := a.txt("settingsTitle")
 	a.ensureSettingsBrushes()
-	style := uint32(win.WS_POPUP | win.WS_VISIBLE)
+	style := uint32(win.WS_POPUP | win.WS_VISIBLE | win.WS_CLIPCHILDREN)
 	hwnd := win.CreateWindowEx(
 		win.WS_EX_TOOLWINDOW,
 		syscall.StringToUTF16Ptr(windowClass),
@@ -1385,10 +1575,15 @@ func (a *petApp) createSettingsWindow() {
 		a.createButton(hwnd, ctrlCoatRandom, a.txt("coatRandom"), 518, 250, 110, 30, 0)
 
 		a.createButton(hwnd, ctrlVariantCombo, "", 360, 298, 318, 34, 0)
-		if a.coatMode == coatSelected {
+		a.createButton(hwnd, ctrlNameLabels, "", 548, 344, 132, 28, 0)
+		if a.nameLabels {
 			for i := 0; i < a.petCount; i++ {
-				_, buttonRect := settingsPetVariantRects(i)
-				a.createButton(hwnd, ctrlPetVariantBase+int32(i), "", buttonRect.Left, buttonRect.Top, buttonRect.Right-buttonRect.Left, buttonRect.Bottom-buttonRect.Top, 0)
+				_, nameRect := settingsPetNameRects(i)
+				a.createButton(hwnd, ctrlPetNameBase+int32(i), "", nameRect.Left, nameRect.Top, nameRect.Right-nameRect.Left, nameRect.Bottom-nameRect.Top, 0)
+				if a.coatMode == coatSelected {
+					_, buttonRect := settingsPetVariantRects(i)
+					a.createButton(hwnd, ctrlPetVariantBase+int32(i), "", buttonRect.Left, buttonRect.Top, buttonRect.Right-buttonRect.Left, buttonRect.Bottom-buttonRect.Top, 0)
+				}
 			}
 		}
 	} else {
@@ -1466,11 +1661,7 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 	if a.settingsTab == tabAnimals {
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 142, Right: 708, Bottom: 192}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 238, Right: 708, Bottom: 292}, rgb(238, 242, 237), 14)
-		if a.coatMode == coatSelected {
-			drawRoundFill(hdc, win.RECT{Left: 238, Top: 338, Right: 708, Bottom: 502}, rgb(238, 242, 237), 14)
-		} else {
-			drawRoundFill(hdc, win.RECT{Left: 238, Top: 344, Right: 708, Bottom: 420}, rgb(238, 242, 237), 14)
-		}
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 338, Right: 708, Bottom: 502}, rgb(238, 242, 237), 14)
 	} else {
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 150, Right: 708, Bottom: 208}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 256, Right: 708, Bottom: 314}, rgb(238, 242, 237), 14)
@@ -1492,14 +1683,14 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 		drawTextLine(hdc, fmt.Sprintf("%d", a.petCount), win.RECT{Left: 464, Top: 154, Right: 498, Bottom: 184}, a.settingsFont, rgb(25, 49, 40), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("coatMode"), win.RECT{Left: 250, Top: 214, Right: 420, Bottom: 238}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("coatColor"), win.RECT{Left: 250, Top: 302, Right: 352, Bottom: 328}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
-		if a.coatMode == coatSelected {
-			drawTextLine(hdc, a.txt("selectedCoats"), win.RECT{Left: 250, Top: 344, Right: 430, Bottom: 370}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.petNameSectionLabel(), win.RECT{Left: 250, Top: 344, Right: 520, Bottom: 370}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		if a.nameLabels {
 			for i := 0; i < a.petCount; i++ {
-				numberRect, _ := settingsPetVariantRects(i)
+				numberRect, _ := settingsPetNameRects(i)
 				drawTextLine(hdc, fmt.Sprintf("%d", i+1), numberRect, a.settingsSmallFont, rgb(69, 78, 72), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 			}
 		} else {
-			drawTextLine(hdc, a.txt("coatNote"), win.RECT{Left: 254, Top: 360, Right: 682, Bottom: 410}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_WORDBREAK|win.DT_NOPREFIX)
+			drawTextLine(hdc, a.localText("オンにすると、名前の編集とカーソルホバー表示を使えます。", "Turn this on to edit names and show them on hover."), win.RECT{Left: 254, Top: 386, Right: 682, Bottom: 430}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_WORDBREAK|win.DT_NOPREFIX)
 		}
 	} else {
 		drawTextLine(hdc, a.txt("mode"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
@@ -1540,6 +1731,20 @@ func (a *petApp) createButton(parent win.HWND, id int32, text string, x, y, w, h
 		parent, win.HMENU(uintptr(id)), a.hinst, nil,
 	)
 	a.setControlFont(hwnd, a.settingsFont)
+	return hwnd
+}
+
+func (a *petApp) createEdit(parent win.HWND, id int32, text string, x, y, w, h int32) win.HWND {
+	hwnd := win.CreateWindowEx(
+		0,
+		syscall.StringToUTF16Ptr("EDIT"),
+		syscall.StringToUTF16Ptr(text),
+		win.WS_CHILD|win.WS_VISIBLE|win.WS_TABSTOP|win.WS_BORDER|win.ES_LEFT|win.ES_AUTOHSCROLL,
+		x, y, w, h,
+		parent, win.HMENU(uintptr(id)), a.hinst, nil,
+	)
+	a.setControlFont(hwnd, a.settingsFont)
+	win.SendMessage(hwnd, win.EM_LIMITTEXT, 24, 0)
 	return hwnd
 }
 
@@ -1677,9 +1882,18 @@ func (a *petApp) settingsButtonLabel(id int32) string {
 		return a.txt("reset")
 	case ctrlClose:
 		return a.txt("close")
+	case ctrlNameLabels:
+		return a.localText("名前を付ける", "Use names")
+	case ctrlRenameOK:
+		return a.localText("保存", "Save")
+	case ctrlRenameCancel:
+		return a.localText("キャンセル", "Cancel")
 	}
 	if id >= ctrlPetVariantBase && id < ctrlPetVariantBase+maxPetCount {
 		return a.variantLabel(a.settingsSelectVariant(id))
+	}
+	if id >= ctrlPetNameBase && id < ctrlPetNameBase+maxPetCount {
+		return a.petDisplayName(int(id - ctrlPetNameBase))
 	}
 	return ""
 }
@@ -1710,6 +1924,8 @@ func (a *petApp) settingsButtonSelected(id int32) bool {
 		return a.wheelEnabled
 	case ctrlBidirectional:
 		return a.bidirectional
+	case ctrlNameLabels:
+		return a.nameLabels
 	}
 	return false
 }
@@ -1731,10 +1947,12 @@ func (a *petApp) settingsButtonBackplate(id int32) settingsRGB {
 	case ctrlCoatFixed, ctrlCoatSelected, ctrlCoatRandom,
 		ctrlModeKeyboard, ctrlModeRandom,
 		ctrlSpeedSlow, ctrlSpeedNormal, ctrlSpeedFast,
-		ctrlTypingWheel, ctrlBidirectional:
+		ctrlTypingWheel, ctrlBidirectional,
+		ctrlNameLabels, ctrlRenameOK, ctrlRenameCancel:
 		return rgb(235, 232, 220)
 	}
-	if id >= ctrlPetVariantBase && id < ctrlPetVariantBase+maxPetCount {
+	if (id >= ctrlPetVariantBase && id < ctrlPetVariantBase+maxPetCount) ||
+		(id >= ctrlPetNameBase && id < ctrlPetNameBase+maxPetCount) {
 		return rgb(235, 232, 220)
 	}
 	return rgb(255, 255, 251)
@@ -1797,9 +2015,22 @@ func settingsPetVariantRects(index int) (win.RECT, win.RECT) {
 	}
 	left := int32(250 + col*228)
 	top := int32(370 + row*26)
-	numberRect := win.RECT{Left: left, Top: top, Right: left + 30, Bottom: top + 26}
-	buttonRect := win.RECT{Left: left + 38, Top: top, Right: left + 214, Bottom: top + 26}
+	numberRect := win.RECT{Left: left, Top: top, Right: left + 24, Bottom: top + 26}
+	buttonRect := win.RECT{Left: left + 110, Top: top, Right: left + 224, Bottom: top + 26}
 	return numberRect, buttonRect
+}
+
+func settingsPetNameRects(index int) (win.RECT, win.RECT) {
+	col := index / 5
+	row := index % 5
+	if col > 1 {
+		col = 1
+	}
+	left := int32(250 + col*228)
+	top := int32(370 + row*26)
+	numberRect := win.RECT{Left: left, Top: top, Right: left + 24, Bottom: top + 26}
+	editRect := win.RECT{Left: left + 30, Top: top + 1, Right: left + 104, Bottom: top + 25}
+	return numberRect, editRect
 }
 
 func (a *petApp) settingsSelectVariant(id int32) int {
@@ -1810,6 +2041,39 @@ func (a *petApp) settingsSelectVariant(id int32) int {
 		}
 	}
 	return clamp(a.variant, 0, len(variants)-1)
+}
+
+func (a *petApp) petDisplayName(index int) string {
+	if index < 0 || index >= maxPetCount {
+		return ""
+	}
+	if name := sanitizePetName(a.petNames[index]); name != "" {
+		return name
+	}
+	return a.localText(fmt.Sprintf("デグー%d", index+1), fmt.Sprintf("Degu %d", index+1))
+}
+
+func (a *petApp) petNameSectionLabel() string {
+	if a.coatMode == coatSelected {
+		return a.localText("名前 / 個別カラー", "Names / coat colors")
+	}
+	return a.localText("名前", "Names")
+}
+
+func (a *petApp) localText(ja, en string) string {
+	if a.lang == langEnglish {
+		return en
+	}
+	return ja
+}
+
+func sanitizePetName(name string) string {
+	name = strings.Join(strings.Fields(name), " ")
+	runes := []rune(name)
+	if len(runes) > 24 {
+		runes = runes[:24]
+	}
+	return string(runes)
 }
 
 type settingsRGB struct {
@@ -1827,6 +2091,20 @@ func drawRoundFill(hdc win.HDC, r win.RECT, c settingsRGB, radius int32) {
 	defer win.DeleteObject(win.HGDIOBJ(brush))
 	oldBrush := win.SelectObject(hdc, win.HGDIOBJ(brush))
 	oldPen := win.SelectObject(hdc, win.GetStockObject(win.NULL_PEN))
+	win.RoundRect(hdc, r.Left, r.Top, r.Right, r.Bottom, radius, radius)
+	win.SelectObject(hdc, oldPen)
+	win.SelectObject(hdc, oldBrush)
+}
+
+func drawRoundOutline(hdc win.HDC, r win.RECT, c settingsRGB, radius int32) {
+	lb := win.LOGBRUSH{LbStyle: win.BS_SOLID, LbColor: win.RGB(c.r, c.g, c.b)}
+	pen := win.ExtCreatePen(win.PS_SOLID, 1, &lb, 0, nil)
+	if pen == 0 {
+		return
+	}
+	defer win.DeleteObject(win.HGDIOBJ(pen))
+	oldBrush := win.SelectObject(hdc, win.GetStockObject(win.NULL_BRUSH))
+	oldPen := win.SelectObject(hdc, win.HGDIOBJ(pen))
 	win.RoundRect(hdc, r.Left, r.Top, r.Right, r.Bottom, radius, radius)
 	win.SelectObject(hdc, oldPen)
 	win.SelectObject(hdc, oldBrush)
@@ -1992,12 +2270,14 @@ func (a *petApp) syncSettingsWindow() {
 	a.setButtonChecked(ctrlSpeedFast, a.speed == 5)
 	a.setButtonChecked(ctrlTypingWheel, a.wheelEnabled)
 	a.setButtonChecked(ctrlBidirectional, a.bidirectional)
+	a.setButtonChecked(ctrlNameLabels, a.nameLabels)
 	a.setButtonChecked(ctrlCoatFixed, a.coatMode == coatFixed)
 	a.setButtonChecked(ctrlCoatSelected, a.coatMode == coatSelected)
 	a.setButtonChecked(ctrlCoatRandom, a.coatMode == coatRandom)
 	a.syncSelectButton(ctrlVariantCombo)
 	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlVariantCombo), a.coatMode == coatFixed)
 	for i := 0; i < a.petCount; i++ {
+		a.syncSelectButton(ctrlPetNameBase + int32(i))
 		a.syncSelectButton(ctrlPetVariantBase + int32(i))
 	}
 	a.syncSelectButton(ctrlLanguageCombo)
@@ -2028,6 +2308,23 @@ func (a *petApp) syncSelectButton(id int32) {
 }
 
 func (a *petApp) handleSettingsCommand(id int32, notify uint16) bool {
+	if id == ctrlNameLabels {
+		a.nameLabels = !a.nameLabels
+		if !a.nameLabels {
+			a.hideNameWindow()
+		}
+		a.recreateSettingsWindow()
+		a.persistSettings()
+		a.render()
+		return true
+	}
+	if id >= ctrlPetNameBase && id < ctrlPetNameBase+maxPetCount {
+		if !a.nameLabels {
+			return true
+		}
+		a.showRenameDialog(int(id - ctrlPetNameBase))
+		return true
+	}
 	switch id {
 	case ctrlTabAnimals:
 		a.settingsTab = tabAnimals
@@ -2152,6 +2449,108 @@ func (a *petApp) trackControlMenu(id int32, menu win.HMENU) uint32 {
 	}
 	win.SetForegroundWindow(a.settingsHwnd)
 	return win.TrackPopupMenu(menu, win.TPM_RETURNCMD|win.TPM_LEFTALIGN|win.TPM_TOPALIGN|win.TPM_RIGHTBUTTON, rect.Left, rect.Bottom+4, 0, a.settingsHwnd, nil)
+}
+
+func (a *petApp) showRenameDialog(index int) {
+	if index < 0 || index >= maxPetCount || a.settingsHwnd == 0 {
+		return
+	}
+	if a.renameHwnd != 0 {
+		win.DestroyWindow(a.renameHwnd)
+		a.renameHwnd = 0
+	}
+	a.ensureSettingsBrushes()
+	a.ensureSettingsFonts()
+	var parentRect win.RECT
+	win.GetWindowRect(a.settingsHwnd, &parentRect)
+	w, h := int32(336), int32(158)
+	x := parentRect.Left + (parentRect.Right-parentRect.Left-w)/2
+	y := parentRect.Top + (parentRect.Bottom-parentRect.Top-h)/2
+	hwnd := win.CreateWindowEx(
+		win.WS_EX_TOOLWINDOW,
+		syscall.StringToUTF16Ptr(windowClass),
+		syscall.StringToUTF16Ptr(a.localText("名前を変更", "Rename pet")),
+		win.WS_POPUP|win.WS_CAPTION|win.WS_SYSMENU|win.WS_VISIBLE|win.WS_CLIPCHILDREN,
+		x, y, w, h,
+		a.settingsHwnd, 0, a.hinst, nil,
+	)
+	if hwnd == 0 {
+		return
+	}
+	a.renameHwnd = hwnd
+	a.renameIndex = index
+	a.renameEdit = a.createEdit(hwnd, ctrlRenameEdit, a.petDisplayName(index), 24, 56, 288, 28)
+	a.createButton(hwnd, ctrlRenameOK, "", 144, 104, 78, 30, 0)
+	a.createButton(hwnd, ctrlRenameCancel, "", 234, 104, 78, 30, 0)
+	win.SetForegroundWindow(hwnd)
+	win.SetFocus(a.renameEdit)
+}
+
+func (a *petApp) renameWndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
+	switch msg {
+	case win.WM_COMMAND:
+		id := int32(uint16(wParam & 0xffff))
+		switch id {
+		case ctrlRenameOK:
+			a.commitRenameDialog()
+			return 0
+		case ctrlRenameCancel, int32(win.IDCANCEL):
+			win.DestroyWindow(hwnd)
+			return 0
+		}
+	case win.WM_PAINT:
+		a.paintRenameWindow(hwnd)
+		return 0
+	case win.WM_DRAWITEM:
+		dis := drawItemStruct(lParam)
+		if a.drawSettingsButton(&dis) {
+			return 1
+		}
+		return 0
+	case win.WM_CTLCOLORSTATIC:
+		win.SetBkMode(win.HDC(wParam), win.TRANSPARENT)
+		win.SetTextColor(win.HDC(wParam), win.RGB(32, 37, 31))
+		return uintptr(win.GetStockObject(win.NULL_BRUSH))
+	case win.WM_CLOSE:
+		win.DestroyWindow(hwnd)
+		return 0
+	case win.WM_DESTROY:
+		if hwnd == a.renameHwnd {
+			a.renameHwnd = 0
+			a.renameEdit = 0
+			a.renameIndex = -1
+		}
+		return 0
+	}
+	return win.DefWindowProc(hwnd, msg, wParam, lParam)
+}
+
+func (a *petApp) paintRenameWindow(hwnd win.HWND) {
+	a.ensureSettingsFonts()
+	var ps win.PAINTSTRUCT
+	hdc := win.BeginPaint(hwnd, &ps)
+	if hdc == 0 {
+		return
+	}
+	defer win.EndPaint(hwnd, &ps)
+	var rect win.RECT
+	win.GetClientRect(hwnd, &rect)
+	drawRectFill(hdc, rect, rgb(247, 248, 244))
+	label := a.localText(fmt.Sprintf("%d匹目の名前", a.renameIndex+1), fmt.Sprintf("Pet %d name", a.renameIndex+1))
+	drawTextLine(hdc, label, win.RECT{Left: 24, Top: 20, Right: rect.Right - 24, Bottom: 46}, a.settingsFont, rgb(27, 36, 32), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+}
+
+func (a *petApp) commitRenameDialog() {
+	if a.renameIndex >= 0 && a.renameIndex < maxPetCount && a.renameEdit != 0 {
+		a.petNames[a.renameIndex] = sanitizePetName(getWindowText(a.renameEdit))
+		a.syncSettingsWindow()
+		a.persistSettings()
+		a.updateHoverName()
+		a.render()
+	}
+	if a.renameHwnd != 0 {
+		win.DestroyWindow(a.renameHwnd)
+	}
 }
 
 func (a *petApp) recreateSettingsWindow() {
@@ -2483,6 +2882,447 @@ func loadForageSprites() []*image.RGBA {
 	return out
 }
 
+func (a *petApp) showStartupToast() {
+	a.showTrayBalloon(
+		a.localText("Degu Desktop 起動中", "Degu Desktop is running"),
+		a.localText("タスクトレイから設定と終了ができます。", "Use the tray icon for settings and exit."),
+	)
+}
+
+func (a *petApp) showTrayBalloon(title, body string) {
+	if a.hwnd == 0 {
+		return
+	}
+	var nid win.NOTIFYICONDATA
+	nid.CbSize = uint32(unsafe.Sizeof(nid))
+	nid.HWnd = a.hwnd
+	nid.UID = 1
+	nid.UFlags = win.NIF_INFO
+	nid.DwInfoFlags = win.NIIF_INFO | win.NIIF_RESPECT_QUIET_TIME
+	copyUTF16Limited(nid.SzInfoTitle[:], title)
+	copyUTF16Limited(nid.SzInfo[:], body)
+	win.Shell_NotifyIcon(win.NIM_MODIFY, &nid)
+}
+
+func copyUTF16Limited(dst []uint16, text string) {
+	if len(dst) == 0 {
+		return
+	}
+	src := syscall.StringToUTF16(text)
+	n := min(len(dst), len(src))
+	copy(dst[:n], src[:n])
+	if n == len(dst) {
+		dst[len(dst)-1] = 0
+	}
+}
+
+func (a *petApp) updateChecking() bool {
+	return a.update.checking.Load() || a.update.installing.Load()
+}
+
+func (a *petApp) hasInstallableUpdate() bool {
+	rel := a.currentRelease()
+	if rel == nil || !isNewerVersion(rel.TagName, appVersion) {
+		return false
+	}
+	return selectUpdateAsset(rel, runtime.GOARCH) != nil
+}
+
+func (a *petApp) updateCheckMenuLabel() string {
+	if a.update.installing.Load() {
+		return a.localText("アップデート適用中...", "Installing update...")
+	}
+	if a.update.checking.Load() {
+		return a.localText("アップデート確認中...", "Checking for updates...")
+	}
+	return a.localText("アップデートを確認", "Check for updates")
+}
+
+func (a *petApp) updateInstallMenuLabel() string {
+	rel := a.currentRelease()
+	if rel == nil {
+		return a.localText("アップデートをインストール", "Install update")
+	}
+	return a.localText(
+		fmt.Sprintf("%s をインストール", rel.TagName),
+		fmt.Sprintf("Install %s", rel.TagName),
+	)
+}
+
+func (a *petApp) startUpdateCheck(manual bool) {
+	if !a.update.checking.CompareAndSwap(false, true) {
+		if manual {
+			a.showTrayBalloon(
+				a.localText("確認中です", "Already checking"),
+				a.localText("最新アップデートの確認が進行中です。", "An update check is already in progress."),
+			)
+		}
+		return
+	}
+	go func() {
+		rel, err := fetchLatestRelease()
+		a.setUpdateResult(rel, err)
+		var notify uintptr
+		if manual {
+			notify = 1
+		}
+		if err != nil {
+			win.PostMessage(a.hwnd, wmUpdateFailed, notify, 0)
+			return
+		}
+		win.PostMessage(a.hwnd, wmUpdateReady, notify, 0)
+	}()
+}
+
+func (a *petApp) onUpdateReady(manual bool) {
+	a.update.checking.Store(false)
+	rel := a.currentRelease()
+	if rel == nil {
+		if manual {
+			a.showTrayBalloon(
+				a.localText("確認できませんでした", "Update check failed"),
+				a.localText("最新リリース情報が空でした。", "The latest release response was empty."),
+			)
+		}
+		return
+	}
+	asset := selectUpdateAsset(rel, runtime.GOARCH)
+	if asset == nil {
+		if manual {
+			a.showTrayBalloon(
+				a.localText("配布 zip が見つかりません", "Update package not found"),
+				a.localText(updateAssetName(runtime.GOARCH)+" が Release にありません。", updateAssetName(runtime.GOARCH)+" is missing from the release."),
+			)
+		}
+		return
+	}
+	if !isNewerVersion(rel.TagName, appVersion) {
+		if manual {
+			a.showTrayBalloon(
+				a.localText("最新版です", "Up to date"),
+				a.localText("インストール済みの Degu Desktop は最新です。", "The installed Degu Desktop is current."),
+			)
+		}
+		return
+	}
+	a.showTrayBalloon(
+		a.localText("アップデートがあります", "Update available"),
+		a.localText(
+			fmt.Sprintf("%s をトレイメニューからインストールできます。", rel.TagName),
+			fmt.Sprintf("%s can be installed from the tray menu.", rel.TagName),
+		),
+	)
+}
+
+func (a *petApp) onUpdateFailed(notify bool) {
+	a.update.checking.Store(false)
+	a.update.installing.Store(false)
+	if !notify {
+		return
+	}
+	a.showTrayBalloon(
+		a.localText("アップデートに失敗しました", "Update failed"),
+		a.currentUpdateError(),
+	)
+}
+
+func (a *petApp) installLatestUpdate() {
+	rel := a.currentRelease()
+	if rel == nil || !isNewerVersion(rel.TagName, appVersion) {
+		a.showTrayBalloon(
+			a.localText("アップデートなし", "No update available"),
+			a.localText("先にアップデートを確認してください。", "Check for updates first."),
+		)
+		return
+	}
+	asset := selectUpdateAsset(rel, runtime.GOARCH)
+	if asset == nil {
+		a.showTrayBalloon(
+			a.localText("配布 zip が見つかりません", "Update package not found"),
+			a.localText(updateAssetName(runtime.GOARCH)+" が Release にありません。", updateAssetName(runtime.GOARCH)+" is missing from the release."),
+		)
+		return
+	}
+	if !a.update.installing.CompareAndSwap(false, true) {
+		a.showTrayBalloon(
+			a.localText("適用中です", "Install already running"),
+			a.localText("アップデートのダウンロードと適用を進めています。", "The update is already being downloaded and installed."),
+		)
+		return
+	}
+	a.showTrayBalloon(
+		a.localText("アップデートを開始", "Starting update"),
+		a.localText("ダウンロード後に Degu Desktop を再起動します。", "Degu Desktop will restart after download."),
+	)
+	go func(asset githubReleaseAsset) {
+		err := downloadAndStartUpdater(asset.BrowserDownloadURL)
+		a.setUpdateResult(rel, err)
+		if err != nil {
+			win.PostMessage(a.hwnd, wmUpdateFailed, 1, 0)
+			return
+		}
+		win.PostMessage(a.hwnd, wmUpdateInstallReady, 0, 0)
+	}(*asset)
+}
+
+func (a *petApp) onUpdateInstallReady() {
+	a.showTrayBalloon(
+		a.localText("アップデートを適用します", "Applying update"),
+		a.localText("本体を終了して、新しいバージョンで再起動します。", "The app will close and restart with the new version."),
+	)
+	a.closing.Store(true)
+	win.DestroyWindow(a.hwnd)
+}
+
+func (a *petApp) setUpdateResult(rel *githubRelease, err error) {
+	a.update.mu.Lock()
+	defer a.update.mu.Unlock()
+	if rel != nil {
+		cp := *rel
+		cp.Assets = append([]githubReleaseAsset(nil), rel.Assets...)
+		a.update.latest = &cp
+	}
+	if err != nil {
+		a.update.lastError = err.Error()
+	} else {
+		a.update.lastError = ""
+	}
+}
+
+func (a *petApp) currentRelease() *githubRelease {
+	a.update.mu.Lock()
+	defer a.update.mu.Unlock()
+	if a.update.latest == nil {
+		return nil
+	}
+	cp := *a.update.latest
+	cp.Assets = append([]githubReleaseAsset(nil), a.update.latest.Assets...)
+	return &cp
+}
+
+func (a *petApp) currentUpdateError() string {
+	a.update.mu.Lock()
+	defer a.update.mu.Unlock()
+	if a.update.lastError == "" {
+		return a.localText("詳細なエラーはありません。", "No detailed error is available.")
+	}
+	return a.update.lastError
+}
+
+func fetchLatestRelease() (*githubRelease, error) {
+	req, err := http.NewRequest(http.MethodGet, updateAPIURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+	req.Header.Set("User-Agent", "DeguDesktop/"+appVersion)
+	client := http.Client{Timeout: 12 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("GitHub Releases API returned HTTP %d", resp.StatusCode)
+	}
+	var rel githubRelease
+	if err := json.NewDecoder(resp.Body).Decode(&rel); err != nil {
+		return nil, err
+	}
+	if rel.TagName == "" {
+		return nil, fmt.Errorf("latest release has no tag name")
+	}
+	if rel.Draft {
+		return nil, fmt.Errorf("latest release is still a draft")
+	}
+	return &rel, nil
+}
+
+func selectUpdateAsset(rel *githubRelease, goarch string) *githubReleaseAsset {
+	if rel == nil {
+		return nil
+	}
+	want := updateAssetName(goarch)
+	for i := range rel.Assets {
+		asset := &rel.Assets[i]
+		if strings.EqualFold(asset.Name, want) && asset.BrowserDownloadURL != "" {
+			return asset
+		}
+	}
+	return nil
+}
+
+func updateAssetName(goarch string) string {
+	switch goarch {
+	case "386":
+		return "DeguDesktop-windows-386.zip"
+	default:
+		return "DeguDesktop-windows-amd64.zip"
+	}
+}
+
+func isNewerVersion(latest, current string) bool {
+	latest = normalizeVersionTag(latest)
+	current = normalizeVersionTag(current)
+	if latest == "" || latest == current {
+		return false
+	}
+	latestParts, latestOK := parseVersionParts(latest)
+	currentParts, currentOK := parseVersionParts(current)
+	if latestOK && currentOK {
+		for i := 0; i < max(len(latestParts), len(currentParts)); i++ {
+			lv, cv := 0, 0
+			if i < len(latestParts) {
+				lv = latestParts[i]
+			}
+			if i < len(currentParts) {
+				cv = currentParts[i]
+			}
+			if lv != cv {
+				return lv > cv
+			}
+		}
+		return false
+	}
+	return current == "" || current == "dev" || strings.HasPrefix(current, "pages-")
+}
+
+func normalizeVersionTag(version string) string {
+	version = strings.TrimSpace(version)
+	version = strings.TrimPrefix(version, "v")
+	version = strings.TrimPrefix(version, "V")
+	return version
+}
+
+func parseVersionParts(version string) ([]int, bool) {
+	if version == "" {
+		return nil, false
+	}
+	if cut := strings.IndexAny(version, "-+"); cut >= 0 {
+		version = version[:cut]
+	}
+	parts := strings.Split(version, ".")
+	out := make([]int, 0, len(parts))
+	for _, part := range parts {
+		if part == "" {
+			return nil, false
+		}
+		value := 0
+		for _, r := range part {
+			if r < '0' || r > '9' {
+				return nil, false
+			}
+			value = value*10 + int(r-'0')
+		}
+		out = append(out, value)
+	}
+	return out, true
+}
+
+func downloadAndStartUpdater(assetURL string) error {
+	tmpDir, err := os.MkdirTemp("", "degu-desktop-update-*")
+	if err != nil {
+		return err
+	}
+	zipPath := filepath.Join(tmpDir, "update.zip")
+	if err := downloadFile(assetURL, zipPath); err != nil {
+		_ = os.RemoveAll(tmpDir)
+		return err
+	}
+	exePath, err := extractUpdateExe(zipPath, tmpDir)
+	if err != nil {
+		_ = os.RemoveAll(tmpDir)
+		return err
+	}
+	currentExe, err := os.Executable()
+	if err != nil {
+		_ = os.RemoveAll(tmpDir)
+		return err
+	}
+	return startUpdaterScript(tmpDir, exePath, currentExe, os.Getpid())
+}
+
+func downloadFile(url, path string) error {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("User-Agent", "DeguDesktop/"+appVersion)
+	client := http.Client{Timeout: 60 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("download returned HTTP %d", resp.StatusCode)
+	}
+	out, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	_, err = io.Copy(out, resp.Body)
+	return err
+}
+
+func extractUpdateExe(zipPath, tmpDir string) (string, error) {
+	reader, err := zip.OpenReader(zipPath)
+	if err != nil {
+		return "", err
+	}
+	defer reader.Close()
+	for _, file := range reader.File {
+		if !strings.EqualFold(filepath.Base(file.Name), "DeguDesktop.exe") {
+			continue
+		}
+		src, err := file.Open()
+		if err != nil {
+			return "", err
+		}
+		defer src.Close()
+		exePath := filepath.Join(tmpDir, "DeguDesktop.exe")
+		dst, err := os.Create(exePath)
+		if err != nil {
+			return "", err
+		}
+		if _, err := io.Copy(dst, src); err != nil {
+			_ = dst.Close()
+			return "", err
+		}
+		if err := dst.Close(); err != nil {
+			return "", err
+		}
+		return exePath, os.Chmod(exePath, 0o755)
+	}
+	return "", fmt.Errorf("DeguDesktop.exe was not found in update zip")
+}
+
+func startUpdaterScript(tmpDir, sourceExe, targetExe string, pid int) error {
+	scriptPath := filepath.Join(tmpDir, "install-update.ps1")
+	script := fmt.Sprintf(`$ErrorActionPreference = 'Stop'
+$source = %s
+$target = %s
+$tempDir = %s
+Wait-Process -Id %d -ErrorAction SilentlyContinue
+Start-Sleep -Milliseconds 300
+Copy-Item -LiteralPath $source -Destination $target -Force
+Start-Process -FilePath $target
+Start-Sleep -Milliseconds 300
+Remove-Item -LiteralPath $tempDir -Recurse -Force -ErrorAction SilentlyContinue
+`, psQuote(sourceExe), psQuote(targetExe), psQuote(tmpDir), pid)
+	if err := os.WriteFile(scriptPath, []byte(script), 0o600); err != nil {
+		return err
+	}
+	cmd := exec.Command("powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", scriptPath)
+	cmd.SysProcAttr = &syscall.SysProcAttr{HideWindow: true}
+	return cmd.Start()
+}
+
+func psQuote(value string) string {
+	return "'" + strings.ReplaceAll(value, "'", "''") + "'"
+}
+
 func (a *petApp) installTray() {
 	iconPath := filepath.Join(os.TempDir(), "degu-desktop-tray.ico")
 	if data, err := fs.ReadFile(appassets.FS, "tray.ico"); err == nil {
@@ -2542,6 +3382,15 @@ func (a *petApp) showTrayMenu() {
 
 	appendChecked(menu, menuWheelToggle, a.txt("typingWheel"), a.wheelEnabled)
 	appendMenu(menu, win.MF_SEPARATOR, 0, nil)
+	updateFlags := uint32(win.MF_STRING)
+	if a.updateChecking() {
+		updateFlags |= win.MF_GRAYED
+	}
+	appendMenu(menu, updateFlags, uintptr(menuCheckUpdate), syscall.StringToUTF16Ptr(a.updateCheckMenuLabel()))
+	if a.hasInstallableUpdate() {
+		appendMenu(menu, win.MF_STRING, uintptr(menuInstallUpdate), syscall.StringToUTF16Ptr(a.updateInstallMenuLabel()))
+	}
+	appendMenu(menu, win.MF_SEPARATOR, 0, nil)
 	appendMenu(menu, win.MF_STRING, uintptr(menuSettings), syscall.StringToUTF16Ptr(a.txt("settingsTitle")))
 	appendMenu(menu, win.MF_STRING, uintptr(menuExit), syscall.StringToUTF16Ptr(a.txt("exit")))
 
@@ -2579,6 +3428,10 @@ func (a *petApp) handleMenuCommand(id uint16) bool {
 		win.DestroyWindow(a.hwnd)
 	case id == menuSettings:
 		a.showSettings()
+	case id == menuCheckUpdate:
+		a.startUpdateCheck(true)
+	case id == menuInstallUpdate:
+		a.installLatestUpdate()
 	case id == menuModeKeyboard:
 		a.mode = modeKeyboard
 		for i := range a.pets {
@@ -2636,6 +3489,14 @@ func (a *petApp) cleanup() {
 	if a.settingsHwnd != 0 {
 		win.DestroyWindow(a.settingsHwnd)
 		a.settingsHwnd = 0
+	}
+	if a.renameHwnd != 0 {
+		win.DestroyWindow(a.renameHwnd)
+		a.renameHwnd = 0
+	}
+	if a.nameHwnd != 0 {
+		win.DestroyWindow(a.nameHwnd)
+		a.nameHwnd = 0
 	}
 	if a.keyHook != 0 {
 		unhookWindowsHookEx(a.keyHook)
@@ -2730,6 +3591,16 @@ func appendMenu(menu win.HMENU, flags uint32, item uintptr, text *uint16) bool {
 func setWindowText(hwnd win.HWND, text string) bool {
 	ret, _, _ := procSetWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(text))))
 	return ret != 0
+}
+
+func getWindowText(hwnd win.HWND) string {
+	if hwnd == 0 {
+		return ""
+	}
+	length := int(win.SendMessage(hwnd, win.WM_GETTEXTLENGTH, 0, 0))
+	buf := make([]uint16, max(1, length+1))
+	win.SendMessage(hwnd, win.WM_GETTEXT, uintptr(len(buf)), uintptr(unsafe.Pointer(&buf[0])))
+	return syscall.UTF16ToString(buf)
 }
 
 func setWindowsHookEx(idHook int, callback uintptr, module win.HINSTANCE, threadID uint32) uintptr {

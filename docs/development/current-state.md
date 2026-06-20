@@ -10,6 +10,7 @@ Last updated: 2026-06-20
 - Importer: `cmd/importsheet`
 - Static site: `docs`
 - GitHub workflows: `.github/workflows/pages.yml`, `.github/workflows/release.yml`
+- Windows artifacts: x64 (`amd64`) and x86 (`386`)
 
 ## Current Architecture
 
@@ -23,11 +24,13 @@ Last updated: 2026-06-20
 ## Current Features
 
 - Transparent always-on-top taskbar overlay.
-- Tray menu and Japanese/English settings window for coat, speed, count, mode, typing wheel, settings, and exit.
+- Tray menu and Japanese/English settings window for optional per-pet names, coat, speed, count, mode, typing wheel, update checks, settings, and exit.
 - Keyboard reaction and random stroll modes.
 - Typing wheel behavior.
 - Foraging props, eating, digging, and carrying behavior.
 - Grooming/social pause behavior.
+- Optional cursor-hover name labels above visible degus.
+- Startup tray notification and GitHub Release based update check/install flow.
 - GitHub Pages and GitHub Release workflows.
 
 ## Current Asset Format
@@ -56,6 +59,14 @@ assets/source/coat-guides/<coat_id>.png
 
 Those guides provide irregular light patch placement for black pied, agouti pied, blue pied, and cream pied. They are not procedural oval masks.
 
+The tray/app icon uses an ImageGen source:
+
+```text
+assets/source/imagegen-icon.png
+```
+
+The importer normalizes it into `assets/tray.ico`.
+
 ## Known Problems
 
 - Species and coat are not yet separate concepts.
@@ -63,6 +74,7 @@ Those guides provide irregular light patch placement for black pied, agouti pied
 - Some generated degu action frames have inconsistent orientation, so runtime frame selection avoids known unstable walk-cycle frames.
 - The current settings window is implemented with animal/motion tabs and Japanese/English labels, but it is still native Win32 rather than a fully custom-rendered UI.
 - The current website describes Degu Desktop but does not yet present a multi-species roadmap.
+- Future art-style selection is not implemented yet. The user likes the more natural illustrated degu-sheet style from the latest attached reference, so style profiles should be modeled separately from coat variants when this is added.
 
 ## Current In-Progress Diff
 
