@@ -46,7 +46,7 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          from datetime import datetime, timezone
+          from datetime import datetime, timedelta, timezone
           from pathlib import Path
           import os
           import re
@@ -54,7 +54,7 @@ jobs:
           sha = os.environ["GITHUB_SHA"]
           values = {
               "data-build-version": f"pages-{sha[:7]}",
-              "data-build-date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+              "data-build-date": datetime.now(timezone(timedelta(hours=9))).strftime("%Y-%m-%d"),
               "data-build-commit": sha[:7],
           }
           path = Path("docs/index.html")

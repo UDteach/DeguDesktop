@@ -355,7 +355,7 @@ The download buttons did not expose which Pages-built binary a visitor would rec
 ### Pages Pass
 
 - Added compact build metadata chips under the x64/x86/Releases download buttons.
-- Updated the Pages workflow to stamp `docs/index.html` at deploy time with `pages-<short sha>`, the UTC deploy date, and the short commit ID.
+- Updated the Pages workflow to stamp `docs/index.html` at deploy time with `pages-<short sha>`, the JST deploy date, and the short commit ID.
 - Reused the same short Pages version string for the x64 and x86 `main.appVersion` injection.
 
 ### Verification
