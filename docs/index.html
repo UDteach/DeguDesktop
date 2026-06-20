@@ -100,6 +100,30 @@
         margin-top: 28px;
       }
 
+      .release-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .release-meta span {
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border: 1px solid var(--line);
+        background: rgba(255, 253, 247, 0.72);
+      }
+
+      .release-meta strong {
+        color: var(--ink);
+        font-weight: 650;
+      }
+
       .button {
         display: inline-flex;
         min-height: 46px;
@@ -232,6 +256,11 @@
             <a class="button" href="https://github.com/UDteach/DeguDesktop/releases">
               Releases
             </a>
+          </div>
+          <div class="release-meta" aria-label="Build information">
+            <span>バージョン <strong data-build-version>dev-local</strong></span>
+            <span>更新日 <strong data-build-date>2026-06-20</strong></span>
+            <span>コミット <strong data-build-commit>local</strong></span>
           </div>
         </div>
 

@@ -31,7 +31,7 @@ Last updated: 2026-06-20
 - Grooming/social pause behavior.
 - Optional cursor-hover name labels above visible degus.
 - Startup tray notification and GitHub Release based update check/install flow.
-- GitHub Pages and GitHub Release workflows.
+- GitHub Pages and GitHub Release workflows, with Pages download metadata for version, update date, and commit.
 
 ## Current Asset Format
 

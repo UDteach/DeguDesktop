@@ -94,6 +94,8 @@ Push a `v*` tag to build `DeguDesktop-windows-amd64.zip` and `DeguDesktop-window
 
 Release builds embed the tag into `main.appVersion` and publish both `DeguDesktop-windows-amd64.zip` and `DeguDesktop-windows-386.zip`. The app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, stage a temporary updater script, exit, replace `DeguDesktop.exe`, and restart.
 
+The GitHub Pages workflow also stamps the download area with the Pages build version, UTC update date, and short commit ID.
+
 ## Cloudflare Pages
 
 `wrangler.jsonc` sets `docs/` as the Pages output directory. For a Git-connected Cloudflare Pages project, connect this repository, use `main` as the production branch, leave the build command blank, and set the output directory to `docs`.

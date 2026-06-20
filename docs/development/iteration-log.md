@@ -339,3 +339,28 @@ Add a practical Windows update path, improve tray identity with an ImageGen icon
   - `.codex/qa/settings-names-toggle-on.png`
   - `.codex/qa/rename-dialog-over-settings.png`
   - `.codex/qa/settings-name-button-after-dialog.png`
+
+## Iteration 10 - Pages Build Metadata
+
+Date: 2026-06-20
+
+### Target
+
+Show the downloadable build version, update date, and commit on the GitHub Pages download area.
+
+### Cause
+
+The download buttons did not expose which Pages-built binary a visitor would receive. That made it harder to tell whether the published page had caught up with the latest repository state.
+
+### Pages Pass
+
+- Added compact build metadata chips under the x64/x86/Releases download buttons.
+- Updated the Pages workflow to stamp `docs/index.html` at deploy time with `pages-<short sha>`, the UTC deploy date, and the short commit ID.
+- Reused the same short Pages version string for the x64 and x86 `main.appVersion` injection.
+
+### Verification
+
+- Stamping dry-run found exactly one `data-build-version`, `data-build-date`, and `data-build-commit` target in `docs/index.html`.
+- `git diff --check`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`

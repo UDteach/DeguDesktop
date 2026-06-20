@@ -33,14 +33,43 @@ jobs:
         shell: bash
         run: |
           mkdir -p docs/download dist
-          GOOS=windows GOARCH=amd64 go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=pages-${{ github.sha }}" -o dist/DeguDesktop.exe ./cmd/degu
+          APP_VERSION="pages-${GITHUB_SHA::7}"
+          GOOS=windows GOARCH=amd64 go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=${APP_VERSION}" -o dist/DeguDesktop.exe ./cmd/degu
           cp README.md dist/README.md
           (cd dist && zip -q DeguDesktop-windows-amd64.zip DeguDesktop.exe README.md)
           cp dist/DeguDesktop-windows-amd64.zip docs/download/DeguDesktop-windows-amd64.zip
           rm -f dist/DeguDesktop.exe
-          GOOS=windows GOARCH=386 go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=pages-${{ github.sha }}" -o dist/DeguDesktop.exe ./cmd/degu
+          GOOS=windows GOARCH=386 go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=${APP_VERSION}" -o dist/DeguDesktop.exe ./cmd/degu
           (cd dist && zip -q DeguDesktop-windows-386.zip DeguDesktop.exe README.md)
           cp dist/DeguDesktop-windows-386.zip docs/download/DeguDesktop-windows-386.zip
+      - name: Stamp page build metadata
+        shell: bash
+        run: |
+          python - <<'PY'
+          from datetime import datetime, timezone
+          from pathlib import Path
+          import os
+          import re
+
+          sha = os.environ["GITHUB_SHA"]
+          values = {
+              "data-build-version": f"pages-{sha[:7]}",
+              "data-build-date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+              "data-build-commit": sha[:7],
+          }
+          path = Path("docs/index.html")
+          text = path.read_text(encoding="utf-8")
+          for attr, value in values.items():
+              text, count = re.subn(
+                  rf"(<strong {attr}>).*?(</strong>)",
+                  rf"\g<1>{value}\2",
+                  text,
+                  count=1,
+              )
+              if count != 1:
+                  raise SystemExit(f"Missing {attr} in docs/index.html")
+          path.write_text(text, encoding="utf-8")
+          PY
       - uses: actions/configure-pages@v5
         with:
           enablement: true
