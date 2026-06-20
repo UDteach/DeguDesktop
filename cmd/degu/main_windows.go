@@ -41,6 +41,7 @@ const (
 	wheelSize     = 72
 	maxPetCount   = 5
 	maxForage     = 5
+	wheelKeyHold  = 18
 )
 
 const (
@@ -260,9 +261,6 @@ func (a *petApp) resetPosition() {
 	work := workArea()
 	a.syncScene(work)
 	a.setPetCount(a.petCount)
-	if a.wheelEnabled && len(a.pets) > 0 {
-		a.enterWheel(&a.pets[0])
-	}
 }
 
 func (a *petApp) tick() {
@@ -327,8 +325,6 @@ func (a *petApp) tickPet(index int, p *deguPet) {
 		p.x += speed
 		if p.state == stateForage {
 			a.maybeStartGnawing(index, p)
-		} else {
-			a.maybeEnterWheel(p)
 		}
 	}
 
@@ -452,8 +448,8 @@ func (a *petApp) onTyping() {
 	}
 	for i := range a.pets {
 		p := &a.pets[i]
-		if a.wheelEnabled && i == 0 && p.item == noItem && abs((p.x+spriteW/2)-a.wheelX) < 180 {
-			a.enterWheel(p)
+		if a.wheelEnabled && i == 0 && p.item == noItem {
+			a.enterWheelFromTyping(p)
 			continue
 		}
 		p.state = stateScurry
@@ -720,27 +716,17 @@ func drawForageProp(dst *image.RGBA, x, y, kind int) {
 	}
 }
 
-func (a *petApp) maybeEnterWheel(p *deguPet) {
-	if !a.wheelEnabled || p.state == stateWheel || p.item != noItem || p.state == stateCarry || p.state == stateGroom {
-		return
-	}
-	center := p.x + spriteW/2
-	if abs(center-a.wheelX) > 8 {
-		return
-	}
-	if rand.Intn(100) < 38 {
-		a.enterWheel(p)
-	}
-}
-
-func (a *petApp) enterWheel(p *deguPet) {
+func (a *petApp) enterWheelFromTyping(p *deguPet) {
+	alreadyRunning := p.state == stateWheel
 	p.state = stateWheel
-	p.frame = 0
-	p.motionSet = rand.Intn(motionSets)
+	if !alreadyRunning {
+		p.frame = 0
+		p.motionSet = rand.Intn(motionSets)
+	}
 	p.item = noItem
 	p.carryKind = noItem
 	p.moveSpeed = 0
-	p.stateTicks = 140 + rand.Intn(90)
+	p.stateTicks = wheelKeyHold
 	p.x = clamp(a.wheelX-wheelSize/2, 0, max(0, a.sceneW-spriteW))
 }
 
@@ -856,7 +842,7 @@ func (a *petApp) showTrayMenu() {
 	appendChecked(countMenu, menuCount5, "5 degus", a.petCount == 5)
 	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(countMenu), syscall.StringToUTF16Ptr("Degu count"))
 
-	appendChecked(menu, menuWheelToggle, "Wheel motion", a.wheelEnabled)
+	appendChecked(menu, menuWheelToggle, "Typing wheel", a.wheelEnabled)
 	appendMenu(menu, win.MF_SEPARATOR, 0, nil)
 	appendMenu(menu, win.MF_STRING, uintptr(menuExit), syscall.StringToUTF16Ptr("Exit"))
 

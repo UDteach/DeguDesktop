@@ -1,6 +1,6 @@
 # Degu Desktop
 
-Windows taskbar pet app written in Go. Pixel-art degus walk, stop, scurry, nibble, hop, and run in a wheel above the taskbar.
+Windows taskbar pet app written in Go. Pixel-art degus walk, stop, scurry, nibble, hop, and run in a wheel while you type above the taskbar.
 
 Repository: <https://github.com/UDteach/DeguDesktop>
 
@@ -12,7 +12,7 @@ Repository: <https://github.com/UDteach/DeguDesktop>
 - Degu count: 1, 2, 3, or 5
 - Social behavior: nearby degus can walk together and pause for grooming
 - Foraging behavior: hay, twigs, and seed-like bits appear near the taskbar for sniffing, gnawing, and carrying
-- Wheel motion: a degu runs inside the wheel, with rotating front spokes, then scurries away
+- Wheel motion: in keyboard mode, a degu runs inside the wheel only while you are typing, then scurries away
 - Coat variants: wild agouti, black, blue-gray, gray, white/cream, sand/champagne, chocolate, and pied variants
 - ImageGen frame PNGs are the art source; no local generated-art fallback
 
