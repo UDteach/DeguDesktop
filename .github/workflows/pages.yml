@@ -37,6 +37,8 @@ jobs:
           (cd dist && zip -q DeguDesktop-windows-amd64.zip DeguDesktop.exe ../README.md)
           cp dist/DeguDesktop-windows-amd64.zip docs/download/DeguDesktop-windows-amd64.zip
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs
