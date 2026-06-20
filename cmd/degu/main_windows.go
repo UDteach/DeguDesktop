@@ -40,6 +40,7 @@ const (
 	sceneH        = 92
 	wheelSize     = 72
 	maxPetCount   = 5
+	maxForage     = 5
 )
 
 const (
@@ -53,6 +54,13 @@ const (
 	nibbleFrames = 6
 	hopStart     = 26
 	hopFrames    = 6
+)
+
+var (
+	idleFrameSeq   = []int{idleStart, idleStart + 1, idleStart + 3, idleStart + 1}
+	walkFrameSeq   = []int{walkStart, walkStart + 1, walkStart + 3, walkStart + 1}
+	nibbleFrameSeq = []int{nibbleStart, nibbleStart + 1, nibbleStart + 2, nibbleStart + 1}
+	hopFrameSeq    = []int{hopStart, hopStart + 1, hopStart + 2, hopStart + 3}
 )
 
 const (
@@ -86,6 +94,14 @@ const (
 	stateNibble
 	stateHop
 	stateWheel
+	stateGroom
+	stateForage
+	stateCarry
+)
+
+const (
+	reservedItem = -2
+	noItem       = -1
 )
 
 type coatVariant struct {
@@ -112,9 +128,18 @@ type deguPet struct {
 	frame      int
 	x          int
 	laneOffset int
+	item       int
+	carryKind  int
 	state      behaviorState
 	stateTicks int
 	moveSpeed  int
+}
+
+type forageItem struct {
+	x      int
+	kind   int
+	owner  int
+	active bool
 }
 
 type petApp struct {
@@ -125,6 +150,7 @@ type petApp struct {
 	frames       map[string][][]*image.RGBA
 	wheel        *image.RGBA
 	pets         []deguPet
+	forage       []forageItem
 	variant      int
 	speed        int
 	mode         behaviorMode
@@ -234,6 +260,9 @@ func (a *petApp) resetPosition() {
 	work := workArea()
 	a.syncScene(work)
 	a.setPetCount(a.petCount)
+	if a.wheelEnabled && len(a.pets) > 0 {
+		a.enterWheel(&a.pets[0])
+	}
 }
 
 func (a *petApp) tick() {
@@ -242,41 +271,70 @@ func (a *petApp) tick() {
 	}
 	work := workArea()
 	a.syncScene(work)
+	a.ensureForageItems()
 	for i := range a.pets {
-		a.tickPet(&a.pets[i])
+		a.tickPet(i, &a.pets[i])
 	}
+	a.syncNearbyWalkers()
+	a.maybeStartSocial()
 	a.tickCount++
 }
 
-func (a *petApp) tickPet(p *deguPet) {
+func (a *petApp) tickPet(index int, p *deguPet) {
 	if p.stateTicks <= 0 {
-		if p.state == stateWheel {
+		switch p.state {
+		case stateWheel:
 			a.leaveWheel(p)
-		} else if a.mode == modeRandom {
+		case stateNibble:
+			if p.item >= 0 && p.item < len(a.forage) {
+				a.finishGnawing(index, p)
+			} else if a.mode == modeRandom {
+				a.chooseRandomAction(p)
+			} else {
+				p.state = stateIdle
+				p.moveSpeed = 0
+				p.stateTicks = 12
+			}
+		case stateGroom, stateCarry:
+			a.releaseForage(index, p)
+			if a.mode == modeRandom {
+				a.chooseRandomAction(p)
+			} else {
+				p.state = stateIdle
+				p.moveSpeed = 0
+				p.stateTicks = 12
+			}
+		default:
+			if a.mode != modeRandom {
+				p.state = stateIdle
+				p.moveSpeed = 0
+				p.stateTicks = 12
+				break
+			}
 			a.chooseRandomAction(p)
-		} else {
-			p.state = stateIdle
-			p.moveSpeed = 0
-			p.stateTicks = 12
 		}
 	}
 
 	speed := 0
 	switch p.state {
-	case stateWalk, stateScurry, stateHop:
+	case stateWalk, stateScurry, stateHop, stateForage, stateCarry:
 		speed = p.moveSpeed
 	case stateWheel:
-		p.x = clamp(a.wheelX-spriteW/2+int(math.Sin(float64(p.frame)/3.0)*2), 0, max(0, a.sceneW-spriteW))
+		p.x = clamp(a.wheelX-wheelSize/2, 0, max(0, a.sceneW-spriteW))
 	}
 
 	if speed > 0 {
 		p.x += speed
-		a.maybeEnterWheel(p)
+		if p.state == stateForage {
+			a.maybeStartGnawing(index, p)
+		} else {
+			a.maybeEnterWheel(p)
+		}
 	}
 
 	p.stateTicks--
 	if p.x > a.sceneW+8 {
-		a.resetPetAtLeft(p)
+		a.resetPetAtLeft(index, p)
 	}
 	p.frame++
 }
@@ -285,13 +343,18 @@ func (a *petApp) chooseRandomAction(p *deguPet) {
 	roll := rand.Intn(100)
 	p.frame = 0
 	p.motionSet = rand.Intn(motionSets)
+	p.item = noItem
+	p.carryKind = noItem
+	if roll < 18 && a.maybeAssignForageTarget(p) {
+		return
+	}
 	switch {
-	case roll < 28:
+	case roll < 34:
 		p.state = stateIdle
 		p.moveSpeed = 0
 		p.stateTicks = 24 + rand.Intn(58)
 		return
-	case roll < 80:
+	case roll < 78:
 		p.state = stateWalk
 		p.moveSpeed = max(1, a.speed-1+rand.Intn(2))
 		p.stateTicks = 34 + rand.Intn(92)
@@ -316,17 +379,41 @@ func (a *petApp) render() {
 	canvas := image.NewRGBA(image.Rect(0, 0, a.sceneW, sceneH))
 	draw.Draw(canvas, canvas.Bounds(), image.Transparent, image.Point{}, draw.Src)
 
-	if a.wheelEnabled {
-		drawWheel(canvas, a.wheelX-wheelSize/2, sceneH-wheelSize-2, a.tickCount, a.wheel)
+	wheelActive := a.wheelEnabled && a.hasWheelRunner()
+	wheelX := a.wheelX - wheelSize/2
+	wheelY := sceneH - wheelSize - 2
+	if wheelActive {
+		drawWheelBack(canvas, wheelX, wheelY, a.wheel)
 	}
+
+	a.drawForageItems(canvas)
 
 	for i := range a.pets {
 		p := &a.pets[i]
+		if p.state == stateWheel {
+			continue
+		}
 		frame := currentFrame(p.state, p.frame)
 		src := a.frames[variants[a.variant].ID][p.motionSet][frame]
 		scaled := scaleImage(src, scale)
 		y := sceneH - spriteH - p.laneOffset
 		draw.Draw(canvas, image.Rect(p.x, y, p.x+spriteW, y+spriteH), scaled, image.Point{}, draw.Over)
+		if p.state == stateCarry && p.carryKind != noItem {
+			drawForageProp(canvas, p.x+spriteW-18, y+35, p.carryKind)
+		}
+	}
+
+	if wheelActive {
+		for i := range a.pets {
+			p := &a.pets[i]
+			if p.state != stateWheel {
+				continue
+			}
+			frame := currentFrame(p.state, p.frame)
+			src := a.frames[variants[a.variant].ID][p.motionSet][frame]
+			drawWheelRunner(canvas, wheelX, wheelY, src, p.frame)
+		}
+		drawWheelFront(canvas, wheelX, wheelY, a.tickCount)
 	}
 	updateLayeredWindow(a.hwnd, canvas, int(work.Left), int(work.Bottom)-sceneH)
 }
@@ -334,19 +421,29 @@ func (a *petApp) render() {
 func currentFrame(state behaviorState, frame int) int {
 	switch state {
 	case stateIdle:
-		return idleStart + (frame/5)%idleFrames
-	case stateWalk:
-		return walkStart + (frame/2)%walkFrames
-	case stateScurry:
-		return scurryStart + frame%scurryFrames
+		return frameFromSeq(idleFrameSeq, frame, 5)
+	case stateWalk, stateForage, stateCarry:
+		return frameFromSeq(walkFrameSeq, frame, 2)
+	case stateScurry, stateWheel:
+		return frameFromSeq(walkFrameSeq, frame, 1)
 	case stateNibble:
-		return nibbleStart + (frame/3)%nibbleFrames
+		return frameFromSeq(nibbleFrameSeq, frame, 3)
 	case stateHop:
-		return hopStart + (frame/2)%hopFrames
-	case stateWheel:
-		return scurryStart + frame%scurryFrames
+		return frameFromSeq(hopFrameSeq, frame, 2)
+	case stateGroom:
+		return frameFromSeq(nibbleFrameSeq, frame, 4)
 	}
 	return idleStart
+}
+
+func frameFromSeq(seq []int, frame, divisor int) int {
+	if len(seq) == 0 {
+		return idleStart
+	}
+	if divisor < 1 {
+		divisor = 1
+	}
+	return seq[(frame/divisor)%len(seq)]
 }
 
 func (a *petApp) onTyping() {
@@ -355,7 +452,7 @@ func (a *petApp) onTyping() {
 	}
 	for i := range a.pets {
 		p := &a.pets[i]
-		if a.wheelEnabled && i == 0 && abs((p.x+spriteW/2)-a.wheelX) < 180 {
+		if a.wheelEnabled && i == 0 && p.item == noItem && abs((p.x+spriteW/2)-a.wheelX) < 180 {
 			a.enterWheel(p)
 			continue
 		}
@@ -382,6 +479,12 @@ func (a *petApp) setPetCount(count int) {
 	if len(a.pets) > count {
 		a.pets = a.pets[:count]
 	}
+	for i := range a.forage {
+		if a.forage[i].owner >= count || a.forage[i].owner == reservedItem {
+			a.forage[i].owner = noItem
+			a.forage[i].active = false
+		}
+	}
 	for i := range a.pets {
 		a.pets[i].laneOffset = (i % 3) * 5
 	}
@@ -392,6 +495,8 @@ func (a *petApp) newPet(index int) deguPet {
 	p := deguPet{
 		x:          -spriteW - index*spread - rand.Intn(80),
 		laneOffset: (index % 3) * 5,
+		item:       noItem,
+		carryKind:  noItem,
 		motionSet:  rand.Intn(motionSets),
 		state:      stateWalk,
 		moveSpeed:  max(1, a.speed-1+rand.Intn(2)),
@@ -404,17 +509,219 @@ func (a *petApp) newPet(index int) deguPet {
 	return p
 }
 
-func (a *petApp) resetPetAtLeft(p *deguPet) {
+func (a *petApp) resetPetAtLeft(index int, p *deguPet) {
+	a.releaseForage(index, p)
 	p.x = -spriteW - rand.Intn(120)
 	p.frame = 0
 	p.motionSet = rand.Intn(motionSets)
+	p.item = noItem
+	p.carryKind = noItem
 	p.state = stateWalk
 	p.moveSpeed = max(1, a.speed-1+rand.Intn(2))
 	p.stateTicks = 40 + rand.Intn(90)
 }
 
+func (a *petApp) ensureForageItems() {
+	for len(a.forage) < maxForage {
+		a.forage = append(a.forage, forageItem{owner: noItem})
+	}
+	if a.tickCount%90 != 0 && a.tickCount != 0 {
+		return
+	}
+	for i := range a.forage {
+		if a.forage[i].active || a.forage[i].owner != noItem {
+			continue
+		}
+		if rand.Intn(100) > 45 {
+			continue
+		}
+		x := 28 + rand.Intn(max(1, a.sceneW-56))
+		if abs(x-a.wheelX) < wheelSize {
+			x = clamp(x+wheelSize+24, 24, max(24, a.sceneW-24))
+		}
+		a.forage[i] = forageItem{
+			x:      x,
+			kind:   rand.Intn(3),
+			owner:  noItem,
+			active: true,
+		}
+	}
+}
+
+func (a *petApp) maybeAssignForageTarget(p *deguPet) bool {
+	if p.item != noItem || p.state == stateWheel {
+		return false
+	}
+	best := noItem
+	bestDistance := a.sceneW + spriteW
+	for i, item := range a.forage {
+		if !item.active || item.owner != noItem {
+			continue
+		}
+		distance := item.x - (p.x + spriteW - 22)
+		if distance < 12 || distance > bestDistance {
+			continue
+		}
+		best = i
+		bestDistance = distance
+	}
+	if best == noItem {
+		return false
+	}
+	a.forage[best].owner = reservedItem
+	p.item = best
+	p.carryKind = noItem
+	p.state = stateForage
+	p.moveSpeed = max(1, a.speed-1)
+	p.stateTicks = max(45, bestDistance/max(1, p.moveSpeed)+36)
+	return true
+}
+
+func (a *petApp) maybeStartGnawing(index int, p *deguPet) {
+	if p.item < 0 || p.item >= len(a.forage) {
+		a.releaseForage(index, p)
+		a.chooseRandomAction(p)
+		return
+	}
+	item := &a.forage[p.item]
+	item.owner = index
+	if !item.active {
+		a.releaseForage(index, p)
+		a.chooseRandomAction(p)
+		return
+	}
+	mouthX := p.x + spriteW - 22
+	if mouthX < item.x {
+		return
+	}
+	p.x = clamp(item.x-spriteW+22, 0, max(0, a.sceneW-spriteW))
+	p.state = stateNibble
+	p.frame = 0
+	p.moveSpeed = 0
+	p.stateTicks = 28 + rand.Intn(34)
+}
+
+func (a *petApp) finishGnawing(index int, p *deguPet) {
+	item := &a.forage[p.item]
+	kind := item.kind
+	item.active = false
+	item.owner = index
+	if rand.Intn(100) < 58 {
+		p.state = stateCarry
+		p.frame = 0
+		p.carryKind = kind
+		p.moveSpeed = max(1, a.speed-1+rand.Intn(2))
+		p.stateTicks = 26 + rand.Intn(44)
+		return
+	}
+	a.releaseForage(index, p)
+	a.chooseRandomAction(p)
+}
+
+func (a *petApp) releaseForage(index int, p *deguPet) {
+	if p.item >= 0 && p.item < len(a.forage) && (a.forage[p.item].owner == index || a.forage[p.item].owner == reservedItem) {
+		a.forage[p.item].owner = noItem
+		a.forage[p.item].active = false
+	}
+	p.item = noItem
+	p.carryKind = noItem
+}
+
+func (a *petApp) syncNearbyWalkers() {
+	for i := 0; i < len(a.pets); i++ {
+		for j := i + 1; j < len(a.pets); j++ {
+			pi := &a.pets[i]
+			pj := &a.pets[j]
+			if pi.state != stateWalk || pj.state != stateWalk {
+				continue
+			}
+			if abs(pi.x-pj.x) > 72 {
+				continue
+			}
+			speed := max(1, min(pi.moveSpeed, pj.moveSpeed))
+			pi.moveSpeed = speed
+			pj.moveSpeed = speed
+		}
+	}
+}
+
+func (a *petApp) maybeStartSocial() {
+	if len(a.pets) < 2 || a.tickCount%24 != 0 || rand.Intn(100) > 28 {
+		return
+	}
+	for i := 0; i < len(a.pets); i++ {
+		for j := i + 1; j < len(a.pets); j++ {
+			pi := &a.pets[i]
+			pj := &a.pets[j]
+			if !canSocialize(pi) || !canSocialize(pj) {
+				continue
+			}
+			if abs(pi.x-pj.x) > 84 {
+				continue
+			}
+			anchor := min(pi.x, pj.x)
+			pi.x = clamp(anchor, 0, max(0, a.sceneW-spriteW-36))
+			pj.x = clamp(pi.x+34+rand.Intn(14), 0, max(0, a.sceneW-spriteW))
+			pj.laneOffset = pi.laneOffset
+			ticks := 44 + rand.Intn(70)
+			pi.state = stateGroom
+			pj.state = stateGroom
+			pi.moveSpeed = 0
+			pj.moveSpeed = 0
+			pi.frame = 0
+			pj.frame = 3
+			pi.stateTicks = ticks
+			pj.stateTicks = ticks + rand.Intn(16)
+			return
+		}
+	}
+}
+
+func canSocialize(p *deguPet) bool {
+	return p.item == noItem && (p.state == stateIdle || p.state == stateWalk || p.state == stateNibble)
+}
+
+func (a *petApp) hasWheelRunner() bool {
+	for i := range a.pets {
+		if a.pets[i].state == stateWheel {
+			return true
+		}
+	}
+	return false
+}
+
+func (a *petApp) drawForageItems(dst *image.RGBA) {
+	y := sceneH - 9
+	for _, item := range a.forage {
+		if !item.active {
+			continue
+		}
+		drawForageProp(dst, item.x, y, item.kind)
+	}
+}
+
+func drawForageProp(dst *image.RGBA, x, y, kind int) {
+	switch kind {
+	case 0:
+		hay := rgba(155, 177, 91, 235)
+		shadow := rgba(83, 101, 55, 180)
+		drawPixelLine(dst, x-8, y+2, x+8, y-3, shadow)
+		drawPixelLine(dst, x-6, y, x+10, y-4, hay)
+		drawPixelLine(dst, x-4, y+3, x+7, y-2, hay)
+	case 1:
+		twig := rgba(111, 78, 47, 240)
+		tip := rgba(164, 119, 72, 230)
+		drawPixelLine(dst, x-9, y+2, x+9, y-2, twig)
+		drawPixelLine(dst, x+1, y-1, x+7, y-7, tip)
+	case 2:
+		fillCircle(dst, x, y-2, 4, rgba(184, 148, 84, 240))
+	default:
+		fillCircle(dst, x, y-2, 3, rgba(170, 150, 94, 220))
+	}
+}
+
 func (a *petApp) maybeEnterWheel(p *deguPet) {
-	if !a.wheelEnabled || p.state == stateWheel {
+	if !a.wheelEnabled || p.state == stateWheel || p.item != noItem || p.state == stateCarry || p.state == stateGroom {
 		return
 	}
 	center := p.x + spriteW/2
@@ -430,9 +737,11 @@ func (a *petApp) enterWheel(p *deguPet) {
 	p.state = stateWheel
 	p.frame = 0
 	p.motionSet = rand.Intn(motionSets)
+	p.item = noItem
+	p.carryKind = noItem
 	p.moveSpeed = 0
-	p.stateTicks = 52 + rand.Intn(96)
-	p.x = clamp(a.wheelX-spriteW/2, 0, max(0, a.sceneW-spriteW))
+	p.stateTicks = 140 + rand.Intn(90)
+	p.x = clamp(a.wheelX-wheelSize/2, 0, max(0, a.sceneW-spriteW))
 }
 
 func (a *petApp) leaveWheel(p *deguPet) {
@@ -758,53 +1067,127 @@ func scaleImageTo(src *image.RGBA, w, h int) *image.RGBA {
 	return dst
 }
 
-func drawWheel(dst *image.RGBA, x, y, tick int, wheel *image.RGBA) {
+func fitVisibleImageTo(src *image.RGBA, w, h int) *image.RGBA {
+	content := alphaBounds(src)
+	if content.Empty() {
+		return scaleImageTo(src, w, h)
+	}
+	cropped := image.NewRGBA(image.Rect(0, 0, content.Dx(), content.Dy()))
+	draw.Draw(cropped, cropped.Bounds(), src, content.Min, draw.Src)
+	scale := math.Min(float64(w)/float64(content.Dx()), float64(h)/float64(content.Dy()))
+	outW := max(1, int(math.Round(float64(content.Dx())*scale)))
+	outH := max(1, int(math.Round(float64(content.Dy())*scale)))
+	scaled := scaleImageTo(cropped, outW, outH)
+	dst := image.NewRGBA(image.Rect(0, 0, w, h))
+	offX := (w - outW) / 2
+	offY := h - outH
+	draw.Draw(dst, image.Rect(offX, offY, offX+outW, offY+outH), scaled, image.Point{}, draw.Over)
+	return dst
+}
+
+func alphaBounds(img *image.RGBA) image.Rectangle {
+	b := img.Bounds()
+	minX, minY := b.Max.X, b.Max.Y
+	maxX, maxY := b.Min.X, b.Min.Y
+	found := false
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			if img.RGBAAt(x, y).A == 0 {
+				continue
+			}
+			found = true
+			if x < minX {
+				minX = x
+			}
+			if y < minY {
+				minY = y
+			}
+			if x+1 > maxX {
+				maxX = x + 1
+			}
+			if y+1 > maxY {
+				maxY = y + 1
+			}
+		}
+	}
+	if !found {
+		return image.Rect(0, 0, 0, 0)
+	}
+	return image.Rect(minX, minY, maxX, maxY)
+}
+
+func drawWheelBack(dst *image.RGBA, x, y int, wheel *image.RGBA) {
 	cx := x + wheelSize/2
 	cy := y + wheelSize/2
 	outer := float64(wheelSize/2 - 2)
 	inner := outer - 5
 	rim := rgba(92, 86, 76, 210)
 	shadow := rgba(44, 41, 38, 120)
-	spoke := rgba(128, 119, 102, 170)
-	hub := rgba(86, 78, 68, 220)
 	base := rgba(74, 67, 58, 210)
 
 	if wheel != nil {
 		draw.Draw(dst, image.Rect(x, y, x+wheelSize, y+wheelSize), wheel, image.Point{}, draw.Over)
-	} else {
-		for py := y; py < y+wheelSize; py++ {
-			for px := x; px < x+wheelSize; px++ {
-				dx := float64(px - cx)
-				dy := float64(py - cy)
-				dist := math.Sqrt(dx*dx + dy*dy)
-				if dist <= outer+1 && dist >= inner {
-					if px < cx && py > cy {
-						dst.SetRGBA(px, py, shadow)
-					} else {
-						dst.SetRGBA(px, py, rim)
-					}
+		return
+	}
+	for py := y; py < y+wheelSize; py++ {
+		for px := x; px < x+wheelSize; px++ {
+			dx := float64(px - cx)
+			dy := float64(py - cy)
+			dist := math.Sqrt(dx*dx + dy*dy)
+			if dist <= outer+1 && dist >= inner {
+				if px < cx && py > cy {
+					dst.SetRGBA(px, py, shadow)
+				} else {
+					dst.SetRGBA(px, py, rim)
 				}
 			}
 		}
 	}
+	drawPixelLine(dst, cx-20, y+wheelSize-2, cx-30, sceneH-2, base)
+	drawPixelLine(dst, cx+20, y+wheelSize-2, cx+30, sceneH-2, base)
+	for px := cx - 38; px <= cx+38; px++ {
+		for py := sceneH - 4; py <= sceneH-2; py++ {
+			if image.Pt(px, py).In(dst.Bounds()) {
+				dst.SetRGBA(px, py, base)
+			}
+		}
+	}
+}
 
-	angle := float64(tick) * 0.22
+func drawWheelRunner(dst *image.RGBA, x, y int, src *image.RGBA, frame int) {
+	runnerW := 68
+	runnerH := 46
+	scaled := fitVisibleImageTo(src, runnerW, runnerH)
+	bob := int(math.Sin(float64(frame)/2.0) * 2)
+	dstX := x + (wheelSize-runnerW)/2
+	dstY := y + wheelSize/2 - runnerH/2 + 6 + bob
+	draw.Draw(dst, image.Rect(dstX, dstY, dstX+runnerW, dstY+runnerH), scaled, image.Point{}, draw.Over)
+}
+
+func drawWheelFront(dst *image.RGBA, x, y, tick int) {
+	cx := x + wheelSize/2
+	cy := y + wheelSize/2
+	inner := float64(wheelSize/2 - 7)
+	spoke := rgba(132, 123, 106, 115)
+	hub := rgba(86, 78, 68, 230)
+	rim := rgba(92, 86, 76, 160)
+
+	angle := float64(tick) * 0.34
 	for i := 0; i < 8; i++ {
 		a := angle + float64(i)*math.Pi/4
 		x2 := cx + int(math.Cos(a)*(inner-2))
 		y2 := cy + int(math.Sin(a)*(inner-2))
-		drawPixelLine(dst, cx, cy, x2, y2, spoke)
+		drawThinLine(dst, cx, cy, x2, y2, spoke)
 	}
 
 	fillCircle(dst, cx, cy, 4, hub)
-	if wheel == nil {
-		drawPixelLine(dst, cx-20, y+wheelSize-2, cx-30, sceneH-2, base)
-		drawPixelLine(dst, cx+20, y+wheelSize-2, cx+30, sceneH-2, base)
-		for px := cx - 38; px <= cx+38; px++ {
-			for py := sceneH - 4; py <= sceneH-2; py++ {
-				if image.Pt(px, py).In(dst.Bounds()) {
-					dst.SetRGBA(px, py, base)
-				}
+	for py := y; py < y+wheelSize; py++ {
+		for px := x; px < x+wheelSize; px++ {
+			dx := float64(px - cx)
+			dy := float64(py - cy)
+			dist := math.Sqrt(dx*dx + dy*dy)
+			if dist >= float64(wheelSize/2-5) && dist <= float64(wheelSize/2-1) {
+				dst.SetRGBA(px, py, rim)
 			}
 		}
 	}
@@ -824,6 +1207,37 @@ func drawPixelLine(dst *image.RGBA, x0, y0, x1, y1 int, c color.RGBA) {
 	err := dx + dy
 	for {
 		drawBlock(dst, x0, y0, c)
+		if x0 == x1 && y0 == y1 {
+			break
+		}
+		e2 := 2 * err
+		if e2 >= dy {
+			err += dy
+			x0 += sx
+		}
+		if e2 <= dx {
+			err += dx
+			y0 += sy
+		}
+	}
+}
+
+func drawThinLine(dst *image.RGBA, x0, y0, x1, y1 int, c color.RGBA) {
+	dx := abs(x1 - x0)
+	dy := -abs(y1 - y0)
+	sx := -1
+	if x0 < x1 {
+		sx = 1
+	}
+	sy := -1
+	if y0 < y1 {
+		sy = 1
+	}
+	err := dx + dy
+	for {
+		if image.Pt(x0, y0).In(dst.Bounds()) {
+			dst.SetRGBA(x0, y0, c)
+		}
 		if x0 == x1 && y0 == y1 {
 			break
 		}

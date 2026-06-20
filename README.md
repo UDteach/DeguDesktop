@@ -10,7 +10,9 @@ Repository: <https://github.com/UDteach/DeguDesktop>
 - Tray menu for coat, speed, count, wheel motion, mode, and exit
 - Modes: keyboard reaction / random stroll
 - Degu count: 1, 2, 3, or 5
-- Wheel motion: a degu can pause at a running wheel, run inside it, then scurry away
+- Social behavior: nearby degus can walk together and pause for grooming
+- Foraging behavior: hay, twigs, and seed-like bits appear near the taskbar for sniffing, gnawing, and carrying
+- Wheel motion: a degu runs inside the wheel, with rotating front spokes, then scurries away
 - Coat variants: wild agouti, black, blue-gray, gray, white/cream, sand/champagne, chocolate, and pied variants
 - ImageGen frame PNGs are the art source; no local generated-art fallback
 
