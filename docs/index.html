@@ -100,6 +100,13 @@
         margin-top: 28px;
       }
 
+      .download-note {
+        margin: 12px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
       .release-meta {
         display: flex;
         flex-wrap: wrap;
@@ -260,10 +267,16 @@
             <a class="button" href="download/DeguDesktop-windows-386.zip">
               Windows版 x86
             </a>
-            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases">
-              Mac版 / GitHub Releases
+            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/download/v0.1.4/DeguDesktop-macos-arm64.zip">
+              Mac版 Apple Silicon
+            </a>
+            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/download/v0.1.4/DeguDesktop-macos-amd64.zip">
+              Mac版 Intel
             </a>
           </div>
+          <p class="download-note">
+            Mac版はmacOS 12 Monterey以降対応です。M1 / M2 / M3 / M4などはApple Silicon版、Intel MacはIntel版を選んでください。
+          </p>
           <div class="release-meta" aria-label="Build information">
             <span>バージョン <strong data-build-version>dev-local</strong></span>
             <span>更新日 <strong data-build-date>2026-06-20</strong></span>
@@ -275,7 +288,7 @@
           <img class="preview" src="assets/degu-preview.png" alt="Degu Desktop preview" />
           <div class="note">
             Windows 10/11はZIPを展開して <code>DeguDesktop.exe</code> を起動してください。
-            Mac版はGitHub Releasesから取得できます。
+            Mac版はZIPを展開して <code>DeguDesktop.app</code> をアプリケーションフォルダに入れてください。
           </div>
         </div>
       </header>
