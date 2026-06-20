@@ -32,16 +32,19 @@ const (
 	timerInterval = 55
 	frameW        = 96
 	frameH        = 64
-	frameCount    = 32
+	frameCount    = 56
 	motionSets    = 10
 	scale         = 1
 	spriteW       = frameW * scale
 	spriteH       = frameH * scale
+	forageW       = 32
+	forageH       = 24
 	sceneH        = 92
 	wheelSize     = 72
 	maxPetCount   = 5
 	maxForage     = 5
 	wheelKeyHold  = 18
+	turnTicks     = 16
 )
 
 const (
@@ -55,6 +58,16 @@ const (
 	nibbleFrames = 6
 	hopStart     = 26
 	hopFrames    = 6
+	turnStart    = 32
+	turnFrames   = 8
+	eatStart     = 40
+	eatFrames    = 4
+	digStart     = 44
+	digFrames    = 4
+	standStart   = 48
+	standFrames  = 4
+	groomStart   = 52
+	groomFrames  = 4
 )
 
 var (
@@ -62,6 +75,11 @@ var (
 	walkFrameSeq   = []int{walkStart, walkStart + 1, walkStart + 3, walkStart + 1}
 	nibbleFrameSeq = []int{nibbleStart, nibbleStart + 1, nibbleStart + 2, nibbleStart + 1}
 	hopFrameSeq    = []int{hopStart, hopStart + 1, hopStart + 2, hopStart + 3}
+	turnFrameSeq   = []int{turnStart, turnStart + 1, turnStart + 2, turnStart + 3, turnStart + 4, turnStart + 5, turnStart + 6, turnStart + 7}
+	eatFrameSeq    = []int{eatStart, eatStart + 1, eatStart + 2, eatStart + 3}
+	digFrameSeq    = []int{digStart, digStart + 1, digStart + 2, digStart + 3}
+	standFrameSeq  = []int{standStart, standStart + 1, standStart + 2, standStart + 3}
+	groomFrameSeq  = []int{groomStart, groomStart + 1, groomStart + 2, groomStart + 3}
 )
 
 const (
@@ -76,7 +94,26 @@ const (
 	menuCount3       uint16 = 122
 	menuCount5       uint16 = 123
 	menuWheelToggle  uint16 = 130
+	menuSettings     uint16 = 140
 	menuVariantBase  uint16 = 200
+)
+
+const (
+	ctrlTabAnimals    int32 = 1000
+	ctrlTabMotion     int32 = 1001
+	ctrlVariantCombo  int32 = 1002
+	ctrlPetMinus      int32 = 1003
+	ctrlPetPlus       int32 = 1004
+	ctrlLanguageCombo int32 = 1005
+	ctrlModeKeyboard  int32 = 1011
+	ctrlModeRandom    int32 = 1012
+	ctrlSpeedSlow     int32 = 1021
+	ctrlSpeedNormal   int32 = 1022
+	ctrlSpeedFast     int32 = 1023
+	ctrlTypingWheel   int32 = 1031
+	ctrlBidirectional int32 = 1032
+	ctrlReset         int32 = 1041
+	ctrlClose         int32 = 1042
 )
 
 type behaviorMode int
@@ -98,6 +135,11 @@ const (
 	stateGroom
 	stateForage
 	stateCarry
+	stateTurn
+	stateEat
+	stateDig
+	stateStand
+	stateFaceGroom
 )
 
 const (
@@ -106,23 +148,38 @@ const (
 )
 
 type coatVariant struct {
-	ID    string
-	Label string
+	ID      string
+	LabelEN string
+	LabelJA string
 }
 
 var variants = []coatVariant{
-	{ID: "wild_agouti", Label: "Wild agouti"},
-	{ID: "black", Label: "Black"},
-	{ID: "blue", Label: "Blue (slate gray)"},
-	{ID: "gray", Label: "Gray"},
-	{ID: "white_cream", Label: "White / cream"},
-	{ID: "sand_champagne", Label: "Sand / champagne"},
-	{ID: "chocolate", Label: "Chocolate"},
-	{ID: "black_pied", Label: "Black pied"},
-	{ID: "agouti_pied", Label: "Agouti pied"},
-	{ID: "blue_pied", Label: "Blue pied (slate gray)"},
-	{ID: "cream_pied", Label: "Cream pied"},
+	{ID: "wild_agouti", LabelEN: "Wild agouti", LabelJA: "野生色 / アグーチ"},
+	{ID: "black", LabelEN: "Black", LabelJA: "ブラック"},
+	{ID: "blue", LabelEN: "Blue (slate gray)", LabelJA: "ブルー（青みグレー）"},
+	{ID: "gray", LabelEN: "Gray", LabelJA: "グレー"},
+	{ID: "white_cream", LabelEN: "White / cream", LabelJA: "ホワイト / クリーム"},
+	{ID: "sand_champagne", LabelEN: "Sand / champagne", LabelJA: "サンド / シャンパン"},
+	{ID: "chocolate", LabelEN: "Chocolate", LabelJA: "チョコレート"},
+	{ID: "black_pied", LabelEN: "Black pied", LabelJA: "ブラックパイド"},
+	{ID: "agouti_pied", LabelEN: "Agouti pied", LabelJA: "アグーチパイド"},
+	{ID: "blue_pied", LabelEN: "Blue pied (slate gray)", LabelJA: "ブルーパイド（青みグレー）"},
+	{ID: "cream_pied", LabelEN: "Cream pied", LabelJA: "クリームパイド"},
 }
+
+type language int
+
+const (
+	langJapanese language = iota
+	langEnglish
+)
+
+type settingsTab int
+
+const (
+	tabAnimals settingsTab = iota
+	tabMotion
+)
 
 type deguPet struct {
 	motionSet  int
@@ -132,8 +189,11 @@ type deguPet struct {
 	item       int
 	carryKind  int
 	state      behaviorState
+	prevState  behaviorState
 	stateTicks int
 	moveSpeed  int
+	dir        int
+	nextDir    int
 }
 
 type forageItem struct {
@@ -144,23 +204,30 @@ type forageItem struct {
 }
 
 type petApp struct {
-	hwnd         win.HWND
-	hinst        win.HINSTANCE
-	trayIcon     win.HICON
-	keyHook      uintptr
-	frames       map[string][][]*image.RGBA
-	wheel        *image.RGBA
-	pets         []deguPet
-	forage       []forageItem
-	variant      int
-	speed        int
-	mode         behaviorMode
-	petCount     int
-	wheelEnabled bool
-	wheelX       int
-	sceneW       int
-	tickCount    int
-	closing      atomic.Bool
+	hwnd          win.HWND
+	hinst         win.HINSTANCE
+	trayIcon      win.HICON
+	keyHook       uintptr
+	frames        map[string][][]*image.RGBA
+	forageSprites []*image.RGBA
+	wheel         *image.RGBA
+	pets          []deguPet
+	forage        []forageItem
+	variant       int
+	speed         int
+	mode          behaviorMode
+	petCount      int
+	wheelEnabled  bool
+	bidirectional bool
+	settingsHwnd  win.HWND
+	settingsTab   settingsTab
+	lang          language
+	settingsFont  win.HFONT
+	settingsBrush win.HBRUSH
+	wheelX        int
+	sceneW        int
+	tickCount     int
+	closing       atomic.Bool
 }
 
 var app *petApp
@@ -168,6 +235,7 @@ var app *petApp
 var (
 	user32                 = syscall.NewLazyDLL("user32.dll")
 	procAppendMenuW        = user32.NewProc("AppendMenuW")
+	procSetWindowTextW     = user32.NewProc("SetWindowTextW")
 	procSetWindowsHookExW  = user32.NewProc("SetWindowsHookExW")
 	procUnhookWindowsHook  = user32.NewProc("UnhookWindowsHookEx")
 	procCallNextHookExProc = user32.NewProc("CallNextHookEx")
@@ -186,14 +254,18 @@ func main() {
 
 	hinst := win.GetModuleHandle(nil)
 	app = &petApp{
-		hinst:        hinst,
-		frames:       loadSprites(),
-		wheel:        loadWheelSprite(),
-		variant:      0,
-		speed:        3,
-		mode:         modeRandom,
-		petCount:     2,
-		wheelEnabled: true,
+		hinst:         hinst,
+		frames:        loadSprites(),
+		forageSprites: loadForageSprites(),
+		wheel:         loadWheelSprite(),
+		variant:       0,
+		speed:         3,
+		mode:          modeRandom,
+		petCount:      2,
+		wheelEnabled:  true,
+		bidirectional: true,
+		settingsTab:   tabAnimals,
+		lang:          langJapanese,
 	}
 
 	className := syscall.StringToUTF16Ptr(windowClass)
@@ -238,6 +310,9 @@ func main() {
 }
 
 func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
+	if app != nil && hwnd == app.settingsHwnd {
+		return app.settingsWndProc(hwnd, msg, wParam, lParam)
+	}
 	switch msg {
 	case win.WM_TIMER:
 		if wParam == timerID {
@@ -250,8 +325,19 @@ func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 			app.showTrayMenu()
 			return 0
 		}
+	case win.WM_COMMAND:
+		id := uint16(wParam & 0xffff)
+		notify := uint16((wParam >> 16) & 0xffff)
+		if app != nil && app.handleSettingsCommand(int32(id), notify) {
+			return 0
+		}
+		if app != nil && app.handleMenuCommand(id) {
+			return 0
+		}
 	case win.WM_DESTROY:
-		win.PostQuitMessage(0)
+		if hwnd == app.hwnd {
+			win.PostQuitMessage(0)
+		}
 		return 0
 	}
 	return win.DefWindowProc(hwnd, msg, wParam, lParam)
@@ -283,6 +369,22 @@ func (a *petApp) tickPet(index int, p *deguPet) {
 		switch p.state {
 		case stateWheel:
 			a.leaveWheel(p)
+		case stateTurn:
+			a.finishTurn(p)
+		case stateEat:
+			if p.item >= 0 && p.item < len(a.forage) {
+				a.finishEating(index, p)
+			} else {
+				a.chooseRandomAction(p)
+			}
+		case stateDig, stateStand, stateFaceGroom:
+			if a.mode == modeRandom {
+				a.chooseRandomAction(p)
+			} else {
+				p.state = stateIdle
+				p.moveSpeed = 0
+				p.stateTicks = 12
+			}
 		case stateNibble:
 			if p.item >= 0 && p.item < len(a.forage) {
 				a.finishGnawing(index, p)
@@ -322,7 +424,7 @@ func (a *petApp) tickPet(index int, p *deguPet) {
 	}
 
 	if speed > 0 {
-		p.x += speed
+		p.x += speed * p.dir
 		if p.state == stateForage {
 			a.maybeStartGnawing(index, p)
 		}
@@ -330,7 +432,9 @@ func (a *petApp) tickPet(index int, p *deguPet) {
 
 	p.stateTicks--
 	if p.x > a.sceneW+8 {
-		a.resetPetAtLeft(index, p)
+		a.resetPetAtEdge(index, p, 1)
+	} else if p.x < -spriteW-8 {
+		a.resetPetAtEdge(index, p, -1)
 	}
 	p.frame++
 }
@@ -341,27 +445,42 @@ func (a *petApp) chooseRandomAction(p *deguPet) {
 	p.motionSet = rand.Intn(motionSets)
 	p.item = noItem
 	p.carryKind = noItem
+	if p.dir == 0 {
+		p.dir = 1
+	}
+	if a.bidirectional && p.state != stateTurn && rand.Intn(100) < 16 {
+		a.startTurn(p, -p.dir, stateWalk)
+		return
+	}
 	if roll < 18 && a.maybeAssignForageTarget(p) {
 		return
 	}
 	switch {
-	case roll < 34:
+	case roll < 30:
 		p.state = stateIdle
 		p.moveSpeed = 0
 		p.stateTicks = 24 + rand.Intn(58)
 		return
-	case roll < 78:
+	case roll < 70:
 		p.state = stateWalk
 		p.moveSpeed = max(1, a.speed-1+rand.Intn(2))
 		p.stateTicks = 34 + rand.Intn(92)
-	case roll < 92:
+	case roll < 84:
 		p.state = stateScurry
 		p.moveSpeed = a.speed + 1 + rand.Intn(2)
 		p.stateTicks = 10 + rand.Intn(18)
-	case roll < 98:
+	case roll < 90:
 		p.state = stateNibble
 		p.moveSpeed = 0
 		p.stateTicks = 26 + rand.Intn(32)
+	case roll < 94:
+		p.state = stateStand
+		p.moveSpeed = 0
+		p.stateTicks = 24 + rand.Intn(28)
+	case roll < 98:
+		p.state = stateFaceGroom
+		p.moveSpeed = 0
+		p.stateTicks = 28 + rand.Intn(30)
 	default:
 		p.state = stateHop
 		p.moveSpeed = max(1, a.speed-1)
@@ -391,11 +510,20 @@ func (a *petApp) render() {
 		}
 		frame := currentFrame(p.state, p.frame)
 		src := a.frames[variants[a.variant].ID][p.motionSet][frame]
-		scaled := scaleImage(src, scale)
 		y := sceneH - spriteH - p.laneOffset
-		draw.Draw(canvas, image.Rect(p.x, y, p.x+spriteW, y+spriteH), scaled, image.Point{}, draw.Over)
+		drawPetSprite(canvas, src, p, p.x, y)
 		if p.state == stateCarry && p.carryKind != noItem {
-			drawForageProp(canvas, p.x+spriteW-18, y+35, p.carryKind)
+			propX := p.x + spriteW - 18
+			if p.dir < 0 {
+				propX = p.x + 18
+			}
+			a.drawForageProp(canvas, propX, y+35, p.carryKind)
+		} else if (p.state == stateEat || p.state == stateDig) && p.carryKind != noItem {
+			propX := p.x + spriteW - 20
+			if p.dir < 0 {
+				propX = p.x + 20
+			}
+			a.drawForageProp(canvas, propX, y+44, p.carryKind)
 		}
 	}
 
@@ -428,6 +556,16 @@ func currentFrame(state behaviorState, frame int) int {
 		return frameFromSeq(hopFrameSeq, frame, 2)
 	case stateGroom:
 		return frameFromSeq(nibbleFrameSeq, frame, 4)
+	case stateTurn:
+		return frameFromSeqClamped(turnFrameSeq, frame, 2)
+	case stateEat:
+		return frameFromSeq(eatFrameSeq, frame, 3)
+	case stateDig:
+		return frameFromSeq(digFrameSeq, frame, 2)
+	case stateStand:
+		return frameFromSeq(standFrameSeq, frame, 4)
+	case stateFaceGroom:
+		return frameFromSeq(groomFrameSeq, frame, 3)
 	}
 	return idleStart
 }
@@ -440,6 +578,20 @@ func frameFromSeq(seq []int, frame, divisor int) int {
 		divisor = 1
 	}
 	return seq[(frame/divisor)%len(seq)]
+}
+
+func frameFromSeqClamped(seq []int, frame, divisor int) int {
+	if len(seq) == 0 {
+		return idleStart
+	}
+	if divisor < 1 {
+		divisor = 1
+	}
+	index := frame / divisor
+	if index >= len(seq) {
+		index = len(seq) - 1
+	}
+	return seq[index]
 }
 
 func (a *petApp) onTyping() {
@@ -483,13 +635,25 @@ func (a *petApp) setPetCount(count int) {
 	}
 	for i := range a.pets {
 		a.pets[i].laneOffset = (i % 3) * 5
+		if a.pets[i].dir == 0 {
+			a.pets[i].dir = 1
+			a.pets[i].nextDir = 1
+		}
 	}
 }
 
 func (a *petApp) newPet(index int) deguPet {
 	spread := max(spriteW+24, a.sceneW/max(1, a.petCount+1))
+	dir := 1
+	if a.bidirectional && index%2 == 1 {
+		dir = -1
+	}
+	x := -spriteW - index*spread - rand.Intn(80)
+	if dir < 0 {
+		x = a.sceneW + index*spread + rand.Intn(80)
+	}
 	p := deguPet{
-		x:          -spriteW - index*spread - rand.Intn(80),
+		x:          x,
 		laneOffset: (index % 3) * 5,
 		item:       noItem,
 		carryKind:  noItem,
@@ -497,6 +661,8 @@ func (a *petApp) newPet(index int) deguPet {
 		state:      stateWalk,
 		moveSpeed:  max(1, a.speed-1+rand.Intn(2)),
 		stateTicks: 30 + rand.Intn(80),
+		dir:        dir,
+		nextDir:    dir,
 	}
 	if index == 0 {
 		p.x = rand.Intn(max(1, a.sceneW-spriteW))
@@ -506,15 +672,74 @@ func (a *petApp) newPet(index int) deguPet {
 }
 
 func (a *petApp) resetPetAtLeft(index int, p *deguPet) {
+	a.resetPetAtEdge(index, p, 1)
+}
+
+func (a *petApp) resetPetAtEdge(index int, p *deguPet, dir int) {
 	a.releaseForage(index, p)
-	p.x = -spriteW - rand.Intn(120)
+	if dir < 0 {
+		p.x = a.sceneW + rand.Intn(120)
+	} else {
+		p.x = -spriteW - rand.Intn(120)
+	}
 	p.frame = 0
 	p.motionSet = rand.Intn(motionSets)
 	p.item = noItem
 	p.carryKind = noItem
 	p.state = stateWalk
+	p.prevState = stateWalk
 	p.moveSpeed = max(1, a.speed-1+rand.Intn(2))
 	p.stateTicks = 40 + rand.Intn(90)
+	p.dir = normalizeDir(dir)
+	p.nextDir = p.dir
+}
+
+func (a *petApp) startTurn(p *deguPet, nextDir int, after behaviorState) {
+	nextDir = normalizeDir(nextDir)
+	if p.dir == 0 {
+		p.dir = 1
+	}
+	if p.dir == nextDir {
+		return
+	}
+	p.prevState = after
+	p.state = stateTurn
+	p.nextDir = nextDir
+	p.moveSpeed = 0
+	p.stateTicks = turnTicks
+	p.frame = 0
+	p.item = noItem
+	p.carryKind = noItem
+}
+
+func (a *petApp) finishTurn(p *deguPet) {
+	p.dir = normalizeDir(p.nextDir)
+	p.nextDir = p.dir
+	p.frame = 0
+	p.motionSet = rand.Intn(motionSets)
+	p.state = p.prevState
+	if p.state == stateTurn || p.state == stateWheel || p.state == stateGroom || p.state == stateForage || p.state == stateCarry {
+		p.state = stateWalk
+	}
+	p.moveSpeed = max(1, a.speed-1+rand.Intn(2))
+	p.stateTicks = 32 + rand.Intn(70)
+}
+
+func (a *petApp) setBidirectional(enabled bool) {
+	a.bidirectional = enabled
+	if enabled {
+		return
+	}
+	for i := range a.pets {
+		p := &a.pets[i]
+		p.dir = 1
+		p.nextDir = 1
+		if p.state == stateTurn {
+			p.state = stateWalk
+			p.moveSpeed = max(1, a.speed-1)
+			p.stateTicks = 24 + rand.Intn(40)
+		}
+	}
 }
 
 func (a *petApp) ensureForageItems() {
@@ -550,11 +775,17 @@ func (a *petApp) maybeAssignForageTarget(p *deguPet) bool {
 	}
 	best := noItem
 	bestDistance := a.sceneW + spriteW
+	dir := normalizeDir(p.dir)
 	for i, item := range a.forage {
 		if !item.active || item.owner != noItem {
 			continue
 		}
-		distance := item.x - (p.x + spriteW - 22)
+		mouthX := p.x + spriteW - 22
+		distance := item.x - mouthX
+		if dir < 0 {
+			mouthX = p.x + 22
+			distance = mouthX - item.x
+		}
 		if distance < 12 || distance > bestDistance {
 			continue
 		}
@@ -568,6 +799,8 @@ func (a *petApp) maybeAssignForageTarget(p *deguPet) bool {
 	p.item = best
 	p.carryKind = noItem
 	p.state = stateForage
+	p.dir = dir
+	p.nextDir = dir
 	p.moveSpeed = max(1, a.speed-1)
 	p.stateTicks = max(45, bestDistance/max(1, p.moveSpeed)+36)
 	return true
@@ -587,10 +820,18 @@ func (a *petApp) maybeStartGnawing(index int, p *deguPet) {
 		return
 	}
 	mouthX := p.x + spriteW - 22
-	if mouthX < item.x {
-		return
+	if p.dir < 0 {
+		mouthX = p.x + 22
+		if mouthX > item.x {
+			return
+		}
+		p.x = clamp(item.x-22, 0, max(0, a.sceneW-spriteW))
+	} else {
+		if mouthX < item.x {
+			return
+		}
+		p.x = clamp(item.x-spriteW+22, 0, max(0, a.sceneW-spriteW))
 	}
-	p.x = clamp(item.x-spriteW+22, 0, max(0, a.sceneW-spriteW))
 	p.state = stateNibble
 	p.frame = 0
 	p.moveSpeed = 0
@@ -602,6 +843,22 @@ func (a *petApp) finishGnawing(index int, p *deguPet) {
 	kind := item.kind
 	item.active = false
 	item.owner = index
+	if kind == 0 || rand.Intn(100) < 54 {
+		p.state = stateEat
+		p.frame = 0
+		p.carryKind = kind
+		p.moveSpeed = 0
+		p.stateTicks = 28 + rand.Intn(24)
+		return
+	}
+	if kind == 2 && rand.Intn(100) < 58 {
+		p.state = stateDig
+		p.frame = 0
+		p.carryKind = kind
+		p.moveSpeed = 0
+		p.stateTicks = 30 + rand.Intn(26)
+		return
+	}
 	if rand.Intn(100) < 58 {
 		p.state = stateCarry
 		p.frame = 0
@@ -612,6 +869,18 @@ func (a *petApp) finishGnawing(index int, p *deguPet) {
 	}
 	a.releaseForage(index, p)
 	a.chooseRandomAction(p)
+}
+
+func (a *petApp) finishEating(index int, p *deguPet) {
+	a.releaseForage(index, p)
+	p.carryKind = noItem
+	if a.mode == modeRandom {
+		a.chooseRandomAction(p)
+		return
+	}
+	p.state = stateIdle
+	p.moveSpeed = 0
+	p.stateTicks = 12
 }
 
 func (a *petApp) releaseForage(index int, p *deguPet) {
@@ -637,6 +906,9 @@ func (a *petApp) syncNearbyWalkers() {
 			speed := max(1, min(pi.moveSpeed, pj.moveSpeed))
 			pi.moveSpeed = speed
 			pj.moveSpeed = speed
+			if normalizeDir(pj.dir) != normalizeDir(pi.dir) {
+				a.startTurn(pj, pi.dir, stateWalk)
+			}
 		}
 	}
 }
@@ -654,6 +926,15 @@ func (a *petApp) maybeStartSocial() {
 			}
 			if abs(pi.x-pj.x) > 84 {
 				continue
+			}
+			if normalizeDir(pi.dir) != 1 || normalizeDir(pj.dir) != -1 {
+				if normalizeDir(pi.dir) != 1 {
+					a.startTurn(pi, 1, stateWalk)
+				}
+				if normalizeDir(pj.dir) != -1 {
+					a.startTurn(pj, -1, stateWalk)
+				}
+				return
 			}
 			anchor := min(pi.x, pj.x)
 			pi.x = clamp(anchor, 0, max(0, a.sceneW-spriteW-36))
@@ -692,27 +973,415 @@ func (a *petApp) drawForageItems(dst *image.RGBA) {
 		if !item.active {
 			continue
 		}
-		drawForageProp(dst, item.x, y, item.kind)
+		a.drawForageProp(dst, item.x, y, item.kind)
 	}
 }
 
-func drawForageProp(dst *image.RGBA, x, y, kind int) {
-	switch kind {
-	case 0:
-		hay := rgba(155, 177, 91, 235)
-		shadow := rgba(83, 101, 55, 180)
-		drawPixelLine(dst, x-8, y+2, x+8, y-3, shadow)
-		drawPixelLine(dst, x-6, y, x+10, y-4, hay)
-		drawPixelLine(dst, x-4, y+3, x+7, y-2, hay)
-	case 1:
-		twig := rgba(111, 78, 47, 240)
-		tip := rgba(164, 119, 72, 230)
-		drawPixelLine(dst, x-9, y+2, x+9, y-2, twig)
-		drawPixelLine(dst, x+1, y-1, x+7, y-7, tip)
-	case 2:
-		fillCircle(dst, x, y-2, 4, rgba(184, 148, 84, 240))
+func (a *petApp) showSettings() {
+	if a.settingsHwnd == 0 {
+		a.createSettingsWindow()
+	}
+	a.syncSettingsWindow()
+	win.ShowWindow(a.settingsHwnd, win.SW_SHOW)
+	win.SetForegroundWindow(a.settingsHwnd)
+}
+
+func (a *petApp) createSettingsWindow() {
+	title := a.txt("settingsTitle")
+	hwnd := win.CreateWindowEx(
+		win.WS_EX_TOOLWINDOW,
+		syscall.StringToUTF16Ptr(windowClass),
+		syscall.StringToUTF16Ptr(title),
+		win.WS_CAPTION|win.WS_SYSMENU|win.WS_VISIBLE,
+		120, 120, 460, 430,
+		a.hwnd, 0, a.hinst, nil,
+	)
+	if hwnd == 0 {
+		return
+	}
+	a.settingsHwnd = hwnd
+	a.settingsFont = win.HFONT(win.GetStockObject(win.DEFAULT_GUI_FONT))
+
+	a.createStatic(hwnd, a.txt("settingsHeader"), 18, 16, 400, 26)
+	a.createButton(hwnd, ctrlTabAnimals, a.txt("tabAnimals"), 18, 50, 132, 32, win.BS_AUTORADIOBUTTON|win.BS_PUSHLIKE|win.WS_GROUP)
+	a.createButton(hwnd, ctrlTabMotion, a.txt("tabMotion"), 154, 50, 132, 32, win.BS_AUTORADIOBUTTON|win.BS_PUSHLIKE)
+
+	if a.settingsTab == tabAnimals {
+		a.createStatic(hwnd, a.txt("animalSection"), 24, 100, 360, 24)
+		a.createStatic(hwnd, a.txt("deguCount"), 34, 134, 170, 24)
+		a.createButton(hwnd, ctrlPetMinus, "-", 210, 130, 42, 30, 0)
+		a.createStatic(hwnd, fmt.Sprintf("%d", a.petCount), 266, 135, 42, 24)
+		a.createButton(hwnd, ctrlPetPlus, "+", 318, 130, 42, 30, 0)
+
+		a.createStatic(hwnd, a.txt("coatColor"), 34, 182, 170, 24)
+		a.createCombo(hwnd, ctrlVariantCombo, 204, 178, 220, 260)
+		a.createStatic(hwnd, a.txt("coatNote"), 34, 224, 385, 44)
+	} else {
+		a.createStatic(hwnd, a.txt("mode"), 24, 100, 140, 24)
+		a.createButton(hwnd, ctrlModeKeyboard, a.txt("modeKeyboard"), 36, 130, 190, 26, win.BS_AUTORADIOBUTTON|win.WS_GROUP)
+		a.createButton(hwnd, ctrlModeRandom, a.txt("modeRandom"), 36, 160, 190, 26, win.BS_AUTORADIOBUTTON)
+
+		a.createStatic(hwnd, a.txt("speed"), 24, 204, 120, 24)
+		a.createButton(hwnd, ctrlSpeedSlow, a.txt("speedSlow"), 36, 234, 95, 26, win.BS_AUTORADIOBUTTON|win.WS_GROUP)
+		a.createButton(hwnd, ctrlSpeedNormal, a.txt("speedNormal"), 140, 234, 105, 26, win.BS_AUTORADIOBUTTON)
+		a.createButton(hwnd, ctrlSpeedFast, a.txt("speedFast"), 256, 234, 95, 26, win.BS_AUTORADIOBUTTON)
+
+		a.createStatic(hwnd, a.txt("motion"), 24, 278, 140, 24)
+		a.createButton(hwnd, ctrlTypingWheel, a.txt("typingWheel"), 36, 306, 190, 26, win.BS_AUTOCHECKBOX|win.WS_GROUP)
+		a.createButton(hwnd, ctrlBidirectional, a.txt("naturalTurns"), 236, 306, 190, 26, win.BS_AUTOCHECKBOX)
+	}
+
+	a.createStatic(hwnd, a.txt("language"), 24, 352, 120, 24)
+	a.createCombo(hwnd, ctrlLanguageCombo, 136, 348, 160, 120)
+	a.createButton(hwnd, ctrlReset, a.txt("reset"), 306, 346, 62, 30, 0)
+	a.createButton(hwnd, ctrlClose, a.txt("close"), 374, 346, 54, 30, 0)
+}
+
+func (a *petApp) createStatic(parent win.HWND, text string, x, y, w, h int32) win.HWND {
+	hwnd := win.CreateWindowEx(
+		0,
+		syscall.StringToUTF16Ptr("STATIC"),
+		syscall.StringToUTF16Ptr(text),
+		win.WS_CHILD|win.WS_VISIBLE|win.SS_LEFT,
+		x, y, w, h,
+		parent, 0, a.hinst, nil,
+	)
+	a.setControlFont(hwnd)
+	return hwnd
+}
+
+func (a *petApp) createButton(parent win.HWND, id int32, text string, x, y, w, h int32, style uint32) win.HWND {
+	hwnd := win.CreateWindowEx(
+		0,
+		syscall.StringToUTF16Ptr("BUTTON"),
+		syscall.StringToUTF16Ptr(text),
+		win.WS_CHILD|win.WS_VISIBLE|win.WS_TABSTOP|style,
+		x, y, w, h,
+		parent, win.HMENU(uintptr(id)), a.hinst, nil,
+	)
+	a.setControlFont(hwnd)
+	return hwnd
+}
+
+func (a *petApp) createCombo(parent win.HWND, id int32, x, y, w, h int32) win.HWND {
+	hwnd := win.CreateWindowEx(
+		0,
+		syscall.StringToUTF16Ptr("COMBOBOX"),
+		nil,
+		win.WS_CHILD|win.WS_VISIBLE|win.WS_TABSTOP|win.WS_VSCROLL|win.CBS_DROPDOWNLIST,
+		x, y, w, h,
+		parent, win.HMENU(uintptr(id)), a.hinst, nil,
+	)
+	a.setControlFont(hwnd)
+	return hwnd
+}
+
+func (a *petApp) setControlFont(hwnd win.HWND) {
+	if hwnd == 0 || a.settingsFont == 0 {
+		return
+	}
+	win.SendMessage(hwnd, win.WM_SETFONT, uintptr(a.settingsFont), 1)
+}
+
+func (a *petApp) settingsWndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
+	switch msg {
+	case win.WM_COMMAND:
+		id := int32(uint16(wParam & 0xffff))
+		notify := uint16((wParam >> 16) & 0xffff)
+		if a.handleSettingsCommand(id, notify) {
+			return 0
+		}
+	case win.WM_CLOSE:
+		win.ShowWindow(hwnd, win.SW_HIDE)
+		return 0
+	case win.WM_DESTROY:
+		if hwnd == a.settingsHwnd {
+			a.settingsHwnd = 0
+		}
+		return 0
+	}
+	return win.DefWindowProc(hwnd, msg, wParam, lParam)
+}
+
+func (a *petApp) syncSettingsWindow() {
+	if a.settingsHwnd == 0 {
+		return
+	}
+	setWindowText(a.settingsHwnd, a.txt("settingsTitle"))
+	a.setButtonChecked(ctrlTabAnimals, a.settingsTab == tabAnimals)
+	a.setButtonChecked(ctrlTabMotion, a.settingsTab == tabMotion)
+	a.setButtonChecked(ctrlModeKeyboard, a.mode == modeKeyboard)
+	a.setButtonChecked(ctrlModeRandom, a.mode == modeRandom)
+	a.setButtonChecked(ctrlSpeedSlow, a.speed == 2)
+	a.setButtonChecked(ctrlSpeedNormal, a.speed == 3)
+	a.setButtonChecked(ctrlSpeedFast, a.speed == 5)
+	a.setButtonChecked(ctrlTypingWheel, a.wheelEnabled)
+	a.setButtonChecked(ctrlBidirectional, a.bidirectional)
+	a.syncCombo(ctrlVariantCombo, len(variants), a.variant, func(i int) string { return a.variantLabel(i) })
+	a.syncCombo(ctrlLanguageCombo, 2, int(a.lang), func(i int) string {
+		if i == int(langEnglish) {
+			return "English"
+		}
+		return "日本語"
+	})
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlPetMinus), a.petCount > 1)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlPetPlus), a.petCount < maxPetCount)
+}
+
+func (a *petApp) setButtonChecked(id int32, checked bool) {
+	h := win.GetDlgItem(a.settingsHwnd, id)
+	if h == 0 {
+		return
+	}
+	value := uintptr(win.BST_UNCHECKED)
+	if checked {
+		value = uintptr(win.BST_CHECKED)
+	}
+	win.SendMessage(h, win.BM_SETCHECK, value, 0)
+}
+
+func (a *petApp) syncCombo(id int32, count int, selected int, label func(int) string) {
+	h := win.GetDlgItem(a.settingsHwnd, id)
+	if h == 0 {
+		return
+	}
+	win.SendMessage(h, win.CB_RESETCONTENT, 0, 0)
+	for i := 0; i < count; i++ {
+		text := syscall.StringToUTF16Ptr(label(i))
+		win.SendMessage(h, win.CB_ADDSTRING, 0, uintptr(unsafe.Pointer(text)))
+	}
+	win.SendMessage(h, win.CB_SETCURSEL, uintptr(selected), 0)
+}
+
+func (a *petApp) handleSettingsCommand(id int32, notify uint16) bool {
+	switch id {
+	case ctrlTabAnimals:
+		a.settingsTab = tabAnimals
+		a.recreateSettingsWindow()
+	case ctrlTabMotion:
+		a.settingsTab = tabMotion
+		a.recreateSettingsWindow()
+	case ctrlVariantCombo:
+		if notify != win.CBN_SELCHANGE {
+			return false
+		}
+		h := win.GetDlgItem(a.settingsHwnd, id)
+		sel := int(win.SendMessage(h, win.CB_GETCURSEL, 0, 0))
+		if sel >= 0 && sel < len(variants) {
+			a.variant = sel
+		}
+	case ctrlLanguageCombo:
+		if notify != win.CBN_SELCHANGE {
+			return false
+		}
+		h := win.GetDlgItem(a.settingsHwnd, id)
+		sel := int(win.SendMessage(h, win.CB_GETCURSEL, 0, 0))
+		if sel == int(langEnglish) {
+			a.lang = langEnglish
+		} else {
+			a.lang = langJapanese
+		}
+		a.recreateSettingsWindow()
+	case ctrlPetMinus:
+		a.setPetCount(a.petCount - 1)
+		a.recreateSettingsWindow()
+	case ctrlPetPlus:
+		a.setPetCount(a.petCount + 1)
+		a.recreateSettingsWindow()
+	case ctrlModeKeyboard:
+		a.handleMenu(menuModeKeyboard)
+	case ctrlModeRandom:
+		a.handleMenu(menuModeRandom)
+	case ctrlSpeedSlow:
+		a.handleMenu(menuSpeedSlow)
+	case ctrlSpeedNormal:
+		a.handleMenu(menuSpeedNormal)
+	case ctrlSpeedFast:
+		a.handleMenu(menuSpeedFast)
+	case ctrlTypingWheel:
+		a.handleMenu(menuWheelToggle)
+	case ctrlBidirectional:
+		a.setBidirectional(!a.bidirectional)
+	case ctrlReset:
+		a.resetPosition()
+		a.render()
+	case ctrlClose:
+		if a.settingsHwnd != 0 {
+			win.ShowWindow(a.settingsHwnd, win.SW_HIDE)
+		}
 	default:
-		fillCircle(dst, x, y-2, 3, rgba(170, 150, 94, 220))
+		return false
+	}
+	a.syncSettingsWindow()
+	a.render()
+	return true
+}
+
+func (a *petApp) recreateSettingsWindow() {
+	if a.settingsHwnd != 0 {
+		win.DestroyWindow(a.settingsHwnd)
+		a.settingsHwnd = 0
+	}
+	a.showSettings()
+}
+
+func (a *petApp) txt(key string) string {
+	if a.lang == langEnglish {
+		switch key {
+		case "settingsTitle":
+			return "Degu Desktop Settings"
+		case "settingsHeader":
+			return "Degu Desktop"
+		case "tabAnimals":
+			return "Animals"
+		case "tabMotion":
+			return "Motion"
+		case "animalSection":
+			return "Degu"
+		case "deguCount":
+			return "Visible pets"
+		case "coatColor":
+			return "Coat color"
+		case "coatNote":
+			return "Pied coats use white patch patterns, not plain recolors."
+		case "language":
+			return "Language"
+		case "mode":
+			return "Mode"
+		case "modeKeyboard":
+			return "Keyboard reaction"
+		case "modeRandom":
+			return "Random stroll"
+		case "speed":
+			return "Speed"
+		case "speedSlow":
+			return "Slow"
+		case "speedNormal":
+			return "Normal"
+		case "speedFast":
+			return "Fast"
+		case "motion":
+			return "Motion"
+		case "typingWheel":
+			return "Typing wheel"
+		case "naturalTurns":
+			return "Natural left/right turns"
+		case "reset":
+			return "Reset"
+		case "close":
+			return "Close"
+		case "exit":
+			return "Exit"
+		}
+	}
+	switch key {
+	case "settingsTitle":
+		return "デグーデスクトップ設定"
+	case "settingsHeader":
+		return "デグーデスクトップ"
+	case "tabAnimals":
+		return "動物"
+	case "tabMotion":
+		return "動き"
+	case "animalSection":
+		return "デグー"
+	case "deguCount":
+		return "出現数"
+	case "coatColor":
+		return "カラー"
+	case "coatNote":
+		return "パイドは白斑パターンつきで生成します。単純な色替えではありません。"
+	case "language":
+		return "表示言語"
+	case "mode":
+		return "モード"
+	case "modeKeyboard":
+		return "キーボード反応"
+	case "modeRandom":
+		return "ランダム散歩"
+	case "speed":
+		return "速度"
+	case "speedSlow":
+		return "ゆっくり"
+	case "speedNormal":
+		return "ふつう"
+	case "speedFast":
+		return "はやい"
+	case "motion":
+		return "動作"
+	case "typingWheel":
+		return "入力中だけ回し車"
+	case "naturalTurns":
+		return "自然な左右ターン"
+	case "reset":
+		return "整列"
+	case "close":
+		return "閉じる"
+	case "exit":
+		return "終了"
+	}
+	return key
+}
+
+func (a *petApp) variantLabel(i int) string {
+	if i < 0 || i >= len(variants) {
+		return ""
+	}
+	if a.lang == langEnglish {
+		return variants[i].LabelEN
+	}
+	return variants[i].LabelJA
+}
+
+func (a *petApp) drawForageProp(dst *image.RGBA, x, y, kind int) {
+	if kind >= 0 && kind < len(a.forageSprites) && a.forageSprites[kind] != nil {
+		src := a.forageSprites[kind]
+		drawFacingImage(dst, src, image.Rect(x-forageW/2, y-forageH, x+forageW/2, y), 1)
+		return
+	}
+	fillCircle(dst, x, y-2, 3, rgba(170, 150, 94, 220))
+}
+
+func drawPetSprite(dst *image.RGBA, src *image.RGBA, p *deguPet, x, y int) {
+	dir := normalizeDir(p.dir)
+	if p.state == stateTurn {
+		dir = turnDrawDirection(p.dir, p.nextDir)
+	}
+	drawFacingImage(dst, src, image.Rect(x, y, x+spriteW, y+spriteH), dir)
+}
+
+func turnDrawDirection(dir, nextDir int) int {
+	if normalizeDir(dir) < 0 && normalizeDir(nextDir) > 0 {
+		return -1
+	}
+	return 1
+}
+
+func drawFacingImage(dst *image.RGBA, src *image.RGBA, r image.Rectangle, dir int) {
+	if r.Empty() {
+		return
+	}
+	sb := src.Bounds()
+	for y := r.Min.Y; y < r.Max.Y; y++ {
+		if y < dst.Bounds().Min.Y || y >= dst.Bounds().Max.Y {
+			continue
+		}
+		sy := sb.Min.Y + (y-r.Min.Y)*sb.Dy()/max(1, r.Dy())
+		for x := r.Min.X; x < r.Max.X; x++ {
+			if x < dst.Bounds().Min.X || x >= dst.Bounds().Max.X {
+				continue
+			}
+			dx := x - r.Min.X
+			sx := sb.Min.X + dx*sb.Dx()/max(1, r.Dx())
+			if dir < 0 {
+				sx = sb.Max.X - 1 - dx*sb.Dx()/max(1, r.Dx())
+			}
+			c := src.RGBAAt(sx, sy)
+			if c.A == 0 {
+				continue
+			}
+			dst.SetRGBA(x, y, overRGBA(dst.RGBAAt(x, y), c))
+		}
 	}
 }
 
@@ -734,6 +1403,8 @@ func (a *petApp) leaveWheel(p *deguPet) {
 	p.state = stateScurry
 	p.frame = 0
 	p.motionSet = rand.Intn(motionSets)
+	p.dir = 1
+	p.nextDir = 1
 	p.moveSpeed = a.speed + 1 + rand.Intn(2)
 	p.stateTicks = 16 + rand.Intn(20)
 	p.x = clamp(a.wheelX+wheelSize/2-20, 0, max(0, a.sceneW-spriteW))
@@ -791,6 +1462,25 @@ func loadWheelSprite() *image.RGBA {
 	return dst
 }
 
+func loadForageSprites() []*image.RGBA {
+	names := []string{"forage_hay", "forage_twig", "forage_seed"}
+	out := make([]*image.RGBA, len(names))
+	for i, name := range names {
+		data, err := fs.ReadFile(appassets.FS, "sprites/"+name+".png")
+		if err != nil {
+			continue
+		}
+		img, err := png.Decode(bytes.NewReader(data))
+		if err != nil {
+			continue
+		}
+		dst := image.NewRGBA(image.Rect(0, 0, forageW, forageH))
+		draw.Draw(dst, dst.Bounds(), img, img.Bounds().Min, draw.Src)
+		out[i] = dst
+	}
+	return out
+}
+
 func (a *petApp) installTray() {
 	iconPath := filepath.Join(os.TempDir(), "degu-desktop-tray.ico")
 	if data, err := fs.ReadFile(appassets.FS, "tray.ico"); err == nil {
@@ -814,37 +1504,38 @@ func (a *petApp) installTray() {
 func (a *petApp) showTrayMenu() {
 	menu := win.CreatePopupMenu()
 	coatMenu := win.CreatePopupMenu()
-	for i, v := range variants {
+	for i := range variants {
 		flags := uint32(win.MF_STRING)
 		if i == a.variant {
 			flags |= win.MF_CHECKED
 		}
-		appendMenu(coatMenu, flags, uintptr(menuVariantBase+uint16(i)), syscall.StringToUTF16Ptr(v.Label))
+		appendMenu(coatMenu, flags, uintptr(menuVariantBase+uint16(i)), syscall.StringToUTF16Ptr(a.variantLabel(i)))
 	}
-	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(coatMenu), syscall.StringToUTF16Ptr("Coat"))
+	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(coatMenu), syscall.StringToUTF16Ptr(a.txt("coatColor")))
 	appendMenu(menu, win.MF_SEPARATOR, 0, nil)
 
 	speedMenu := win.CreatePopupMenu()
-	appendChecked(speedMenu, menuSpeedSlow, "Slow", a.speed == 2)
-	appendChecked(speedMenu, menuSpeedNormal, "Normal", a.speed == 3)
-	appendChecked(speedMenu, menuSpeedFast, "Fast", a.speed == 5)
-	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(speedMenu), syscall.StringToUTF16Ptr("Speed"))
+	appendChecked(speedMenu, menuSpeedSlow, a.txt("speedSlow"), a.speed == 2)
+	appendChecked(speedMenu, menuSpeedNormal, a.txt("speedNormal"), a.speed == 3)
+	appendChecked(speedMenu, menuSpeedFast, a.txt("speedFast"), a.speed == 5)
+	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(speedMenu), syscall.StringToUTF16Ptr(a.txt("speed")))
 
 	modeMenu := win.CreatePopupMenu()
-	appendChecked(modeMenu, menuModeKeyboard, "Keyboard reaction", a.mode == modeKeyboard)
-	appendChecked(modeMenu, menuModeRandom, "Random stroll", a.mode == modeRandom)
-	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(modeMenu), syscall.StringToUTF16Ptr("Mode"))
+	appendChecked(modeMenu, menuModeKeyboard, a.txt("modeKeyboard"), a.mode == modeKeyboard)
+	appendChecked(modeMenu, menuModeRandom, a.txt("modeRandom"), a.mode == modeRandom)
+	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(modeMenu), syscall.StringToUTF16Ptr(a.txt("mode")))
 
 	countMenu := win.CreatePopupMenu()
-	appendChecked(countMenu, menuCount1, "1 degu", a.petCount == 1)
-	appendChecked(countMenu, menuCount2, "2 degus", a.petCount == 2)
-	appendChecked(countMenu, menuCount3, "3 degus", a.petCount == 3)
-	appendChecked(countMenu, menuCount5, "5 degus", a.petCount == 5)
-	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(countMenu), syscall.StringToUTF16Ptr("Degu count"))
+	appendChecked(countMenu, menuCount1, "1", a.petCount == 1)
+	appendChecked(countMenu, menuCount2, "2", a.petCount == 2)
+	appendChecked(countMenu, menuCount3, "3", a.petCount == 3)
+	appendChecked(countMenu, menuCount5, "5", a.petCount == 5)
+	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(countMenu), syscall.StringToUTF16Ptr(a.txt("deguCount")))
 
-	appendChecked(menu, menuWheelToggle, "Typing wheel", a.wheelEnabled)
+	appendChecked(menu, menuWheelToggle, a.txt("typingWheel"), a.wheelEnabled)
 	appendMenu(menu, win.MF_SEPARATOR, 0, nil)
-	appendMenu(menu, win.MF_STRING, uintptr(menuExit), syscall.StringToUTF16Ptr("Exit"))
+	appendMenu(menu, win.MF_STRING, uintptr(menuSettings), syscall.StringToUTF16Ptr(a.txt("settingsTitle")))
+	appendMenu(menu, win.MF_STRING, uintptr(menuExit), syscall.StringToUTF16Ptr(a.txt("exit")))
 
 	var pt win.POINT
 	win.GetCursorPos(&pt)
@@ -866,10 +1557,17 @@ func appendChecked(menu win.HMENU, id uint16, label string, checked bool) {
 }
 
 func (a *petApp) handleMenu(id uint16) {
+	a.handleMenuCommand(id)
+	a.syncSettingsWindow()
+}
+
+func (a *petApp) handleMenuCommand(id uint16) bool {
 	switch {
 	case id == menuExit:
 		a.closing.Store(true)
 		win.DestroyWindow(a.hwnd)
+	case id == menuSettings:
+		a.showSettings()
 	case id == menuModeKeyboard:
 		a.mode = modeKeyboard
 		for i := range a.pets {
@@ -906,11 +1604,18 @@ func (a *petApp) handleMenu(id uint16) {
 	case id >= menuVariantBase && int(id-menuVariantBase) < len(variants):
 		a.variant = int(id - menuVariantBase)
 		a.render()
+	default:
+		return false
 	}
+	return true
 }
 
 func (a *petApp) cleanup() {
 	win.KillTimer(a.hwnd, timerID)
+	if a.settingsHwnd != 0 {
+		win.DestroyWindow(a.settingsHwnd)
+		a.settingsHwnd = 0
+	}
 	if a.keyHook != 0 {
 		unhookWindowsHookEx(a.keyHook)
 	}
@@ -940,6 +1645,11 @@ func appendMenu(menu win.HMENU, flags uint32, item uintptr, text *uint16) bool {
 		textPtr = uintptr(unsafe.Pointer(text))
 	}
 	ret, _, _ := procAppendMenuW.Call(uintptr(menu), uintptr(flags), item, textPtr)
+	return ret != 0
+}
+
+func setWindowText(hwnd win.HWND, text string) bool {
+	ret, _, _ := procSetWindowTextW.Call(uintptr(hwnd), uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(text))))
 	return ret != 0
 }
 
@@ -1263,6 +1973,24 @@ func drawBlock(dst *image.RGBA, x, y int, c color.RGBA) {
 			}
 		}
 	}
+}
+
+func overRGBA(dst, src color.RGBA) color.RGBA {
+	a := int(src.A)
+	inv := 255 - a
+	return color.RGBA{
+		R: uint8((int(src.R)*a + int(dst.R)*inv) / 255),
+		G: uint8((int(src.G)*a + int(dst.G)*inv) / 255),
+		B: uint8((int(src.B)*a + int(dst.B)*inv) / 255),
+		A: uint8(a + int(dst.A)*inv/255),
+	}
+}
+
+func normalizeDir(dir int) int {
+	if dir < 0 {
+		return -1
+	}
+	return 1
 }
 
 func abs(v int) int {

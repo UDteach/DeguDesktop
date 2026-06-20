@@ -38,6 +38,16 @@ func TestFrameFromSeqHandlesEmptyAndBadDivisor(t *testing.T) {
 	}
 }
 
+func TestFrameFromSeqClampedHoldsFinalFrame(t *testing.T) {
+	seq := []int{7, 9, 11}
+	if got := frameFromSeqClamped(seq, 999, 2); got != 11 {
+		t.Fatalf("frameFromSeqClamped past end = %d, want 11", got)
+	}
+	if got := frameFromSeqClamped(seq, 3, 0); got != 11 {
+		t.Fatalf("frameFromSeqClamped with zero divisor = %d, want 11", got)
+	}
+}
+
 func TestTypingStartsAndExtendsWheelOnlyInKeyboardMode(t *testing.T) {
 	a := &petApp{
 		mode:         modeKeyboard,
@@ -94,5 +104,50 @@ func TestTypingDoesNotStartWheelInRandomMode(t *testing.T) {
 	a.onTyping()
 	if got := a.pets[0].state; got == stateWheel {
 		t.Fatalf("typing in random mode started wheel state")
+	}
+}
+
+func TestTurnStateUsesGeneratedTurnFrames(t *testing.T) {
+	if got := currentFrame(stateTurn, 0); got != turnStart {
+		t.Fatalf("turn frame 0 = %d, want %d", got, turnStart)
+	}
+	if got := currentFrame(stateTurn, turnTicks-1); got != turnStart+turnFrames-1 {
+		t.Fatalf("turn final active frame = %d, want %d", got, turnStart+turnFrames-1)
+	}
+	if got := currentFrame(stateTurn, turnTicks+10); got != turnStart+turnFrames-1 {
+		t.Fatalf("turn frame after duration = %d, want held final frame %d", got, turnStart+turnFrames-1)
+	}
+}
+
+func TestTurnDrawDirectionMirrorsOnlyLeftToRightTurns(t *testing.T) {
+	if got := turnDrawDirection(1, -1); got != 1 {
+		t.Fatalf("right-to-left turn draw direction = %d, want 1", got)
+	}
+	if got := turnDrawDirection(-1, 1); got != -1 {
+		t.Fatalf("left-to-right turn draw direction = %d, want -1", got)
+	}
+}
+
+func TestSetBidirectionalOffNormalizesPets(t *testing.T) {
+	a := &petApp{
+		bidirectional: true,
+		speed:         3,
+		pets: []deguPet{
+			{state: stateTurn, dir: -1, nextDir: -1, item: noItem},
+			{state: stateWalk, dir: -1, nextDir: -1, item: noItem},
+		},
+	}
+
+	a.setBidirectional(false)
+	if a.bidirectional {
+		t.Fatalf("bidirectional stayed enabled")
+	}
+	for i, pet := range a.pets {
+		if pet.dir != 1 || pet.nextDir != 1 {
+			t.Fatalf("pet %d direction = (%d,%d), want (1,1)", i, pet.dir, pet.nextDir)
+		}
+		if pet.state == stateTurn {
+			t.Fatalf("pet %d remained in stateTurn", i)
+		}
 	}
 }

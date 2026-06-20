@@ -17,14 +17,16 @@ import (
 )
 
 const (
-	totalFrames = 32
+	totalFrames = 56
 	motionSets  = 10
 	atlasRows   = 11
-	atlasCols   = 32
+	atlasCols   = 56
 	coatRows    = 5
 	coatCols    = 7
 	frameW      = 96
 	frameH      = 64
+	forageW     = 32
+	forageH     = 24
 	wheelW      = 72
 	wheelH      = 72
 	padding     = 5
@@ -44,6 +46,16 @@ const (
 	nibbleFrames = 6
 	hopStart     = 26
 	hopFrames    = 6
+	turnStart    = 32
+	turnFrames   = 8
+	eatStart     = 40
+	eatFrames    = 4
+	digStart     = 44
+	digFrames    = 4
+	standStart   = 48
+	standFrames  = 4
+	groomStart   = 52
+	groomFrames  = 4
 )
 
 type rowSpec struct {
@@ -73,6 +85,11 @@ var rows = []rowSpec{
 	{Name: "scurry", Row: 2, Cols: 8, Offset: 12},
 	{Name: "nibble", Row: 3, Cols: 6, Offset: 20},
 	{Name: "hop", Row: 4, Cols: 6, Offset: 26},
+	{Name: "turn", Row: 5, Cols: 8, Offset: 32},
+	{Name: "eat", Row: 6, Cols: 4, Offset: 40},
+	{Name: "dig", Row: 7, Cols: 4, Offset: 44},
+	{Name: "stand", Row: 8, Cols: 4, Offset: 48},
+	{Name: "groomface", Row: 9, Cols: 4, Offset: 52},
 }
 
 type report struct {
@@ -111,6 +128,11 @@ type rawFrame struct {
 	warnings []string
 }
 
+type coatGuide struct {
+	img     *image.RGBA
+	content image.Rectangle
+}
+
 type frameSpec struct {
 	Index  int
 	Action string
@@ -118,7 +140,7 @@ type frameSpec struct {
 }
 
 func main() {
-	source := flag.String("source", filepath.FromSlash("assets/source/imagegen-sheet-clean.png"), "single 32x11 ImageGen atlas")
+	source := flag.String("source", filepath.FromSlash("assets/source/imagegen-sheet-clean.png"), "single 56x11 ImageGen atlas")
 	poseDir := flag.String("pose-dir", filepath.FromSlash("assets/source/poses"), "directory containing one clean ImageGen pose per coat")
 	frameDir := flag.String("frame-dir", filepath.FromSlash("assets/source/frames"), "directory containing one ImageGen PNG per runtime frame")
 	sourceDir := flag.String("source-dir", filepath.FromSlash("assets/source/coats"), "directory containing one 8x5 ImageGen sheet per coat")
@@ -126,6 +148,8 @@ func main() {
 	preview := flag.String("preview", filepath.FromSlash("docs/assets/degu-preview.png"), "preview PNG path")
 	reportPath := flag.String("report", filepath.FromSlash("assets/source/import-report.json"), "validation report path")
 	wheelSource := flag.String("wheel-source", filepath.FromSlash("assets/source/imagegen-wheel.png"), "single ImageGen wheel PNG")
+	forageDir := flag.String("forage-dir", filepath.FromSlash("assets/source/forage"), "directory containing ImageGen forage prop PNGs")
+	coatGuideDir := flag.String("coat-guide-dir", filepath.FromSlash("assets/source/coat-guides"), "directory containing ImageGen coat guide PNGs")
 	flag.Parse()
 
 	must(os.MkdirAll(*outDir, 0o755))
@@ -143,7 +167,7 @@ func main() {
 	if frameFilesReady(*frameDir) {
 		rep.Source = filepath.Clean(*frameDir)
 		rep.Rows = len(variants)
-		importFrameFiles(*frameDir, sheets, &rep, *outDir)
+		importFrameFiles(*frameDir, *coatGuideDir, sheets, &rep, *outDir)
 	} else if actionSheetsReady(filepath.Dir(*source)) {
 		rep.Source = filepath.Clean(filepath.Dir(*source))
 		rep.Rows = len(variants)
@@ -188,6 +212,7 @@ func main() {
 		writeICO(filepath.FromSlash("assets/tray.ico"), firstFrame(wild))
 	}
 	writeWheelSprite(*wheelSource, filepath.Join(*outDir, "wheel.png"))
+	writeForageSprites(*forageDir, *outDir)
 	writeJSON(*reportPath, rep)
 	if len(rep.Warnings) > 0 {
 		for _, warning := range rep.Warnings {
@@ -216,11 +241,9 @@ func actionSheetsReady(dir string) bool {
 }
 
 func frameFilesReady(dir string) bool {
-	for _, id := range variants {
-		for _, spec := range expectedFrameSpecs() {
-			if _, err := os.Stat(filepath.Join(dir, id, frameFileName(spec))); err != nil {
-				return false
-			}
+	for _, spec := range expectedFrameSpecs() {
+		if _, err := os.Stat(filepath.Join(dir, "wild_agouti", frameFileName(spec))); err != nil {
+			return false
 		}
 	}
 	return true
@@ -244,13 +267,14 @@ func frameFileName(spec frameSpec) string {
 	return fmt.Sprintf("%02d_%s_%02d.png", spec.Index, spec.Action, spec.Step)
 }
 
-func importFrameFiles(dir string, sheets map[string]*image.RGBA, rep *report, outDir string) {
+func importFrameFiles(dir string, coatGuideDir string, sheets map[string]*image.RGBA, rep *report, outDir string) {
 	specs := expectedFrameSpecs()
 	canonical := loadFrameFileSet(dir, "wild_agouti", specs, rep, outDir)
 	repairFrames(canonical)
 	canonical = stabilizeCanonicalMotion(canonical)
+	coatGuides := loadCoatGuides(coatGuideDir)
 	for _, id := range variants {
-		rawFrames := cloneAndTintFrames(canonical, id)
+		rawFrames := cloneAndTintFrames(canonical, id, coatGuides[id])
 		appendFrameFileReports(id, specs, rawFrames, rep, outDir)
 		sheet := image.NewRGBA(image.Rect(0, 0, frameW*totalFrames, frameH))
 		for _, row := range rows {
@@ -351,12 +375,26 @@ func appendFrameFileReports(id string, specs []frameSpec, rawFrames []rawFrame, 
 	}
 }
 
-func cloneAndTintFrames(frames []rawFrame, id string) []rawFrame {
+func loadCoatGuides(dir string) map[string]coatGuide {
+	out := map[string]coatGuide{}
+	for _, id := range variants {
+		path := filepath.Join(dir, id+".png")
+		src, err := openPNG(path)
+		if err != nil {
+			continue
+		}
+		img := imageToCleanFrame(src)
+		out[id] = coatGuide{img: img, content: alphaBounds(img)}
+	}
+	return out
+}
+
+func cloneAndTintFrames(frames []rawFrame, id string, guide coatGuide) []rawFrame {
 	out := make([]rawFrame, len(frames))
 	for i, frame := range frames {
 		img := cloneRGBA(frame.img)
 		if id != "wild_agouti" {
-			img = tintFrame(img, id)
+			img = tintFrame(img, id, guide)
 		}
 		content := alphaBounds(img)
 		out[i] = rawFrame{
@@ -502,7 +540,7 @@ type coatPalette struct {
 	Creamy bool
 }
 
-func tintFrame(src *image.RGBA, id string) *image.RGBA {
+func tintFrame(src *image.RGBA, id string, guide coatGuide) *image.RGBA {
 	palette := paletteFor(id)
 	b := src.Bounds()
 	content := alphaBounds(src)
@@ -528,12 +566,12 @@ func tintFrame(src *image.RGBA, id string) *image.RGBA {
 			xn := float64(x-content.Min.X) / float64(max(1, content.Dx()))
 			yn := float64(y-content.Min.Y) / float64(max(1, content.Dy()))
 			bodyPalette := palette
-			if palette.Pied && piedPatch(xn, yn) {
+			if palette.Pied && (guidePiedPatch(guide, xn, yn) || (guide.img == nil && piedPatch(id, xn, yn))) {
 				if palette.Creamy {
 					bodyPalette = coatPalette{
-						Dark:  color.RGBA{R: 160, G: 124, B: 74, A: 255},
-						Base:  color.RGBA{R: 210, G: 170, B: 104, A: 255},
-						Light: color.RGBA{R: 245, G: 220, B: 166, A: 255},
+						Dark:  color.RGBA{R: 205, G: 190, B: 162, A: 255},
+						Base:  color.RGBA{R: 240, G: 232, B: 210, A: 255},
+						Light: color.RGBA{R: 255, G: 252, B: 240, A: 255},
 					}
 				} else {
 					bodyPalette = coatPalette{
@@ -551,6 +589,35 @@ func tintFrame(src *image.RGBA, id string) *image.RGBA {
 	return dst
 }
 
+func guidePiedPatch(guide coatGuide, xn, yn float64) bool {
+	if guide.img == nil || guide.content.Empty() {
+		return false
+	}
+	content := guide.content
+	x := content.Min.X + clampInt(int(math.Round(xn*float64(content.Dx()-1))), 0, max(0, content.Dx()-1))
+	y := content.Min.Y + clampInt(int(math.Round(yn*float64(content.Dy()-1))), 0, max(0, content.Dy()-1))
+	for dy := -1; dy <= 1; dy++ {
+		for dx := -1; dx <= 1; dx++ {
+			px := clampInt(x+dx, content.Min.X, content.Max.X-1)
+			py := clampInt(y+dy, content.Min.Y, content.Max.Y-1)
+			c := guide.img.RGBAAt(px, py)
+			if isWhitePatchPixel(c) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func isWhitePatchPixel(c color.RGBA) bool {
+	if c.A < 64 {
+		return false
+	}
+	maxc := max3(c.R, c.G, c.B)
+	minc := min3(c.R, c.G, c.B)
+	return maxc > 170 && maxc-minc < 55
+}
+
 func paletteFor(id string) coatPalette {
 	switch id {
 	case "black":
@@ -561,9 +628,9 @@ func paletteFor(id string) coatPalette {
 		}
 	case "blue":
 		return coatPalette{
-			Dark:  color.RGBA{R: 45, G: 54, B: 61, A: 255},
-			Base:  color.RGBA{R: 86, G: 101, B: 112, A: 255},
-			Light: color.RGBA{R: 151, G: 160, B: 166, A: 255},
+			Dark:  color.RGBA{R: 58, G: 61, B: 61, A: 255},
+			Base:  color.RGBA{R: 108, G: 111, B: 106, A: 255},
+			Light: color.RGBA{R: 169, G: 168, B: 158, A: 255},
 		}
 	case "gray":
 		return coatPalette{
@@ -605,9 +672,9 @@ func paletteFor(id string) coatPalette {
 		}
 	case "blue_pied":
 		return coatPalette{
-			Dark:  color.RGBA{R: 45, G: 54, B: 61, A: 255},
-			Base:  color.RGBA{R: 86, G: 101, B: 112, A: 255},
-			Light: color.RGBA{R: 151, G: 160, B: 166, A: 255},
+			Dark:  color.RGBA{R: 58, G: 61, B: 61, A: 255},
+			Base:  color.RGBA{R: 108, G: 111, B: 106, A: 255},
+			Light: color.RGBA{R: 169, G: 168, B: 158, A: 255},
 			Pied:  true,
 		}
 	case "cream_pied":
@@ -645,13 +712,35 @@ func mixColor(a, b color.RGBA, t float64) color.RGBA {
 	}
 }
 
-func piedPatch(xn, yn float64) bool {
-	if yn < 0.24 || yn > 0.94 || xn < 0.18 {
+func piedPatch(id string, xn, yn float64) bool {
+	if yn < 0.22 || yn > 0.96 || xn < 0.10 {
 		return false
 	}
-	return (xn > 0.32 && xn < 0.50 && yn > 0.45) ||
-		(xn > 0.55 && xn < 0.78 && yn > 0.30 && yn < 0.82) ||
-		(xn > 0.20 && xn < 0.34 && yn > 0.58)
+	switch id {
+	case "black_pied":
+		return ellipsePatch(xn, yn, 0.35, 0.62, 0.16, 0.22) ||
+			ellipsePatch(xn, yn, 0.68, 0.42, 0.18, 0.20) ||
+			ellipsePatch(xn, yn, 0.18, 0.72, 0.10, 0.14)
+	case "agouti_pied":
+		return ellipsePatch(xn, yn, 0.42, 0.50, 0.18, 0.24) ||
+			ellipsePatch(xn, yn, 0.72, 0.68, 0.18, 0.18) ||
+			ellipsePatch(xn, yn, 0.23, 0.38, 0.09, 0.13)
+	case "blue_pied":
+		return ellipsePatch(xn, yn, 0.30, 0.44, 0.14, 0.18) ||
+			ellipsePatch(xn, yn, 0.58, 0.64, 0.22, 0.22) ||
+			ellipsePatch(xn, yn, 0.82, 0.46, 0.10, 0.16)
+	case "cream_pied":
+		return ellipsePatch(xn, yn, 0.48, 0.58, 0.20, 0.24) ||
+			ellipsePatch(xn, yn, 0.74, 0.38, 0.16, 0.18)
+	default:
+		return ellipsePatch(xn, yn, 0.55, 0.55, 0.22, 0.24)
+	}
+}
+
+func ellipsePatch(x, y, cx, cy, rx, ry float64) bool {
+	dx := (x - cx) / rx
+	dy := (y - cy) / ry
+	return dx*dx+dy*dy <= 1
 }
 
 func luminance(c color.RGBA) int {
@@ -672,17 +761,20 @@ func clamp01(v float64) float64 {
 	return v
 }
 
+func clampInt(v, lo, hi int) int {
+	if v < lo {
+		return lo
+	}
+	if v > hi {
+		return hi
+	}
+	return v
+}
+
 func animatePoseFrames(base *image.RGBA) []*image.RGBA {
 	frames := make([]*image.RGBA, totalFrames)
-	shifts := []image.Point{
-		image.Pt(0, 0), image.Pt(0, -1), image.Pt(0, 0), image.Pt(0, 1),
-		image.Pt(-1, 0), image.Pt(0, 0), image.Pt(1, 0), image.Pt(0, 1), image.Pt(-1, 0), image.Pt(0, -1), image.Pt(1, 0), image.Pt(0, 0),
-		image.Pt(-2, 0), image.Pt(-1, -1), image.Pt(0, 0), image.Pt(2, 0), image.Pt(1, 1), image.Pt(0, 0), image.Pt(-1, 0), image.Pt(1, 0),
-		image.Pt(0, 0), image.Pt(0, 1), image.Pt(0, 0), image.Pt(0, -1), image.Pt(0, 0), image.Pt(0, 1),
-		image.Pt(0, 1), image.Pt(0, -2), image.Pt(0, -4), image.Pt(0, -2), image.Pt(0, 0), image.Pt(0, 1),
-	}
 	for i := range frames {
-		frames[i] = shiftFrame(base, shifts[i])
+		frames[i] = shiftFrame(base, motionSetShift(0, i))
 	}
 	return frames
 }
@@ -1305,6 +1397,7 @@ func fitToFrameSmooth(src *image.RGBA, content image.Rectangle) *image.RGBA {
 	draw.Draw(srcContent, srcContent.Bounds(), src, content.Min, draw.Src)
 	target := image.Rect(offX, offY, offX+outW, offY+outH)
 	xdraw.CatmullRom.Scale(dst, target, srcContent, srcContent.Bounds(), draw.Over, nil)
+	cleanFittedFrame(dst)
 	return dst
 }
 
@@ -1353,7 +1446,30 @@ func fitToFrameWithScale(src *image.RGBA, content image.Rectangle, scale float64
 	draw.Draw(srcContent, srcContent.Bounds(), src, content.Min, draw.Src)
 	target := image.Rect(offX, offY, offX+outW, offY+outH)
 	xdraw.CatmullRom.Scale(dst, target, srcContent, srcContent.Bounds(), draw.Over, nil)
+	cleanFittedFrame(dst)
 	return dst
+}
+
+func cleanFittedFrame(img *image.RGBA) {
+	b := img.Bounds()
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			c := img.RGBAAt(x, y)
+			if c.A == 0 {
+				continue
+			}
+			if c.A < 16 || isCoolColorFringe(c) {
+				img.SetRGBA(x, y, color.RGBA{})
+			}
+		}
+	}
+}
+
+func isCoolColorFringe(c color.RGBA) bool {
+	if c.A >= 96 {
+		return false
+	}
+	return (c.B > 130 && c.R < 110) || (c.G > 150 && c.R < 110 && c.B > 100)
 }
 
 func writePreview(path string, sheets map[string]*image.RGBA) {
@@ -1408,6 +1524,35 @@ func writeWheelSprite(sourcePath, outPath string) {
 	writePNG(outPath, dst)
 }
 
+func writeForageSprites(sourceDir, outDir string) {
+	names := []string{"forage_hay", "forage_twig", "forage_seed"}
+	for _, name := range names {
+		path := filepath.Join(sourceDir, name+".png")
+		src, err := openPNG(path)
+		if err != nil {
+			fmt.Println("warning: forage source not found:", err)
+			continue
+		}
+		cleaned := cleanArtwork(toRGBA(src))
+		content := alphaBounds(cleaned)
+		if content.Empty() {
+			fmt.Println("warning: forage source has no visible content:", path)
+			continue
+		}
+		dst := image.NewRGBA(image.Rect(0, 0, forageW, forageH))
+		scale := math.Min(float64(forageW-4)/float64(content.Dx()), float64(forageH-4)/float64(content.Dy()))
+		outW := max(1, int(math.Round(float64(content.Dx())*scale)))
+		outH := max(1, int(math.Round(float64(content.Dy())*scale)))
+		offX := (forageW - outW) / 2
+		offY := forageH - outH - 2
+		srcContent := image.NewRGBA(image.Rect(0, 0, content.Dx(), content.Dy()))
+		draw.Draw(srcContent, srcContent.Bounds(), cleaned, content.Min, draw.Src)
+		xdraw.CatmullRom.Scale(dst, image.Rect(offX, offY, offX+outW, offY+outH), srcContent, srcContent.Bounds(), draw.Over, nil)
+		cleanFittedFrame(dst)
+		writePNG(filepath.Join(outDir, name+".png"), dst)
+	}
+}
+
 func variantMotionSheet(base *image.RGBA, set int) *image.RGBA {
 	if set == 0 {
 		return cloneRGBA(base)
@@ -1429,6 +1574,16 @@ func variantMotionSheet(base *image.RGBA, set int) *image.RGBA {
 func motionSetShift(set int, frame int) image.Point {
 	actionOffset := frame
 	switch {
+	case frame >= groomStart:
+		actionOffset = frame - groomStart
+	case frame >= standStart:
+		actionOffset = frame - standStart
+	case frame >= digStart:
+		actionOffset = frame - digStart
+	case frame >= eatStart:
+		actionOffset = frame - eatStart
+	case frame >= turnStart:
+		actionOffset = frame - turnStart
 	case frame >= hopStart:
 		actionOffset = frame - hopStart
 	case frame >= nibbleStart:

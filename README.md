@@ -1,35 +1,46 @@
 # Degu Desktop
 
-Windows taskbar pet app written in Go. Pixel-art degus walk, stop, scurry, nibble, hop, and run in a wheel while you type above the taskbar.
+Windows taskbar pet app written in Go. Pixel-art degus walk, stop, scurry, nibble, hop, eat, dig, stand, groom their face, turn left/right, and run in a wheel while you type above the taskbar.
 
 Repository: <https://github.com/UDteach/DeguDesktop>
 
 ## Features
 
 - Transparent always-on-top pet layer above the Windows taskbar
-- Tray menu for coat, speed, count, wheel motion, mode, and exit
+- Tray menu and Japanese/English settings window for speed, count, coat color, wheel motion, mode, and exit
 - Modes: keyboard reaction / random stroll
 - Degu count: 1, 2, 3, or 5
 - Social behavior: nearby degus can walk together and pause for grooming
-- Foraging behavior: hay, twigs, and seed-like bits appear near the taskbar for sniffing, gnawing, and carrying
+- Foraging behavior: hay, twigs, and low-key seed-like bits appear near the taskbar for sniffing, eating, digging, gnawing, and carrying
 - Wheel motion: in keyboard mode, a degu runs inside the wheel only while you are typing, then scurries away
-- Coat variants: wild agouti, black, blue-gray, gray, white/cream, sand/champagne, chocolate, and pied variants
+- Turn motion: eight ImageGen frames smooth direction changes instead of instant sprite flipping
+- Coat variants: wild agouti, black, blue-gray, gray, white/cream, sand/champagne, chocolate, black pied, agouti pied, blue pied, and cream pied
+- Pied coats use ImageGen coat-guide images for irregular white patch placement, not simple recolors or oval procedural masks
 - ImageGen frame PNGs are the art source; no local generated-art fallback
 
 ## ImageGen Asset Source
 
-Preferred intake is one ImageGen PNG per runtime frame:
+Preferred intake is one ImageGen PNG per runtime frame for the canonical wild agouti motion set:
 
 ```text
-assets/source/frames/<coat_id>/<frame>_<action>_<step>.png
+assets/source/frames/wild_agouti/<frame>_<action>_<step>.png
 ```
 
 Runtime frame contract:
 
-- 32 files per coat
-- actions: idle, walk, scurry, nibble, hop
+- 56 files for the canonical `wild_agouti` motion set
+- actions: idle, walk, scurry, nibble, hop, turn, eat, dig, stand, groomface
 - each file contains one complete degu, not a grid
 - the importer normalizes every frame into a fixed 96x64 runtime canvas
+- the importer expands the canonical motion set into all coat variants
+
+Pied coat guides are also ImageGen sources:
+
+```text
+assets/source/coat-guides/<coat_id>.png
+```
+
+The importer normalizes each guide and transfers its irregular white patch map across every runtime motion frame for the matching pied coat.
 
 Fallback ImageGen action sheets are also supported:
 
@@ -39,6 +50,11 @@ assets/source/imagegen-walk.png
 assets/source/imagegen-scurry.png
 assets/source/imagegen-nibble.png
 assets/source/imagegen-hop.png
+assets/source/imagegen-turn.png
+assets/source/imagegen-eat.png
+assets/source/imagegen-dig.png
+assets/source/imagegen-stand.png
+assets/source/imagegen-groomface.png
 ```
 
 Import and validate:
