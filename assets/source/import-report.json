@@ -1,0 +1,6347 @@
+{
+  "source": "assets\\source\\frames",
+  "source_width": 1536,
+  "source_height": 1024,
+  "columns": 32,
+  "rows": 11,
+  "frame_width": 96,
+  "frame_height": 64,
+  "cells": [
+    {
+      "variant": "wild_agouti",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "black",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 0,
+      "sheet": "wild_agouti/00_idle_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 1,
+      "sheet": "wild_agouti/01_idle_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 2,
+      "sheet": "wild_agouti/02_idle_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 3,
+      "sheet": "wild_agouti/03_idle_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 4,
+      "sheet": "wild_agouti/04_walk_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 5,
+      "sheet": "wild_agouti/05_walk_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 6,
+      "sheet": "wild_agouti/06_walk_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 7,
+      "sheet": "wild_agouti/07_walk_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 8,
+      "sheet": "wild_agouti/08_walk_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 9,
+      "sheet": "wild_agouti/09_walk_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 10,
+      "sheet": "wild_agouti/10_walk_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 11,
+      "sheet": "wild_agouti/11_walk_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 12,
+      "sheet": "wild_agouti/12_scurry_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 13,
+      "sheet": "wild_agouti/13_scurry_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 14,
+      "sheet": "wild_agouti/14_scurry_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 15,
+      "sheet": "wild_agouti/15_scurry_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 16,
+      "sheet": "wild_agouti/16_scurry_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 17,
+      "sheet": "wild_agouti/17_scurry_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 18,
+      "sheet": "wild_agouti/18_scurry_06.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 125,
+        "y": 254,
+        "w": 1211,
+        "h": 461
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 19,
+      "sheet": "wild_agouti/19_scurry_07.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 20,
+      "sheet": "wild_agouti/20_nibble_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 21,
+      "sheet": "wild_agouti/21_nibble_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 22,
+      "sheet": "wild_agouti/22_nibble_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 23,
+      "sheet": "wild_agouti/23_nibble_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 24,
+      "sheet": "wild_agouti/24_nibble_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 25,
+      "sheet": "wild_agouti/25_nibble_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 123,
+        "y": 312,
+        "w": 1236,
+        "h": 388
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 26,
+      "sheet": "wild_agouti/26_hop_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 171,
+        "y": 261,
+        "w": 1127,
+        "h": 459
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 27,
+      "sheet": "wild_agouti/27_hop_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 165,
+        "y": 243,
+        "w": 1140,
+        "h": 510
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 28,
+      "sheet": "wild_agouti/28_hop_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 231,
+        "y": 260,
+        "w": 1139,
+        "h": 468
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 29,
+      "sheet": "wild_agouti/29_hop_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 122,
+        "y": 334,
+        "w": 1236,
+        "h": 384
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 30,
+      "sheet": "wild_agouti/30_hop_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 178,
+        "y": 236,
+        "w": 1248,
+        "h": 482
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 31,
+      "sheet": "wild_agouti/31_hop_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 157,
+        "y": 227,
+        "w": 1157,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    }
+  ]
+}

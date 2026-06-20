@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Degu Desktop</title>
+    <meta
+      name="description"
+      content="A small Windows taskbar pet app with a degu that walks above the taskbar."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #20251f;
+        --muted: #5c665f;
+        --paper: #f7f5ec;
+        --surface: #fffdf7;
+        --line: #d8d8ce;
+        --leaf: #3e6f52;
+        --leaf-dark: #2f573f;
+        --slate: #63788a;
+        --gold: #b9852d;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Segoe UI", system-ui, sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+      }
+
+      main {
+        width: min(1040px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 36px;
+      }
+
+      nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        min-height: 48px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        font-weight: 700;
+      }
+
+      .navlinks {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .navlinks a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(240px, 380px);
+        gap: 42px;
+        align-items: center;
+        min-height: calc(100vh - 92px);
+        padding: 34px 0;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(42px, 8vw, 82px);
+        line-height: 0.96;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        margin: 22px 0 0;
+        max-width: 660px;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1.7;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .button {
+        display: inline-flex;
+        min-height: 46px;
+        align-items: center;
+        justify-content: center;
+        padding: 0 18px;
+        border: 1px solid var(--ink);
+        background: var(--surface);
+        text-decoration: none;
+        font-weight: 650;
+      }
+
+      .button.primary {
+        border-color: var(--leaf);
+        background: var(--leaf);
+        color: white;
+      }
+
+      .button.primary:hover {
+        background: var(--leaf-dark);
+      }
+
+      .preview-wrap {
+        display: grid;
+        gap: 14px;
+        align-items: center;
+      }
+
+      .preview {
+        width: 100%;
+        height: auto;
+        background: #10120f;
+        border: 1px solid var(--line);
+      }
+
+      .note {
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      section {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 22px;
+        border-top: 1px solid var(--line);
+        padding-top: 26px;
+      }
+
+      article {
+        border-top: 3px solid var(--gold);
+        padding-top: 14px;
+      }
+
+      article:nth-child(2) {
+        border-color: var(--slate);
+      }
+
+      article:nth-child(3) {
+        border-color: var(--leaf);
+      }
+
+      h2 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+
+      article p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      @media (max-width: 760px) {
+        header,
+        section {
+          grid-template-columns: 1fr;
+        }
+
+        header {
+          min-height: auto;
+          padding: 34px 0 28px;
+        }
+
+        nav {
+          align-items: flex-start;
+          flex-direction: column;
+          padding-bottom: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav>
+        <div class="brand">Degu Desktop</div>
+        <div class="navlinks">
+          <a href="#download">Download</a>
+          <a href="https://github.com/UDteach/DeguDesktop">GitHub</a>
+        </div>
+      </nav>
+
+      <header>
+        <div>
+          <h1>Degu Desktop</h1>
+          <p class="lead">
+            A small Windows desktop pet app. Pixel-art degus walk above the
+            taskbar, react to typing, and can pause for wheel-running.
+          </p>
+          <div id="download" class="actions">
+            <a class="button primary" href="download/DeguDesktop-windows-amd64.zip">
+              Download for Windows
+            </a>
+            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases">
+              Releases
+            </a>
+          </div>
+        </div>
+
+        <div class="preview-wrap">
+          <img class="preview" src="assets/degu-preview.png" alt="Degu Desktop preview" />
+          <div class="note">
+            Windows 10/11, amd64. Unzip the file and run
+            <code>DeguDesktop.exe</code>.
+          </div>
+        </div>
+      </header>
+
+      <section>
+        <article>
+          <h2>Taskbar Pet</h2>
+          <p>A transparent always-on-top pet layer designed to stay near the taskbar.</p>
+        </article>
+        <article>
+          <h2>Degu Count</h2>
+          <p>Switch between 1, 2, 3, or 5 degus from the tray menu.</p>
+        </article>
+        <article>
+          <h2>Coat Variants</h2>
+          <p>Includes agouti, black, blue-gray, gray, cream, chocolate, and pied coats.</p>
+        </article>
+        <article>
+          <h2>Release Build</h2>
+          <p>The download link points to the zip generated for this static Pages site and GitHub Releases.</p>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

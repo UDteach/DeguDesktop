@@ -1,0 +1,44 @@
+name: Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.x"
+      - name: Generate preview assets
+        shell: bash
+        run: go run ./cmd/importsheet
+      - name: Build download zip
+        shell: bash
+        run: |
+          mkdir -p docs/download dist
+          GOOS=windows GOARCH=amd64 go build -buildvcs=false -ldflags="-H=windowsgui -s -w" -o dist/DeguDesktop.exe ./cmd/degu
+          (cd dist && zip -q DeguDesktop-windows-amd64.zip DeguDesktop.exe ../README.md)
+          cp dist/DeguDesktop-windows-amd64.zip docs/download/DeguDesktop-windows-amd64.zip
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v4

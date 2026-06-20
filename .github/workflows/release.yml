@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.x"
+      - name: Generate assets
+        shell: pwsh
+        run: go run ./cmd/importsheet
+      - name: Test
+        run: go test -buildvcs=false ./...
+      - name: Build
+        run: |
+          New-Item -ItemType Directory -Force dist | Out-Null
+          go build -buildvcs=false -ldflags="-H=windowsgui -s -w" -o dist/DeguDesktop.exe ./cmd/degu
+          Compress-Archive -Path dist/DeguDesktop.exe,README.md -DestinationPath dist/DeguDesktop-windows-amd64.zip -Force
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/DeguDesktop-windows-amd64.zip

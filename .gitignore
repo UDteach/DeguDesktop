@@ -1,0 +1,11 @@
+.DS_Store
+*.exe
+*.dll
+*.log
+dist/
+build/
+.agents/
+.codex/
+.wrangler/
+.idea/
+.vscode/
