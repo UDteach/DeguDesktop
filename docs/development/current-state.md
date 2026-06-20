@@ -18,7 +18,7 @@ Last updated: 2026-06-20
 - The Windows app is a Go + Win32 desktop pet overlay.
 - The macOS app is a Go + Cocoa menu-bar app with a transparent bottom overlay above the Dock area.
 - Runtime pet state currently lives mostly in `cmd/degu/main_windows.go`.
-- The macOS initial port lives in `cmd/degu/main_darwin.go` and `cmd/degu/darwin_cocoa.m`.
+- The macOS port lives in `cmd/degu/main_darwin.go` and `cmd/degu/darwin_cocoa_darwin.m`.
 - Coat variants are represented by a global `variants` list.
 - Runtime sprites are normalized to 96x64 frames.
 - Existing animations are `idle`, `walk`, `scurry`, `nibble`, `hop`, `turn`, `eat`, `dig`, `stand`, and `groomface`.
@@ -39,16 +39,20 @@ Last updated: 2026-06-20
 ## Current macOS Port
 
 - Transparent always-on-top click-through layer at the bottom of the current screen, above the Dock visible area.
-- Menu-bar degu icon with Quit.
+- Menu-bar degu icon with a native settings window and Quit.
+- macOS settings window covers visible count 1-10, fixed/per-pet/random coat selection, optional per-pet names, mode, speed, and typing wheel.
 - Multiple degus wander left/right along the bottom edge.
 - Keyboard reaction is wired through macOS event monitoring when system permissions allow it.
+- Click reactions are wired through global mouse monitoring while preserving the click-through overlay.
+- Optional cursor-hover name labels appear above visible degus.
+- macOS settings are persisted under the user's Application Support config directory.
+- Current macOS builds support macOS 12 Monterey or later because the release build uses Go 1.25; older macOS support would need a separately tested Go 1.24 compatibility build.
 - Local packaging uses `scripts/build_macos.sh` to create ad-hoc-signed `DeguDesktop.app` ZIPs.
 - Local release packaging creates `DeguDesktop-macos-arm64.zip` and `DeguDesktop-macos-amd64.zip`; those ZIPs can be attached to GitHub Releases manually.
 
 Known macOS gaps:
 
-- No macOS settings UI yet.
-- No macOS click reaction, foraging behavior, update installer, or notarization automation yet.
+- No macOS foraging behavior, update installer, or notarization automation yet.
 - Developer ID signing and Apple notarization remain manual release-operator steps.
 
 ## Current Asset Format

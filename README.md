@@ -1,6 +1,6 @@
 # Degu Desktop
 
-Desktop pet app written in Go. On Windows, pixel-art degus walk above the taskbar with the full Degu Desktop behavior set. On macOS, the initial port runs as a menu-bar app and lets degus wander along the bottom edge above the Dock.
+Desktop pet app written in Go. On Windows, pixel-art degus walk above the taskbar with the full Degu Desktop behavior set. On macOS, the app runs as a menu-bar app and lets degus wander along the bottom edge above the Dock.
 
 Repository: <https://github.com/UDteach/DeguDesktop>
 
@@ -11,7 +11,7 @@ Windows:
 - Transparent always-on-top pet layer above the Windows taskbar
 - Tray menu and Japanese/English settings window for names, speed, count, coat color, wheel motion, mode, updates, and exit
 - Modes: keyboard reaction / random stroll
-- Degu count: 1, 2, 3, 5, or 10
+- Degu count: settings supports 1-10; tray quick actions include common counts
 - Optional per-pet names can be enabled in settings; when enabled, names appear above a degu while the cursor hovers over it
 - Startup tray notification and GitHub Release based update checking from the tray menu
 - Social behavior: nearby degus can walk together and pause for grooming
@@ -22,12 +22,15 @@ Windows:
 - Pied coats use ImageGen coat-guide images for irregular white patch placement, not simple recolors or oval procedural masks
 - ImageGen frame PNGs are the art source; no local generated-art fallback
 
-macOS initial port:
+macOS:
 
 - Transparent always-on-top bottom overlay above the Dock area
-- Menu-bar degu icon with Quit
+- Menu-bar degu icon with a native settings window
+- Settings for visible count 1-10, fixed/per-pet/random coat selection, per-pet names, mode, speed, typing wheel, and exit
 - Multiple degus wandering along the bottom edge
 - Keyboard reaction through macOS event monitoring when system permissions allow it
+- Click reactions and optional cursor-hover name labels while preserving the click-through desktop layer
+- Supported OS for current builds: macOS 12 Monterey or later, Intel and Apple Silicon
 
 ## ImageGen Asset Source
 
@@ -103,7 +106,7 @@ Build a macOS app bundle:
 GOARCH=arm64 VERSION=dev ./scripts/build_macos.sh
 ```
 
-The macOS app runs as a menu-bar app and places a click-through transparent pet layer at the bottom of the current screen, above the Dock area. Global keyboard reaction can require macOS input monitoring/accessibility permission depending on the user's system settings.
+The macOS app runs as a menu-bar app and places a click-through transparent pet layer at the bottom of the current screen, above the Dock area. The menu-bar icon opens a native settings window for visible count, coat selection, per-pet names, mode, speed, typing wheel, and exit. It does not show a Dock icon by default. Current builds support macOS 12 Monterey or later because they are built with Go 1.25. Global keyboard and mouse reaction can require macOS input monitoring/accessibility permission depending on the user's system settings.
 
 ## Release
 
@@ -116,7 +119,7 @@ Release assets use:
 - `DeguDesktop-macos-arm64.zip`
 - `DeguDesktop-macos-amd64.zip`
 
-The Windows app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, stage a temporary updater script, exit, replace `DeguDesktop.exe`, and restart. The macOS app is currently packaged as an ad-hoc-signed app bundle; Developer ID signing and notarization are still separate release-operator steps.
+The Windows app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, stage a temporary updater script, exit, replace `DeguDesktop.exe`, and restart. The macOS app is currently packaged as an ad-hoc-signed app bundle for macOS 12 Monterey or later; Developer ID signing and notarization are still separate release-operator steps. Older macOS support would need a separate Go 1.24-based compatibility build and testing.
 
 The GitHub Pages workflow also stamps the download area with the Pages build version, JST update date, and short commit ID.
 

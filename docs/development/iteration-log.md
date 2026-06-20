@@ -355,7 +355,7 @@ The download buttons did not expose which Pages-built binary a visitor would rec
 ### Pages Pass
 
 - Added compact build metadata chips under the x64/x86/Releases download buttons.
-- Added a disabled `Mac版 Soon` chip to the download button row without adding a non-existent artifact link.
+- Added a disabled macOS placeholder chip to the download button row without adding a non-existent artifact link.
 - Updated the Pages workflow to stamp `docs/index.html` at deploy time with `pages-<short sha>`, the JST deploy date, and the short commit ID.
 - Reused the same short Pages version string for the x64 and x86 `main.appVersion` injection.
 
@@ -381,7 +381,7 @@ The repository previously had a Windows-only Win32 app plus a non-Windows stub t
 ### App Pass
 
 - Added a darwin-specific Go entry point in `cmd/degu/main_darwin.go`.
-- Added a small Objective-C Cocoa bridge in `cmd/degu/darwin_cocoa.m` and `cmd/degu/darwin_cocoa.h`.
+- Added a small Objective-C Cocoa bridge in `cmd/degu/darwin_cocoa_darwin.m` and `cmd/degu/darwin_cocoa.h`.
 - Created a transparent, click-through, always-on-top bottom overlay positioned above the Dock visible area.
 - Added a menu-bar degu icon with Quit.
 - Reused embedded generated degu sprite sheets so multiple coat variants wander along the bottom edge.
@@ -416,3 +416,85 @@ The repository previously had a Windows-only Win32 app plus a non-Windows stub t
 - No macOS settings window yet.
 - No macOS click reaction, foraging behavior, update installer, or notarization automation yet.
 - The local artifact is ad-hoc signed. Public distribution still needs Developer ID signing and Apple notarization before a polished external release.
+
+## Iteration 12 - macOS Menu Settings And Motion Fix
+
+Date: 2026-06-20
+
+### Target
+
+Fix the macOS animation that looked like it was looking around while moving, make the app icon show in the macOS app bundle, and let the menu-bar icon edit practical Mac settings.
+
+### Cause
+
+The macOS port was cycling every frame in the walk/scurry ranges, while Windows uses a stable subset to avoid generated-frame orientation jitter. The app bundle also lacked `CFBundleIconFile`, and the menu-bar item only exposed Quit.
+
+### App Pass
+
+- Matched macOS horizontal motion to the Windows stable walk frame sequence.
+- Added Darwin tests for stable horizontal frames, direction movement, mirrored drawing, and menu-backed settings state.
+- Added app-bundle `.icns` generation from the runtime degu sprite and wired `CFBundleIconFile`.
+- Added menu-bar settings for speed, visible degu count, keyboard reaction, and exit.
+- Persisted macOS menu settings under the user's Application Support config directory.
+
+### Verification
+
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `GO_CMD=.codex/tools/go/bin/go GOARCH=arm64 VERSION=v0.1.5 scripts/build_macos.sh`
+- `GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go test -buildvcs=false -c -o /tmp/degu-windows-amd64.test.exe ./cmd/degu`
+- `GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -buildvcs=false -ldflags="-H=windowsgui -X main.appVersion=v0.1.5" -o /tmp/DeguDesktop.exe ./cmd/degu`
+- `plutil -lint packaging/macos/Info.plist`
+- `bash -n scripts/build_macos.sh`
+- `codesign --verify --deep --strict /Applications/DeguDesktop.app`
+- Opened the menu-bar icon through System Events and verified menu items: `速さ`, `表示数`, `キーボード反応`, `終了`.
+- Verified menu actions save `speed`, `petCount`, and `wheelEnabled` to `~/Library/Application Support/DeguDesktop/settings.json`.
+- Captured `.codex/qa/macos-direction-fix-bottom.png` and `.codex/qa/macos-menu-settings.png`.
+
+### Remaining macOS Gaps
+
+- No full macOS settings window yet.
+- No macOS click reaction, foraging behavior, update installer, Developer ID signing, or notarization automation yet.
+
+## Iteration 13 - macOS Names, Clicks, And Full Count Selection
+
+Date: 2026-06-20
+
+### Target
+
+Bring the macOS build closer to Windows behavior by adding per-pet names, click reactions, and direct selection for 6-9 visible degus.
+
+### Cause
+
+The macOS settings window covered motion and coat controls, but did not yet expose the Windows name workflow. The macOS menu also only offered the older count shortcuts, so 6, 7, 8, and 9 were not directly selectable even though the runtime supports up to ten pets.
+
+### App Pass
+
+- Added macOS settings persistence for optional name labels and ten per-pet names.
+- Added a native `名前` settings tab with a name-label toggle and one field per visible pet slot.
+- Added cursor-hover name labels above degus when name labels are enabled.
+- Added click reactions using a global left-click monitor while preserving the click-through desktop layer.
+- Expanded the macOS menu-bar count menu and settings count popup to support every count from 1 through 10.
+- Added Darwin tests for full visible-count support, name persistence, default display names, and click hit testing.
+
+### Verification
+
+- `clang -fsyntax-only -fblocks -x objective-c -framework Cocoa cmd/degu/darwin_cocoa_darwin.m`
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `GO_CMD=.codex/tools/go/bin/go GOARCH=arm64 VERSION=v0.1.5 scripts/build_macos.sh`
+- `GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go test -buildvcs=false -c -o /tmp/degu-windows-amd64.test.exe ./cmd/degu`
+- `GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -buildvcs=false -ldflags="-H=windowsgui -X main.appVersion=v0.1.5" -o /tmp/DeguDesktop.exe ./cmd/degu`
+- `plutil -lint packaging/macos/Info.plist`
+- `codesign --verify --deep --strict /Applications/DeguDesktop.app`
+- Reinstalled `/Applications/DeguDesktop.app`, launched it, and verified the running process.
+- Opened the menu-bar settings window through System Events and captured `.codex/qa/macos-settings-names-click-counts.png`.
+- Opened the new `名前` tab and captured `.codex/qa/macos-settings-name-tab.png`.
+
+### Remaining macOS Gaps
+
+- Synthetic live-click QA was blocked by macOS accessibility permission for `osascript`; the click reaction hit test is covered in Go tests.
+- No macOS foraging behavior, update installer, Developer ID signing, or notarization automation yet.

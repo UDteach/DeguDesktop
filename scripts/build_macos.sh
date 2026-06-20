@@ -31,6 +31,162 @@ text = Path(src).read_text(encoding="utf-8").replace("__VERSION__", safe)
 Path(dst).write_text(text, encoding="utf-8")
 PY
 
+ICON_TMP="$(mktemp -d)"
+trap 'rm -rf "$ICON_TMP"' EXIT
+ICONSET="$ICON_TMP/DeguDesktop.iconset"
+mkdir -p "$ICONSET"
+cat > "$ICON_TMP/make_icon.go" <<'GO'
+package main
+
+import (
+	"image"
+	"image/draw"
+	"image/png"
+	"log"
+	"math"
+	"os"
+	"path/filepath"
+)
+
+const (
+	frameW     = 96
+	frameH     = 64
+	iconFrames = 56
+)
+
+var iconFiles = map[string]int{
+	"icon_16x16.png":     16,
+	"icon_16x16@2x.png":  32,
+	"icon_32x32.png":     32,
+	"icon_32x32@2x.png":  64,
+	"icon_128x128.png":   128,
+	"icon_128x128@2x.png": 256,
+	"icon_256x256.png":   256,
+	"icon_256x256@2x.png": 512,
+	"icon_512x512.png":   512,
+	"icon_512x512@2x.png": 1024,
+}
+
+func main() {
+	if len(os.Args) != 3 {
+		log.Fatal("usage: make_icon <sprite-sheet> <iconset-dir>")
+	}
+	src := readPNG(os.Args[1])
+	if src.Bounds().Dx() < frameW*iconFrames || src.Bounds().Dy() < frameH {
+		log.Fatalf("unexpected sprite sheet size: %v", src.Bounds())
+	}
+	frame := image.NewRGBA(image.Rect(0, 0, frameW, frameH))
+	draw.Draw(frame, frame.Bounds(), src, image.Point{}, draw.Src)
+	content := cropVisible(frame)
+	for name, size := range iconFiles {
+		writePNG(filepath.Join(os.Args[2], name), fitIcon(content, size))
+	}
+}
+
+func readPNG(path string) image.Image {
+	f, err := os.Open(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	img, err := png.Decode(f)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return img
+}
+
+func writePNG(path string, img image.Image) {
+	f, err := os.Create(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	if err := png.Encode(f, img); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func cropVisible(src *image.RGBA) *image.RGBA {
+	b := src.Bounds()
+	minX, minY := b.Max.X, b.Max.Y
+	maxX, maxY := b.Min.X, b.Min.Y
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			if src.RGBAAt(x, y).A <= 8 {
+				continue
+			}
+			if x < minX {
+				minX = x
+			}
+			if y < minY {
+				minY = y
+			}
+			if x+1 > maxX {
+				maxX = x + 1
+			}
+			if y+1 > maxY {
+				maxY = y + 1
+			}
+		}
+	}
+	if minX >= maxX || minY >= maxY {
+		log.Fatal("sprite frame has no visible content")
+	}
+	r := image.Rect(max(b.Min.X, minX-2), max(b.Min.Y, minY-2), min(b.Max.X, maxX+2), min(b.Max.Y, maxY+2))
+	dst := image.NewRGBA(image.Rect(0, 0, r.Dx(), r.Dy()))
+	draw.Draw(dst, dst.Bounds(), src, r.Min, draw.Src)
+	return dst
+}
+
+func fitIcon(src *image.RGBA, size int) *image.RGBA {
+	dst := image.NewRGBA(image.Rect(0, 0, size, size))
+	padding := int(math.Round(float64(size) * 0.14))
+	limit := size - padding*2
+	if limit < 1 {
+		limit = size
+	}
+	sb := src.Bounds()
+	scale := math.Min(float64(limit)/float64(sb.Dx()), float64(limit)/float64(sb.Dy()))
+	w := max(1, int(math.Round(float64(sb.Dx())*scale)))
+	h := max(1, int(math.Round(float64(sb.Dy())*scale)))
+	scaled := scaleNearest(src, w, h)
+	x := (size - w) / 2
+	y := (size - h) / 2
+	draw.Draw(dst, image.Rect(x, y, x+w, y+h), scaled, image.Point{}, draw.Over)
+	return dst
+}
+
+func scaleNearest(src *image.RGBA, width, height int) *image.RGBA {
+	dst := image.NewRGBA(image.Rect(0, 0, width, height))
+	sb := src.Bounds()
+	for y := 0; y < height; y++ {
+		sy := sb.Min.Y + y*sb.Dy()/height
+		for x := 0; x < width; x++ {
+			sx := sb.Min.X + x*sb.Dx()/width
+			dst.SetRGBA(x, y, src.RGBAAt(sx, sy))
+		}
+	}
+	return dst
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func max(a, b int) int {
+	if a > b {
+		return a
+	}
+	return b
+}
+GO
+"$GO_CMD" run "$ICON_TMP/make_icon.go" "$ROOT_DIR/assets/sprites/degu_wild_agouti_set00.png" "$ICONSET"
+iconutil -c icns "$ICONSET" -o "$APP_DIR/Contents/Resources/DeguDesktop.icns"
+
 CGO_ENABLED=1 GOOS=darwin GOARCH="$ARCH" "$GO_CMD" build \
   -buildvcs=false \
   -ldflags="-s -w -X main.appVersion=$VERSION" \
