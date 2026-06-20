@@ -365,3 +365,54 @@ The download buttons did not expose which Pages-built binary a visitor would rec
 - `git diff --check`
 - `go test -buildvcs=false ./...`
 - `go vet -buildvcs=false ./...`
+
+## Iteration 11 - macOS Bottom Overlay Port
+
+Date: 2026-06-20
+
+### Target
+
+Port Degu Desktop to macOS in the same repository, with degus wandering along the bottom of the screen above the Dock.
+
+### Cause
+
+The repository previously had a Windows-only Win32 app plus a non-Windows stub that only printed that Degu Desktop was implemented for Windows. A real Mac release needs a darwin entry point, Cocoa host window, app-bundle packaging, release workflow artifacts, and clear platform-status docs.
+
+### App Pass
+
+- Added a darwin-specific Go entry point in `cmd/degu/main_darwin.go`.
+- Added a small Objective-C Cocoa bridge in `cmd/degu/darwin_cocoa.m` and `cmd/degu/darwin_cocoa.h`.
+- Created a transparent, click-through, always-on-top bottom overlay positioned above the Dock visible area.
+- Added a menu-bar degu icon with Quit.
+- Reused embedded generated degu sprite sheets so multiple coat variants wander along the bottom edge.
+- Reused a transparent runtime sprite to generate the menu-bar icon, avoiding the non-transparent source icon background.
+- Added keyboard reaction through macOS event monitoring when system permissions allow it.
+- Kept Windows implementation isolated under the existing Windows build tag and changed the old non-Windows stub to exclude darwin.
+
+### Packaging And Release
+
+- Added `packaging/macos/Info.plist`.
+- Added `scripts/build_macos.sh` to create an ad-hoc-signed `DeguDesktop.app` and zip it as `DeguDesktop-macos-<arch>.zip`.
+- Kept the existing GitHub Release workflow unchanged because the current GitHub token lacks `workflow` scope; macOS arm64 and amd64 ZIPs are generated locally and can be uploaded to the Release with `gh release`.
+- Updated `README.md`, `docs/index.html`, and `docs/development/current-state.md` with macOS status and release notes.
+
+### Verification
+
+- `plutil -lint packaging/macos/Info.plist`
+- `bash -n scripts/build_macos.sh`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `GO_CMD=.codex/tools/go/bin/go GOARCH=arm64 VERSION=dev-local scripts/build_macos.sh`
+- `GO_CMD=.codex/tools/go/bin/go GOARCH=amd64 VERSION=dev-local scripts/build_macos.sh`
+- `GOOS=windows GOARCH=amd64 go build -buildvcs=false -ldflags="-H=windowsgui" -o dist/DeguDesktop.exe ./cmd/degu`
+- `git diff --check`
+- Launched the direct macOS binary and captured `.codex/qa/macos-degu-overlay.png`.
+- Launched `dist/DeguDesktop.app` and captured `.codex/qa/macos-app-bundle-overlay.png`.
+- Verified the menu-bar degu icon and captured `.codex/qa/macos-menu-bar-icon.png`.
+
+### Remaining macOS Gaps
+
+- No macOS settings window yet.
+- No macOS click reaction, foraging behavior, update installer, or notarization automation yet.
+- The local artifact is ad-hoc signed. Public distribution still needs Developer ID signing and Apple notarization before a polished external release.

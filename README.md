@@ -1,10 +1,12 @@
 # Degu Desktop
 
-Windows taskbar pet app written in Go. Pixel-art degus walk, stop, scurry, nibble, hop, eat, dig, stand, groom their face, turn left/right, and run in a wheel while you type above the taskbar.
+Desktop pet app written in Go. On Windows, pixel-art degus walk above the taskbar with the full Degu Desktop behavior set. On macOS, the initial port runs as a menu-bar app and lets degus wander along the bottom edge above the Dock.
 
 Repository: <https://github.com/UDteach/DeguDesktop>
 
 ## Features
+
+Windows:
 
 - Transparent always-on-top pet layer above the Windows taskbar
 - Tray menu and Japanese/English settings window for names, speed, count, coat color, wheel motion, mode, updates, and exit
@@ -19,6 +21,13 @@ Repository: <https://github.com/UDteach/DeguDesktop>
 - Coat variants: wild agouti, black, blue-gray, gray, white/cream, sand/champagne, chocolate, black pied, agouti pied, blue pied, and cream pied
 - Pied coats use ImageGen coat-guide images for irregular white patch placement, not simple recolors or oval procedural masks
 - ImageGen frame PNGs are the art source; no local generated-art fallback
+
+macOS initial port:
+
+- Transparent always-on-top bottom overlay above the Dock area
+- Menu-bar degu icon with Quit
+- Multiple degus wandering along the bottom edge
+- Keyboard reaction through macOS event monitoring when system permissions allow it
 
 ## ImageGen Asset Source
 
@@ -88,11 +97,26 @@ Build a GUI binary:
 go build -ldflags="-H=windowsgui" -o dist/DeguDesktop.exe ./cmd/degu
 ```
 
+Build a macOS app bundle:
+
+```bash
+GOARCH=arm64 VERSION=dev ./scripts/build_macos.sh
+```
+
+The macOS app runs as a menu-bar app and places a click-through transparent pet layer at the bottom of the current screen, above the Dock area. Global keyboard reaction can require macOS input monitoring/accessibility permission depending on the user's system settings.
+
 ## Release
 
-Push a `v*` tag to build `DeguDesktop-windows-amd64.zip` and `DeguDesktop-windows-386.zip` and attach them to a GitHub Release. GitHub Pages publishes `docs/`.
+Push a `v*` tag to build Windows ZIPs and attach them to a GitHub Release. GitHub Pages publishes `docs/`. macOS ZIPs are generated with `scripts/build_macos.sh` and can be attached to the same GitHub Release.
 
-Release builds embed the tag into `main.appVersion` and publish both `DeguDesktop-windows-amd64.zip` and `DeguDesktop-windows-386.zip`. The app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, stage a temporary updater script, exit, replace `DeguDesktop.exe`, and restart.
+Release assets use:
+
+- `DeguDesktop-windows-amd64.zip`
+- `DeguDesktop-windows-386.zip`
+- `DeguDesktop-macos-arm64.zip`
+- `DeguDesktop-macos-amd64.zip`
+
+The Windows app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, stage a temporary updater script, exit, replace `DeguDesktop.exe`, and restart. The macOS app is currently packaged as an ad-hoc-signed app bundle; Developer ID signing and notarization are still separate release-operator steps.
 
 The GitHub Pages workflow also stamps the download area with the Pages build version, JST update date, and short commit ID.
 

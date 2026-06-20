@@ -11,17 +11,20 @@ Last updated: 2026-06-20
 - Static site: `docs`
 - GitHub workflows: `.github/workflows/pages.yml`, `.github/workflows/release.yml`
 - Windows artifacts: x64 (`amd64`) and x86 (`386`)
+- macOS artifacts: Apple Silicon (`arm64`) and Intel (`amd64`)
 
 ## Current Architecture
 
-- The app is a Go + Win32 desktop pet overlay.
+- The Windows app is a Go + Win32 desktop pet overlay.
+- The macOS app is a Go + Cocoa menu-bar app with a transparent bottom overlay above the Dock area.
 - Runtime pet state currently lives mostly in `cmd/degu/main_windows.go`.
+- The macOS initial port lives in `cmd/degu/main_darwin.go` and `cmd/degu/darwin_cocoa.m`.
 - Coat variants are represented by a global `variants` list.
 - Runtime sprites are normalized to 96x64 frames.
 - Existing animations are `idle`, `walk`, `scurry`, `nibble`, `hop`, `turn`, `eat`, `dig`, `stand`, and `groomface`.
 - The app currently has degu-only sprite assets, with coat variants handled as degu coats.
 
-## Current Features
+## Current Windows Features
 
 - Transparent always-on-top taskbar overlay.
 - Tray menu and Japanese/English settings window for optional per-pet names, coat, speed, count, mode, typing wheel, update checks, settings, and exit.
@@ -32,6 +35,21 @@ Last updated: 2026-06-20
 - Optional cursor-hover name labels above visible degus.
 - Startup tray notification and GitHub Release based update check/install flow.
 - GitHub Pages and GitHub Release workflows, with Pages download metadata for version, update date, and commit.
+
+## Current macOS Port
+
+- Transparent always-on-top click-through layer at the bottom of the current screen, above the Dock visible area.
+- Menu-bar degu icon with Quit.
+- Multiple degus wander left/right along the bottom edge.
+- Keyboard reaction is wired through macOS event monitoring when system permissions allow it.
+- Local packaging uses `scripts/build_macos.sh` to create ad-hoc-signed `DeguDesktop.app` ZIPs.
+- Local release packaging creates `DeguDesktop-macos-arm64.zip` and `DeguDesktop-macos-amd64.zip`; those ZIPs can be attached to GitHub Releases manually.
+
+Known macOS gaps:
+
+- No macOS settings UI yet.
+- No macOS click reaction, foraging behavior, update installer, or notarization automation yet.
+- Developer ID signing and Apple notarization remain manual release-operator steps.
 
 ## Current Asset Format
 

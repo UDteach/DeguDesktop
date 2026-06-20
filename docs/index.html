@@ -6,7 +6,7 @@
     <title>Degu Desktop</title>
     <meta
       name="description"
-      content="デグーがWindowsのタスクバー上を歩き回る、Go + Win32製のデスクトップペットアプリ。"
+      content="デグーがWindowsのタスクバー上やMacのDock上を歩き回る、Go製のデスクトップペットアプリ。"
     />
     <style>
       :root {
@@ -250,8 +250,8 @@
         <div>
           <h1>Degu Desktop</h1>
           <p class="lead">
-            Windowsのタスクバー上で、ピクセル風のデグーがちょこちょこ歩き回るデスクトップペットです。
-            キーボード入力やクリックに反応し、採食、食べる、掘る、毛づくろい、自然な左右ターン、入力中だけ回る回し車に対応しています。
+            Windowsのタスクバー上やMacのDock上で、ピクセル風のデグーがちょこちょこ歩き回るデスクトップペットです。
+            キーボード入力に反応し、Windows版ではクリック反応、採食、食べる、掘る、毛づくろい、自然な左右ターン、入力中だけ回る回し車にも対応しています。
           </p>
           <div id="download" class="actions">
             <a class="button primary" href="download/DeguDesktop-windows-amd64.zip">
@@ -264,7 +264,7 @@
               Mac版 Soon
             </span>
             <a class="button" href="https://github.com/UDteach/DeguDesktop/releases">
-              Releases
+              Mac版 / Releases
             </a>
           </div>
           <div class="release-meta" aria-label="Build information">
@@ -277,8 +277,8 @@
         <div class="preview-wrap">
           <img class="preview" src="assets/degu-preview.png" alt="Degu Desktop preview" />
           <div class="note">
-            Windows 10/11、x64 / x86向け。ZIPを展開して
-            <code>DeguDesktop.exe</code> を起動してください。
+            Windows 10/11はZIPを展開して <code>DeguDesktop.exe</code> を起動してください。
+            Mac版はGitHub Releasesから取得できます。
           </div>
         </div>
       </header>
@@ -290,27 +290,31 @@
         </article>
         <article>
           <h2>最大10匹</h2>
-          <p>トレイメニューや設定画面から、1、2、3、5、10匹を切り替えられます。</p>
+          <p>Windows版では、トレイメニューや設定画面から1、2、3、5、10匹を切り替えられます。</p>
         </article>
         <article>
           <h2>設定画面</h2>
-          <p>毛色の決め方、1匹ごとの色、速度、入力モード、回し車、言語、自然な左右ターンを調整できます。</p>
+          <p>Windows版では、毛色、1匹ごとの色、速度、入力モード、回し車、言語、自然な左右ターンを調整できます。</p>
         </article>
         <article>
           <h2>自然な動き</h2>
           <p>歩く、止まる、走る、左右ターンをつなぎ、急な反転が目立たないようにしています。</p>
         </article>
         <article>
+          <h2>Mac版</h2>
+          <p>Mac版はメニューバーのデグーアイコンから終了でき、Dock上の下端でデグーがうろちょろします。</p>
+        </article>
+        <article>
           <h2>採食と遊び</h2>
-          <p>小さな牧草、枝、種のようなアイテムを嗅ぐ、食べる、掘る、かじる、運ぶ動きがあります。</p>
+          <p>Windows版では、小さな牧草、枝、種のようなアイテムを嗅ぐ、食べる、掘る、かじる、運ぶ動きがあります。</p>
         </article>
         <article>
           <h2>入力中の回し車</h2>
-          <p>キーボード反応モードでは、入力している間だけ回し車が動きます。</p>
+          <p>Windows版のキーボード反応モードでは、入力している間だけ回し車が動きます。</p>
         </article>
         <article>
           <h2>クリック反応</h2>
-          <p>デグーをクリックすると、ハートなどの小さな吹き出しが出ます。デスクトップへのクリックは通します。</p>
+          <p>Windows版では、デグーをクリックするとハートなどの小さな吹き出しが出ます。デスクトップへのクリックは通します。</p>
         </article>
         <article>
           <h2>毛色バリエーション</h2>
@@ -318,16 +322,17 @@
         </article>
         <article>
           <h2>配布ビルド</h2>
-          <p>このページのダウンロードリンクから、Windows向けZIPを取得できます。</p>
+          <p>このページのダウンロードリンクからWindows向けZIPを取得できます。Mac版はGitHub Releasesで配布します。</p>
         </article>
       </section>
 
       <section class="english" id="english">
         <h2>English</h2>
         <p>
-          Degu Desktop is a small Windows desktop pet app. Pixel-art degus walk above the taskbar,
-          react to typing and clicks, forage, eat, dig, groom, turn smoothly, and run inside a wheel while you type.
-          Download the Windows x64 or x86 ZIP, unzip it, and run <code>DeguDesktop.exe</code>.
+          Degu Desktop is a small desktop pet app for Windows and macOS. Pixel-art degus walk above the Windows taskbar
+          or along the bottom edge above the Mac Dock and react to typing. The Windows build also supports click reactions,
+          foraging, eating, digging, grooming, smooth turns, and wheel running while you type. Download the Windows x64 or x86
+          ZIP from this page, or get the macOS ZIP from GitHub Releases.
         </p>
       </section>
     </main>
