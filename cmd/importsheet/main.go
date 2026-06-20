@@ -1473,20 +1473,111 @@ func isCoolColorFringe(c color.RGBA) bool {
 }
 
 func writePreview(path string, sheets map[string]*image.RGBA) {
-	ids := []string{"wild_agouti", "black", "blue", "white_cream", "black_pied", "gray", "sand_champagne", "chocolate", "agouti_pied", "blue_pied"}
-	previewFrames := []int{0, 4, 8, 12, 20, 2, 6, 14, 22, 26}
-	preview := image.NewRGBA(image.Rect(0, 0, frameW*5, frameH*2))
-	for i, id := range ids {
-		sheet := sheets[id]
+	const (
+		previewW  = 960
+		previewH  = 360
+		taskbarH  = 62
+		petScale  = 2
+		petBaseY  = previewH - taskbarH + 2
+		layerBase = previewH - taskbarH - 45
+	)
+	preview := image.NewRGBA(image.Rect(0, 0, previewW, previewH))
+	fillRect(preview, preview.Bounds(), color.RGBA{R: 253, G: 253, B: 250, A: 255})
+	fillRect(preview, image.Rect(0, layerBase, previewW, previewH-taskbarH), color.RGBA{R: 246, G: 248, B: 244, A: 255})
+	fillRect(preview, image.Rect(0, previewH-taskbarH, previewW, previewH), color.RGBA{R: 239, G: 242, B: 245, A: 255})
+	fillRect(preview, image.Rect(0, previewH-taskbarH, previewW, previewH-taskbarH+2), color.RGBA{R: 216, G: 222, B: 226, A: 255})
+	drawTaskbarPreview(preview, previewH-taskbarH)
+
+	pets := []struct {
+		id    string
+		frame int
+		x     int
+		lane  int
+		flip  bool
+	}{
+		{"wild_agouti", 8, 28, 0, false},
+		{"blue", 12, 170, 8, false},
+		{"gray", 4, 318, 3, false},
+		{"black_pied", 20, 474, 11, false},
+		{"sand_champagne", 6, 630, 0, true},
+		{"agouti_pied", 22, 782, 7, true},
+	}
+	for _, pet := range pets {
+		sheet := sheets[pet.id]
 		if sheet == nil {
 			continue
 		}
-		frame := previewFrames[i]
-		src := image.Rect(frame*frameW, 0, (frame+1)*frameW, frameH)
-		dst := image.Rect((i%5)*frameW, (i/5)*frameH, (i%5+1)*frameW, (i/5+1)*frameH)
-		draw.Draw(preview, dst, sheet, src.Min, draw.Over)
+		sprite := previewFrame(sheet, pet.frame, petScale, pet.flip)
+		y := petBaseY - sprite.Bounds().Dy() - pet.lane
+		drawPreviewShadow(preview, pet.x+sprite.Bounds().Dx()/2, petBaseY-pet.lane-5, 46, 8)
+		draw.Draw(preview, image.Rect(pet.x, y, pet.x+sprite.Bounds().Dx(), y+sprite.Bounds().Dy()), sprite, image.Point{}, draw.Over)
 	}
+	drawPreviewBubble(preview, 410, 126)
 	writePNG(path, preview)
+}
+
+func fillRect(dst *image.RGBA, rect image.Rectangle, c color.RGBA) {
+	draw.Draw(dst, rect.Intersect(dst.Bounds()), &image.Uniform{C: c}, image.Point{}, draw.Src)
+}
+
+func previewFrame(sheet *image.RGBA, frame int, scale int, flip bool) *image.RGBA {
+	frame = clampInt(frame, 0, totalFrames-1)
+	srcRect := image.Rect(frame*frameW, 0, (frame+1)*frameW, frameH)
+	frameImg := image.NewRGBA(image.Rect(0, 0, frameW, frameH))
+	if !flip {
+		draw.Draw(frameImg, frameImg.Bounds(), sheet, srcRect.Min, draw.Src)
+	} else {
+		for y := 0; y < frameH; y++ {
+			for x := 0; x < frameW; x++ {
+				frameImg.SetRGBA(frameW-1-x, y, sheet.RGBAAt(srcRect.Min.X+x, srcRect.Min.Y+y))
+			}
+		}
+	}
+	return scaleNearest(frameImg, scale)
+}
+
+func drawTaskbarPreview(dst *image.RGBA, top int) {
+	startX := 24
+	for i := 0; i < 5; i++ {
+		x := startX + i*42
+		fillRect(dst, image.Rect(x, top+18, x+26, top+44), color.RGBA{R: 255, G: 255, B: 255, A: 255})
+		fillRect(dst, image.Rect(x+7, top+25, x+19, top+37), []color.RGBA{
+			{R: 51, G: 91, B: 128, A: 255},
+			{R: 50, G: 112, B: 80, A: 255},
+			{R: 194, G: 139, B: 55, A: 255},
+			{R: 92, G: 102, B: 114, A: 255},
+			{R: 126, G: 82, B: 52, A: 255},
+		}[i])
+	}
+	fillRect(dst, image.Rect(820, top+21, 934, top+25), color.RGBA{R: 210, G: 216, B: 221, A: 255})
+	fillRect(dst, image.Rect(820, top+35, 900, top+39), color.RGBA{R: 210, G: 216, B: 221, A: 255})
+}
+
+func drawPreviewShadow(dst *image.RGBA, cx, cy, rx, ry int) {
+	c := color.RGBA{R: 223, G: 228, B: 221, A: 255}
+	for y := cy - ry; y <= cy+ry; y++ {
+		for x := cx - rx; x <= cx+rx; x++ {
+			dx := float64(x-cx) / float64(rx)
+			dy := float64(y-cy) / float64(ry)
+			if dx*dx+dy*dy <= 1 && image.Pt(x, y).In(dst.Bounds()) {
+				dst.SetRGBA(x, y, c)
+			}
+		}
+	}
+}
+
+func drawPreviewBubble(dst *image.RGBA, x, y int) {
+	fillRect(dst, image.Rect(x+3, y+3, x+57, y+39), color.RGBA{R: 224, G: 229, B: 224, A: 255})
+	fillRect(dst, image.Rect(x, y, x+54, y+34), color.RGBA{R: 255, G: 255, B: 252, A: 255})
+	fillRect(dst, image.Rect(x+1, y+1, x+53, y+3), color.RGBA{R: 63, G: 97, B: 78, A: 230})
+	fillRect(dst, image.Rect(x+1, y+31, x+53, y+33), color.RGBA{R: 63, G: 97, B: 78, A: 230})
+	fillRect(dst, image.Rect(x+1, y+1, x+3, y+33), color.RGBA{R: 63, G: 97, B: 78, A: 230})
+	fillRect(dst, image.Rect(x+51, y+1, x+53, y+33), color.RGBA{R: 63, G: 97, B: 78, A: 230})
+	fillRect(dst, image.Rect(x+24, y+33, x+31, y+40), color.RGBA{R: 255, G: 255, B: 252, A: 255})
+	fillRect(dst, image.Rect(x+18, y+11, x+24, y+18), color.RGBA{R: 221, G: 77, B: 96, A: 255})
+	fillRect(dst, image.Rect(x+29, y+11, x+35, y+18), color.RGBA{R: 221, G: 77, B: 96, A: 255})
+	fillRect(dst, image.Rect(x+21, y+18, x+33, y+23), color.RGBA{R: 221, G: 77, B: 96, A: 255})
+	fillRect(dst, image.Rect(x+24, y+23, x+30, y+27), color.RGBA{R: 221, G: 77, B: 96, A: 255})
 }
 
 func writeSpriteSets(outDir string, id string, base *image.RGBA) {

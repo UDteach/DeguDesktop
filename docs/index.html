@@ -1,19 +1,19 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Degu Desktop</title>
     <meta
       name="description"
-      content="A small Windows taskbar pet app with a degu that walks above the taskbar."
+      content="デグーがWindowsのタスクバー上を歩き回る、Go + Win32製のデスクトップペットアプリ。"
     />
     <style>
       :root {
         color-scheme: light;
         --ink: #20251f;
         --muted: #5c665f;
-        --paper: #f7f5ec;
+        --paper: #f8f8f3;
         --surface: #fffdf7;
         --line: #d8d8ce;
         --leaf: #3e6f52;
@@ -131,8 +131,9 @@
       .preview {
         width: 100%;
         height: auto;
-        background: #10120f;
+        background: #fff;
         border: 1px solid var(--line);
+        box-shadow: 0 18px 50px rgba(42, 49, 43, 0.1);
       }
 
       .note {
@@ -141,7 +142,7 @@
         line-height: 1.6;
       }
 
-      section {
+      .features {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 22px;
@@ -149,16 +150,16 @@
         padding-top: 26px;
       }
 
-      article {
+      .features article {
         border-top: 3px solid var(--gold);
         padding-top: 14px;
       }
 
-      article:nth-child(2) {
+      .features article:nth-child(2) {
         border-color: var(--slate);
       }
 
-      article:nth-child(3) {
+      .features article:nth-child(3) {
         border-color: var(--leaf);
       }
 
@@ -167,15 +168,26 @@
         font-size: 18px;
       }
 
-      article p {
+      article p,
+      .english p {
         margin: 0;
         color: var(--muted);
         line-height: 1.7;
       }
 
+      .english {
+        margin-top: 28px;
+        border-top: 1px solid var(--line);
+        padding-top: 22px;
+      }
+
+      .english h2 {
+        margin-bottom: 10px;
+      }
+
       @media (max-width: 760px) {
         header,
-        section {
+        .features {
           grid-template-columns: 1fr;
         }
 
@@ -197,7 +209,8 @@
       <nav>
         <div class="brand">Degu Desktop</div>
         <div class="navlinks">
-          <a href="#download">Download</a>
+          <a href="#download">ダウンロード</a>
+          <a href="#english">English</a>
           <a href="https://github.com/UDteach/DeguDesktop">GitHub</a>
         </div>
       </nav>
@@ -206,12 +219,12 @@
         <div>
           <h1>Degu Desktop</h1>
           <p class="lead">
-            A small Windows desktop pet app. Pixel-art degus walk above the
-            taskbar, react to typing, forage, eat, dig, groom, turn smoothly, and run inside a wheel while you type.
+            Windowsのタスクバー上で、ピクセル風のデグーがちょこちょこ歩き回るデスクトップペットです。
+            キーボード入力やクリックに反応し、採食、食べる、掘る、毛づくろい、自然な左右ターン、入力中だけ回る回し車に対応しています。
           </p>
           <div id="download" class="actions">
             <a class="button primary" href="download/DeguDesktop-windows-amd64.zip">
-              Download for Windows
+              Windows版をダウンロード
             </a>
             <a class="button" href="https://github.com/UDteach/DeguDesktop/releases">
               Releases
@@ -222,45 +235,58 @@
         <div class="preview-wrap">
           <img class="preview" src="assets/degu-preview.png" alt="Degu Desktop preview" />
           <div class="note">
-            Windows 10/11, amd64. Unzip the file and run
-            <code>DeguDesktop.exe</code>.
+            Windows 10/11、amd64向け。ZIPを展開して
+            <code>DeguDesktop.exe</code> を起動してください。
           </div>
         </div>
       </header>
 
-      <section>
+      <section class="features">
         <article>
-          <h2>Taskbar Pet</h2>
-          <p>A transparent always-on-top pet layer designed to stay near the taskbar.</p>
+          <h2>タスクバー上のペット</h2>
+          <p>透明な最前面レイヤーで、タスクバー付近にデグーがいるように見せます。</p>
         </article>
         <article>
-          <h2>Degu Count</h2>
-          <p>Switch between 1, 2, 3, or 5 degus from the tray menu or settings window.</p>
+          <h2>最大10匹</h2>
+          <p>トレイメニューや設定画面から、1、2、3、5、10匹を切り替えられます。</p>
         </article>
         <article>
-          <h2>Settings Window</h2>
-          <p>Adjust animals, coat color, mode, speed, typing wheel, language, and natural left/right turns.</p>
+          <h2>設定画面</h2>
+          <p>毛色の決め方、1匹ごとの色、速度、入力モード、回し車、言語、自然な左右ターンを調整できます。</p>
         </article>
         <article>
-          <h2>Social Motion</h2>
-          <p>Nearby degus can keep pace, stop together, and groom.</p>
+          <h2>自然な動き</h2>
+          <p>歩く、止まる、走る、左右ターンをつなぎ、急な反転が目立たないようにしています。</p>
         </article>
         <article>
-          <h2>Foraging</h2>
-          <p>Small hay, twig, and seed-like props can be sniffed, eaten, dug around, gnawed, and carried.</p>
+          <h2>採食と遊び</h2>
+          <p>小さな牧草、枝、種のようなアイテムを嗅ぐ、食べる、掘る、かじる、運ぶ動きがあります。</p>
         </article>
         <article>
-          <h2>Typing Wheel</h2>
-          <p>In keyboard mode, the wheel runs only while typing continues.</p>
+          <h2>入力中の回し車</h2>
+          <p>キーボード反応モードでは、入力している間だけ回し車が動きます。</p>
         </article>
         <article>
-          <h2>Coat Variants</h2>
-          <p>Includes agouti, black, blue-gray, gray, cream, chocolate, and ImageGen-guided pied coats.</p>
+          <h2>クリック反応</h2>
+          <p>デグーをクリックすると、ハートなどの小さな吹き出しが出ます。デスクトップへのクリックは通します。</p>
         </article>
         <article>
-          <h2>Release Build</h2>
-          <p>The download link points to the zip generated for this static Pages site and GitHub Releases.</p>
+          <h2>毛色バリエーション</h2>
+          <p>アグーチ、ブラック、ブルーグレー、グレー、クリーム、チョコレート、パイド系の毛色を収録しています。</p>
         </article>
+        <article>
+          <h2>配布ビルド</h2>
+          <p>このページのダウンロードリンクから、Windows向けZIPを取得できます。</p>
+        </article>
+      </section>
+
+      <section class="english" id="english">
+        <h2>English</h2>
+        <p>
+          Degu Desktop is a small Windows desktop pet app. Pixel-art degus walk above the taskbar,
+          react to typing and clicks, forage, eat, dig, groom, turn smoothly, and run inside a wheel while you type.
+          Download the Windows amd64 ZIP, unzip it, and run <code>DeguDesktop.exe</code>.
+        </p>
       </section>
     </main>
   </body>
