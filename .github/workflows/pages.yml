@@ -34,7 +34,8 @@ jobs:
         run: |
           mkdir -p docs/download dist
           GOOS=windows GOARCH=amd64 go build -buildvcs=false -ldflags="-H=windowsgui -s -w" -o dist/DeguDesktop.exe ./cmd/degu
-          (cd dist && zip -q DeguDesktop-windows-amd64.zip DeguDesktop.exe ../README.md)
+          cp README.md dist/README.md
+          (cd dist && zip -q DeguDesktop-windows-amd64.zip DeguDesktop.exe README.md)
           cp dist/DeguDesktop-windows-amd64.zip docs/download/DeguDesktop-windows-amd64.zip
       - uses: actions/configure-pages@v5
         with:
