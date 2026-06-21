@@ -9,9 +9,10 @@ Repository: <https://github.com/UDteach/DeguDesktop>
 Windows:
 
 - Transparent always-on-top pet layer above the Windows taskbar
-- Tray menu and Japanese/English settings window for names, speed, count, coat color, wheel motion, mode, updates, and exit
+- Tray menu and Japanese/English settings window for names, speed, count, coat color, wheel motion, display position, mode, updates, and exit
 - Modes: keyboard reaction / random stroll
-- Degu count: settings supports 1-10; tray quick actions include common counts
+- Degu count: settings and tray quick actions support 1-10
+- Pet height alignment: choose a natural small stagger or a single shared baseline
 - Optional per-pet names can be enabled in settings; when enabled, names appear above a degu while the cursor hovers over it
 - Startup tray notification and GitHub Release based update checking from the tray menu
 - Social behavior: nearby degus can walk together and pause for grooming

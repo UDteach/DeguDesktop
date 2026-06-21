@@ -32,37 +32,41 @@ import (
 )
 
 const (
-	appName                    = "Degu Desktop"
-	windowClass                = "DeguDesktopPetWindow"
-	wmTray                     = win.WM_APP + 1
-	wmTyping                   = win.WM_APP + 2
-	wmMouseClick               = win.WM_APP + 3
-	wmUpdateReady              = win.WM_APP + 4
-	wmUpdateFailed             = win.WM_APP + 5
-	wmUpdateInstallReady       = win.WM_APP + 6
-	timerID                    = 42
-	timerInterval              = 55
-	frameW                     = 96
-	frameH                     = 64
-	frameCount                 = 62
-	motionSets                 = 10
-	scale                      = 1
-	spriteW                    = frameW * scale
-	spriteH                    = frameH * scale
-	forageW                    = 32
-	forageH                    = 24
-	sceneH                     = 92
-	wheelSize                  = 72
-	maxPetCount                = 10
-	maxForage                  = 5
-	wheelKeyHold               = 18
-	turnTicks                  = 16
-	reactionTicks              = 54
-	settingsClientW      int32 = 760
-	settingsClientH      int32 = 560
-	settingsDirName            = "DeguDesktop"
-	settingsFileName           = "settings.json"
-	updateAPIURL               = "https://api.github.com/repos/UDteach/DeguDesktop/releases/latest"
+	appName                     = "Degu Desktop"
+	windowClass                 = "DeguDesktopPetWindow"
+	wmTray                      = win.WM_APP + 1
+	wmTyping                    = win.WM_APP + 2
+	wmMouseClick                = win.WM_APP + 3
+	wmUpdateReady               = win.WM_APP + 4
+	wmUpdateFailed              = win.WM_APP + 5
+	wmUpdateInstallReady        = win.WM_APP + 6
+	timerID                     = 42
+	timerInterval               = 55
+	frameW                      = 96
+	frameH                      = 64
+	frameCount                  = 62
+	motionSets                  = 10
+	scale                       = 1
+	spriteW                     = frameW * scale
+	spriteH                     = frameH * scale
+	forageW                     = 32
+	forageH                     = 24
+	sceneH                      = 92
+	wheelSize                   = 72
+	maxPetCount                 = 10
+	maxForage                   = 5
+	defaultOverlayOffsetY       = 10
+	minOverlayOffsetY           = -48
+	maxOverlayOffsetY           = 96
+	overlayOffsetStep           = 4
+	wheelKeyHold                = 18
+	turnTicks                   = 16
+	reactionTicks               = 54
+	settingsClientW       int32 = 760
+	settingsClientH       int32 = 620
+	settingsDirName             = "DeguDesktop"
+	settingsFileName            = "settings.json"
+	defaultUpdateAPIURL         = "https://api.github.com/repos/UDteach/DeguDesktop/releases/latest"
 )
 
 const (
@@ -115,11 +119,7 @@ const (
 	menuSpeedSlow     uint16 = 110
 	menuSpeedNormal   uint16 = 111
 	menuSpeedFast     uint16 = 112
-	menuCount1        uint16 = 120
-	menuCount2        uint16 = 121
-	menuCount3        uint16 = 122
-	menuCount5        uint16 = 123
-	menuCount10       uint16 = 124
+	menuCountBase     uint16 = 119
 	menuWheelToggle   uint16 = 130
 	menuCoatFixed     uint16 = 131
 	menuCoatSelected  uint16 = 132
@@ -131,34 +131,41 @@ const (
 )
 
 const (
-	ctrlTabAnimals     int32 = 1000
-	ctrlTabMotion      int32 = 1001
-	ctrlVariantCombo   int32 = 1002
-	ctrlPetMinus       int32 = 1003
-	ctrlPetPlus        int32 = 1004
-	ctrlLanguageCombo  int32 = 1005
-	ctrlCoatFixed      int32 = 1006
-	ctrlCoatSelected   int32 = 1007
-	ctrlCoatRandom     int32 = 1008
-	ctrlModeKeyboard   int32 = 1011
-	ctrlModeRandom     int32 = 1012
-	ctrlSpeedSlow      int32 = 1021
-	ctrlSpeedNormal    int32 = 1022
-	ctrlSpeedFast      int32 = 1023
-	ctrlTypingWheel    int32 = 1031
-	ctrlBidirectional  int32 = 1032
-	ctrlReset          int32 = 1041
-	ctrlClose          int32 = 1042
-	ctrlTopClose       int32 = 1043
-	ctrlNameLabels     int32 = 1044
-	ctrlPetVariantBase int32 = 1050
-	ctrlPetNameBase    int32 = 1070
-	ctrlRenameEdit     int32 = 1100
-	ctrlRenameOK       int32 = 1101
-	ctrlRenameCancel   int32 = 1102
+	ctrlTabAnimals      int32 = 1000
+	ctrlTabMotion       int32 = 1001
+	ctrlVariantCombo    int32 = 1002
+	ctrlPetMinus        int32 = 1003
+	ctrlPetPlus         int32 = 1004
+	ctrlLanguageCombo   int32 = 1005
+	ctrlCoatFixed       int32 = 1006
+	ctrlCoatSelected    int32 = 1007
+	ctrlCoatRandom      int32 = 1008
+	ctrlModeKeyboard    int32 = 1011
+	ctrlModeRandom      int32 = 1012
+	ctrlSpeedSlow       int32 = 1021
+	ctrlSpeedNormal     int32 = 1022
+	ctrlSpeedFast       int32 = 1023
+	ctrlTypingWheel     int32 = 1031
+	ctrlBidirectional   int32 = 1032
+	ctrlPositionTaskbar int32 = 1033
+	ctrlPositionBottom  int32 = 1034
+	ctrlOffsetUp        int32 = 1035
+	ctrlOffsetDown      int32 = 1036
+	ctrlLaneStaggered   int32 = 1037
+	ctrlLaneAligned     int32 = 1038
+	ctrlReset           int32 = 1041
+	ctrlClose           int32 = 1042
+	ctrlTopClose        int32 = 1043
+	ctrlNameLabels      int32 = 1044
+	ctrlPetVariantBase  int32 = 1050
+	ctrlPetNameBase     int32 = 1070
+	ctrlRenameEdit      int32 = 1100
+	ctrlRenameOK        int32 = 1101
+	ctrlRenameCancel    int32 = 1102
 )
 
 var appVersion = "dev"
+var updateAPIURL = defaultUpdateAPIURL
 
 type behaviorMode int
 
@@ -231,6 +238,20 @@ const (
 	coatFixed coatMode = iota
 	coatSelected
 	coatRandom
+)
+
+type overlayPositionMode int
+
+const (
+	positionTaskbarEdge overlayPositionMode = iota
+	positionScreenBottom
+)
+
+type petLaneMode int
+
+const (
+	laneStaggered petLaneMode = iota
+	laneAligned
 )
 
 type deguPet struct {
@@ -316,6 +337,9 @@ type petApp struct {
 	petCount           int
 	wheelEnabled       bool
 	bidirectional      bool
+	positionMode       overlayPositionMode
+	overlayOffsetY     int
+	laneMode           petLaneMode
 	settingsHwnd       win.HWND
 	settingsTab        settingsTab
 	lang               language
@@ -324,6 +348,9 @@ type petApp struct {
 	settingsSmallFont  win.HFONT
 	settingsBrush      win.HBRUSH
 	settingsCard       win.HBRUSH
+	settingsTooltip    win.HWND
+	settingsTipText    [][]uint16
+	settingsHoverTip   string
 	settingsX          int32
 	settingsY          int32
 	settingsSaveFailed bool
@@ -341,20 +368,23 @@ type petApp struct {
 }
 
 type appSettings struct {
-	Version       int      `json:"version"`
-	Variant       int      `json:"variant"`
-	CoatMode      int      `json:"coatMode"`
-	SelectedCoats []int    `json:"selectedCoats"`
-	Speed         int      `json:"speed"`
-	Mode          int      `json:"mode"`
-	PetCount      int      `json:"petCount"`
-	WheelEnabled  bool     `json:"wheelEnabled"`
-	Bidirectional bool     `json:"bidirectional"`
-	Language      int      `json:"language"`
-	SettingsX     int32    `json:"settingsX"`
-	SettingsY     int32    `json:"settingsY"`
-	NameLabels    bool     `json:"nameLabels"`
-	PetNames      []string `json:"petNames,omitempty"`
+	Version        int      `json:"version"`
+	Variant        int      `json:"variant"`
+	CoatMode       int      `json:"coatMode"`
+	SelectedCoats  []int    `json:"selectedCoats"`
+	Speed          int      `json:"speed"`
+	Mode           int      `json:"mode"`
+	PetCount       int      `json:"petCount"`
+	WheelEnabled   bool     `json:"wheelEnabled"`
+	Bidirectional  bool     `json:"bidirectional"`
+	PositionMode   *int     `json:"positionMode,omitempty"`
+	VerticalOffset *int     `json:"verticalOffset,omitempty"`
+	LaneMode       *int     `json:"laneMode,omitempty"`
+	Language       int      `json:"language"`
+	SettingsX      int32    `json:"settingsX"`
+	SettingsY      int32    `json:"settingsY"`
+	NameLabels     bool     `json:"nameLabels"`
+	PetNames       []string `json:"petNames,omitempty"`
 }
 
 var app *petApp
@@ -363,6 +393,7 @@ var (
 	user32                 = syscall.NewLazyDLL("user32.dll")
 	ntdll                  = syscall.NewLazyDLL("ntdll.dll")
 	procAppendMenuW        = user32.NewProc("AppendMenuW")
+	procGetDlgCtrlID       = user32.NewProc("GetDlgCtrlID")
 	procSetWindowTextW     = user32.NewProc("SetWindowTextW")
 	procSetWindowsHookExW  = user32.NewProc("SetWindowsHookExW")
 	procUnhookWindowsHook  = user32.NewProc("UnhookWindowsHookEx")
@@ -383,24 +414,27 @@ func main() {
 
 	hinst := win.GetModuleHandle(nil)
 	app = &petApp{
-		hinst:         hinst,
-		frames:        loadSprites(),
-		forageSprites: loadForageSprites(),
-		wheel:         loadWheelSprite(),
-		variant:       0,
-		coatMode:      coatRandom,
-		selectedCoats: [maxPetCount]int{0, 1, 2, 4, 8, 6, 3, 7, 5, 9},
-		speed:         3,
-		mode:          modeRandom,
-		petCount:      2,
-		wheelEnabled:  true,
-		bidirectional: true,
-		settingsTab:   tabAnimals,
-		lang:          langJapanese,
-		settingsX:     120,
-		settingsY:     120,
-		hoverPet:      -1,
-		renameIndex:   -1,
+		hinst:          hinst,
+		frames:         loadSprites(),
+		forageSprites:  loadForageSprites(),
+		wheel:          loadWheelSprite(),
+		variant:        0,
+		coatMode:       coatRandom,
+		selectedCoats:  [maxPetCount]int{0, 1, 2, 4, 8, 6, 3, 7, 5, 9},
+		speed:          3,
+		mode:           modeRandom,
+		petCount:       2,
+		wheelEnabled:   true,
+		bidirectional:  true,
+		positionMode:   positionTaskbarEdge,
+		overlayOffsetY: defaultOverlayOffsetY,
+		laneMode:       laneStaggered,
+		settingsTab:    tabAnimals,
+		lang:           langJapanese,
+		settingsX:      120,
+		settingsY:      120,
+		hoverPet:       -1,
+		renameIndex:    -1,
 	}
 	_ = app.loadSettings()
 
@@ -509,8 +543,8 @@ func wndProc(hwnd win.HWND, msg uint32, wParam, lParam uintptr) uintptr {
 }
 
 func (a *petApp) resetPosition() {
-	work := workArea()
-	a.syncScene(work)
+	overlay := a.overlayRect()
+	a.syncScene(overlay)
 	a.setPetCount(a.petCount)
 }
 
@@ -557,6 +591,15 @@ func (a *petApp) loadSettings() error {
 	a.petCount = clamp(settings.PetCount, 1, maxPetCount)
 	a.wheelEnabled = settings.WheelEnabled
 	a.bidirectional = settings.Bidirectional
+	if settings.PositionMode != nil {
+		a.positionMode = normalizeOverlayPositionMode(*settings.PositionMode)
+	}
+	if settings.VerticalOffset != nil {
+		a.overlayOffsetY = normalizeOverlayOffset(*settings.VerticalOffset)
+	}
+	if settings.LaneMode != nil {
+		a.laneMode = normalizePetLaneMode(*settings.LaneMode)
+	}
 	a.nameLabels = settings.NameLabels
 	a.lang = normalizeLanguage(settings.Language)
 	if settings.SettingsX != 0 || settings.SettingsY != 0 {
@@ -581,21 +624,27 @@ func (a *petApp) saveSettings() error {
 	for i := range a.petNames {
 		names[i] = sanitizePetName(a.petNames[i])
 	}
+	positionMode := int(normalizeOverlayPositionMode(int(a.positionMode)))
+	verticalOffset := normalizeOverlayOffset(a.overlayOffsetY)
+	laneMode := int(normalizePetLaneMode(int(a.laneMode)))
 	settings := appSettings{
-		Version:       1,
-		Variant:       clamp(a.variant, 0, len(variants)-1),
-		CoatMode:      int(a.coatMode),
-		SelectedCoats: coats,
-		Speed:         normalizeSpeed(a.speed),
-		Mode:          int(normalizeBehaviorMode(int(a.mode))),
-		PetCount:      clamp(a.petCount, 1, maxPetCount),
-		WheelEnabled:  a.wheelEnabled,
-		Bidirectional: a.bidirectional,
-		Language:      int(normalizeLanguage(int(a.lang))),
-		SettingsX:     a.settingsX,
-		SettingsY:     a.settingsY,
-		NameLabels:    a.nameLabels,
-		PetNames:      names,
+		Version:        1,
+		Variant:        clamp(a.variant, 0, len(variants)-1),
+		CoatMode:       int(a.coatMode),
+		SelectedCoats:  coats,
+		Speed:          normalizeSpeed(a.speed),
+		Mode:           int(normalizeBehaviorMode(int(a.mode))),
+		PetCount:       clamp(a.petCount, 1, maxPetCount),
+		WheelEnabled:   a.wheelEnabled,
+		Bidirectional:  a.bidirectional,
+		PositionMode:   &positionMode,
+		VerticalOffset: &verticalOffset,
+		LaneMode:       &laneMode,
+		Language:       int(normalizeLanguage(int(a.lang))),
+		SettingsX:      a.settingsX,
+		SettingsY:      a.settingsY,
+		NameLabels:     a.nameLabels,
+		PetNames:       names,
 	}
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
@@ -666,12 +715,33 @@ func normalizeSpeed(speed int) int {
 	}
 }
 
+func normalizeOverlayPositionMode(mode int) overlayPositionMode {
+	switch overlayPositionMode(mode) {
+	case positionTaskbarEdge, positionScreenBottom:
+		return overlayPositionMode(mode)
+	default:
+		return positionTaskbarEdge
+	}
+}
+
+func normalizeOverlayOffset(offset int) int {
+	return clamp(offset, minOverlayOffsetY, maxOverlayOffsetY)
+}
+
+func normalizePetLaneMode(mode int) petLaneMode {
+	switch petLaneMode(mode) {
+	case laneStaggered, laneAligned:
+		return petLaneMode(mode)
+	default:
+		return laneStaggered
+	}
+}
+
 func (a *petApp) tick() {
 	if a.closing.Load() {
 		return
 	}
-	work := workArea()
-	a.syncScene(work)
+	a.syncScene(a.overlayRect())
 	a.updateHoverName()
 	a.ensureForageItems()
 	for i := range a.pets {
@@ -820,7 +890,9 @@ func (a *petApp) chooseRandomAction(p *deguPet) {
 
 func (a *petApp) render() {
 	work := workArea()
-	a.syncScene(work)
+	screen := screenArea()
+	overlay := a.overlayRectFor(work, screen)
+	a.syncScene(overlay)
 	canvas := image.NewRGBA(image.Rect(0, 0, a.sceneW, sceneH))
 	draw.Draw(canvas, canvas.Bounds(), image.Transparent, image.Point{}, draw.Src)
 
@@ -870,7 +942,7 @@ func (a *petApp) render() {
 		drawWheelFront(canvas, wheelX, wheelY, a.tickCount)
 	}
 	a.drawReactions(canvas)
-	updateLayeredWindow(a.hwnd, canvas, int(work.Left), int(work.Bottom)-sceneH)
+	updateLayeredWindow(a.hwnd, canvas, int(overlay.Left), int(overlay.Top))
 }
 
 func currentFrame(state behaviorState, frame int) int {
@@ -970,9 +1042,9 @@ func (a *petApp) showPetReaction(index int) {
 }
 
 func (a *petApp) petAtScreenPoint(screenX, screenY int) int {
-	work := workArea()
-	sceneX := screenX - int(work.Left)
-	sceneY := screenY - (int(work.Bottom) - sceneH)
+	overlay := a.overlayRect()
+	sceneX := screenX - int(overlay.Left)
+	sceneY := screenY - int(overlay.Top)
 	return a.petAtScenePoint(sceneX, sceneY)
 }
 
@@ -1027,16 +1099,17 @@ func (a *petApp) showNameWindow(index int) {
 		a.hideNameWindow()
 		return
 	}
-	work := workArea()
+	overlay := a.overlayRect()
+	screen := screenArea()
 	p := a.pets[index]
 	runes := []rune(name)
 	w := clamp(34+len(runes)*12, 72, 220)
 	h := 30
 	baseY := sceneH - spriteH - p.laneOffset
-	x := int(work.Left) + p.x + spriteW/2 - w/2
-	y := int(work.Bottom) - sceneH + baseY - h - 8
-	x = clamp(x, int(work.Left), int(work.Right)-w)
-	y = clamp(y, int(work.Top), int(work.Bottom)-h)
+	x := int(overlay.Left) + p.x + spriteW/2 - w/2
+	y := int(overlay.Top) + baseY - h - 8
+	x = clamp(x, int(overlay.Left), int(overlay.Right)-w)
+	y = clamp(y, int(screen.Top), int(screen.Bottom)-h)
 	if a.nameHwnd == 0 {
 		a.nameHwnd = win.CreateWindowEx(
 			win.WS_EX_TOOLWINDOW|win.WS_EX_TOPMOST|win.WS_EX_NOACTIVATE|win.WS_EX_TRANSPARENT,
@@ -1101,10 +1174,63 @@ func (a *petApp) paintNameWindow(hwnd win.HWND) {
 	drawTextLine(hdc, a.nameText, textRect, a.settingsSmallFont, rgb(27, 36, 32), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
 }
 
-func (a *petApp) syncScene(work win.RECT) {
-	a.sceneW = max(1, int(work.Right-work.Left))
+func (a *petApp) syncScene(bounds win.RECT) {
+	a.sceneW = max(1, int(bounds.Right-bounds.Left))
 	nextWheelX := a.sceneW * 2 / 3
 	a.wheelX = clamp(nextWheelX, wheelSize/2+24, max(wheelSize/2+24, a.sceneW-wheelSize/2-24))
+}
+
+func (a *petApp) overlayRect() win.RECT {
+	return a.overlayRectFor(workArea(), screenArea())
+}
+
+func (a *petApp) overlayRectFor(work, screen win.RECT) win.RECT {
+	mode := normalizeOverlayPositionMode(int(a.positionMode))
+	offset := normalizeOverlayOffset(a.overlayOffsetY)
+	base := work
+	if mode == positionScreenBottom {
+		base = screen
+	}
+	if base.Right <= base.Left {
+		base.Left = screen.Left
+		base.Right = screen.Right
+	}
+	if base.Bottom <= base.Top {
+		base.Top = screen.Top
+		base.Bottom = screen.Bottom
+	}
+	y := int(base.Bottom) - sceneH + offset
+	minY := int(screen.Top)
+	maxY := max(minY, int(screen.Bottom)-sceneH)
+	y = clamp(y, minY, maxY)
+	return win.RECT{
+		Left:   base.Left,
+		Top:    int32(y),
+		Right:  base.Right,
+		Bottom: int32(y + sceneH),
+	}
+}
+
+func (a *petApp) resetOverlayPlacement() {
+	a.positionMode = positionTaskbarEdge
+	a.overlayOffsetY = defaultOverlayOffsetY
+}
+
+func (a *petApp) adjustOverlayOffset(delta int) {
+	a.overlayOffsetY = normalizeOverlayOffset(a.overlayOffsetY + delta)
+}
+
+func (a *petApp) laneOffsetFor(index int) int {
+	if normalizePetLaneMode(int(a.laneMode)) == laneAligned {
+		return 0
+	}
+	return (index % 3) * 5
+}
+
+func (a *petApp) applyLaneOffsets() {
+	for i := range a.pets {
+		a.pets[i].laneOffset = a.laneOffsetFor(i)
+	}
 }
 
 func (a *petApp) setPetCount(count int) {
@@ -1123,7 +1249,7 @@ func (a *petApp) setPetCount(count int) {
 		}
 	}
 	for i := range a.pets {
-		a.pets[i].laneOffset = (i % 3) * 5
+		a.pets[i].laneOffset = a.laneOffsetFor(i)
 		if a.coatMode != coatRandom {
 			a.pets[i].variant = a.variantForIndex(i)
 		} else if a.pets[i].variant < 0 || a.pets[i].variant >= len(variants) {
@@ -1198,7 +1324,7 @@ func (a *petApp) newPet(index int) deguPet {
 	}
 	p := deguPet{
 		x:          x,
-		laneOffset: (index % 3) * 5,
+		laneOffset: a.laneOffsetFor(index),
 		variant:    a.variantForIndex(index),
 		item:       noItem,
 		carryKind:  noItem,
@@ -1565,6 +1691,9 @@ func (a *petApp) createSettingsWindow() {
 		return
 	}
 	a.settingsHwnd = hwnd
+	a.settingsTooltip = 0
+	a.settingsTipText = nil
+	a.settingsHoverTip = ""
 	a.ensureSettingsFonts()
 
 	a.createButton(hwnd, ctrlTopClose, "x", 716, 18, 28, 28, 0)
@@ -1601,11 +1730,19 @@ func (a *petApp) createSettingsWindow() {
 
 		a.createButton(hwnd, ctrlTypingWheel, a.txt("typingWheel"), 250, 378, 210, 32, win.WS_GROUP)
 		a.createButton(hwnd, ctrlBidirectional, a.txt("naturalTurns"), 478, 378, 210, 32, 0)
+
+		a.createButton(hwnd, ctrlPositionTaskbar, a.settingsButtonLabel(ctrlPositionTaskbar), 250, 466, 134, 30, win.WS_GROUP)
+		a.createButton(hwnd, ctrlPositionBottom, a.settingsButtonLabel(ctrlPositionBottom), 392, 466, 160, 30, 0)
+		a.createButton(hwnd, ctrlOffsetUp, a.settingsButtonLabel(ctrlOffsetUp), 560, 466, 62, 30, 0)
+		a.createButton(hwnd, ctrlOffsetDown, a.settingsButtonLabel(ctrlOffsetDown), 628, 466, 62, 30, 0)
+
+		a.createButton(hwnd, ctrlLaneStaggered, a.settingsButtonLabel(ctrlLaneStaggered), 250, 532, 180, 30, win.WS_GROUP)
+		a.createButton(hwnd, ctrlLaneAligned, a.settingsButtonLabel(ctrlLaneAligned), 446, 532, 180, 30, 0)
 	}
 
-	a.createButton(hwnd, ctrlLanguageCombo, "", 322, 514, 180, 34, 0)
-	a.createButton(hwnd, ctrlReset, a.txt("reset"), 556, 516, 78, 32, 0)
-	a.createButton(hwnd, ctrlClose, a.txt("close"), 646, 516, 78, 32, 0)
+	a.createButton(hwnd, ctrlLanguageCombo, "", 322, 574, 180, 34, 0)
+	a.createButton(hwnd, ctrlReset, a.txt("reset"), 534, 576, 100, 32, 0)
+	a.createButton(hwnd, ctrlClose, a.txt("close"), 646, 576, 78, 32, 0)
 }
 
 func (a *petApp) ensureSettingsBrushes() {
@@ -1660,8 +1797,8 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 	drawRectFill(hdc, win.RECT{Left: 0, Top: 0, Right: 204, Bottom: settingsClientH}, rgb(22, 45, 38))
 	drawRectFill(hdc, win.RECT{Left: 204, Top: 0, Right: settingsClientW, Bottom: settingsClientH}, rgb(247, 248, 244))
 
-	drawRoundFill(hdc, win.RECT{Left: 226, Top: 96, Right: 736, Bottom: 506}, rgb(255, 255, 251), 18)
-	drawRoundFill(hdc, win.RECT{Left: 226, Top: 514, Right: 736, Bottom: 552}, rgb(255, 255, 251), 14)
+	drawRoundFill(hdc, win.RECT{Left: 226, Top: 96, Right: 736, Bottom: 566}, rgb(255, 255, 251), 18)
+	drawRoundFill(hdc, win.RECT{Left: 226, Top: 574, Right: 736, Bottom: 612}, rgb(255, 255, 251), 14)
 
 	if a.settingsTab == tabAnimals {
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 142, Right: 708, Bottom: 192}, rgb(238, 242, 237), 14)
@@ -1671,6 +1808,8 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 150, Right: 708, Bottom: 208}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 256, Right: 708, Bottom: 314}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 364, Right: 708, Bottom: 424}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 438, Right: 708, Bottom: 502}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 508, Right: 708, Bottom: 566}, rgb(238, 242, 237), 14)
 	}
 
 	drawTextLine(hdc, a.txt("settingsHeader"), win.RECT{Left: 24, Top: 28, Right: 178, Bottom: 56}, a.settingsTitleFont, rgb(245, 250, 244), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
@@ -1679,7 +1818,12 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 	drawTextLine(hdc, a.settingsSidebarStatus(), win.RECT{Left: 38, Top: 486, Right: 164, Bottom: 508}, a.settingsSmallFont, rgb(231, 241, 233), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
 
 	drawTextLine(hdc, a.settingsPageTitle(), win.RECT{Left: 226, Top: 28, Right: 620, Bottom: 56}, a.settingsTitleFont, rgb(27, 36, 32), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
-	drawTextLine(hdc, a.settingsPageLead(), win.RECT{Left: 226, Top: 56, Right: 660, Bottom: 82}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+	leadRect := win.RECT{Left: 226, Top: 56, Right: 700, Bottom: 90}
+	leadFlags := uint32(win.DT_LEFT | win.DT_VCENTER | win.DT_SINGLELINE | win.DT_NOPREFIX | win.DT_END_ELLIPSIS)
+	if a.settingsHoverTip != "" {
+		leadFlags = win.DT_LEFT | win.DT_WORDBREAK | win.DT_NOPREFIX | win.DT_END_ELLIPSIS
+	}
+	drawTextLine(hdc, a.settingsPageLead(), leadRect, a.settingsSmallFont, rgb(91, 104, 96), leadFlags)
 
 	labelColor := rgb(50, 61, 55)
 	if a.settingsTab == tabAnimals {
@@ -1701,8 +1845,12 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 		drawTextLine(hdc, a.txt("mode"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("speed"), win.RECT{Left: 246, Top: 232, Right: 400, Bottom: 256}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("motion"), win.RECT{Left: 246, Top: 340, Right: 400, Bottom: 364}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.localText("表示位置", "Position"), win.RECT{Left: 246, Top: 444, Right: 380, Bottom: 466}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.positionSummary(), win.RECT{Left: 382, Top: 444, Right: 690, Bottom: 466}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		drawTextLine(hdc, a.localText("個体の高さ", "Pet height"), win.RECT{Left: 246, Top: 514, Right: 380, Bottom: 534}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.laneSummary(), win.RECT{Left: 382, Top: 514, Right: 690, Bottom: 534}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
 	}
-	drawTextLine(hdc, a.txt("language"), win.RECT{Left: 226, Top: 522, Right: 314, Bottom: 546}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+	drawTextLine(hdc, a.txt("language"), win.RECT{Left: 226, Top: 582, Right: 314, Bottom: 606}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 }
 
 func (a *petApp) createStatic(parent win.HWND, text string, x, y, w, h int32) win.HWND {
@@ -1736,7 +1884,67 @@ func (a *petApp) createButton(parent win.HWND, id int32, text string, x, y, w, h
 		parent, win.HMENU(uintptr(id)), a.hinst, nil,
 	)
 	a.setControlFont(hwnd, a.settingsFont)
+	a.addSettingsTooltip(hwnd, id, parent)
 	return hwnd
+}
+
+func (a *petApp) ensureSettingsTooltip() win.HWND {
+	if a.settingsTooltip != 0 {
+		return a.settingsTooltip
+	}
+	if a.settingsHwnd == 0 {
+		return 0
+	}
+	initControls := win.INITCOMMONCONTROLSEX{
+		DwSize: uint32(unsafe.Sizeof(win.INITCOMMONCONTROLSEX{})),
+		DwICC:  win.ICC_WIN95_CLASSES,
+	}
+	win.InitCommonControlsEx(&initControls)
+	a.settingsTooltip = win.CreateWindowEx(
+		win.WS_EX_TOPMOST,
+		syscall.StringToUTF16Ptr("tooltips_class32"),
+		nil,
+		win.WS_POPUP|win.TTS_ALWAYSTIP|win.TTS_NOPREFIX,
+		0, 0, 0, 0,
+		a.settingsHwnd, 0, a.hinst, nil,
+	)
+	if a.settingsTooltip != 0 {
+		win.SendMessage(a.settingsTooltip, win.TTM_SETMAXTIPWIDTH, 0, 360)
+		win.SendMessage(a.settingsTooltip, win.TTM_ACTIVATE, 1, 0)
+	}
+	return a.settingsTooltip
+}
+
+func (a *petApp) destroySettingsTooltip() {
+	if a.settingsTooltip != 0 {
+		win.DestroyWindow(a.settingsTooltip)
+		a.settingsTooltip = 0
+	}
+	a.settingsTipText = nil
+}
+
+func (a *petApp) addSettingsTooltip(control win.HWND, id int32, parent win.HWND) {
+	if control == 0 || parent != a.settingsHwnd {
+		return
+	}
+	text := a.settingsTooltipText(id)
+	if text == "" {
+		return
+	}
+	tooltip := a.ensureSettingsTooltip()
+	if tooltip == 0 {
+		return
+	}
+	buf := syscall.StringToUTF16(text)
+	a.settingsTipText = append(a.settingsTipText, buf)
+	info := win.TOOLINFO{
+		CbSize:   uint32(unsafe.Sizeof(win.TOOLINFO{})),
+		UFlags:   win.TTF_IDISHWND | win.TTF_SUBCLASS,
+		Hwnd:     a.settingsHwnd,
+		UId:      uintptr(control),
+		LpszText: &a.settingsTipText[len(a.settingsTipText)-1][0],
+	}
+	win.SendMessage(tooltip, win.TTM_ADDTOOL, 0, uintptr(unsafe.Pointer(&info)))
 }
 
 func (a *petApp) createEdit(parent win.HWND, id int32, text string, x, y, w, h int32) win.HWND {
@@ -1876,6 +2084,18 @@ func (a *petApp) settingsButtonLabel(id int32) string {
 		return a.txt("typingWheel")
 	case ctrlBidirectional:
 		return a.txt("naturalTurns")
+	case ctrlPositionTaskbar:
+		return a.localText("タスクバー基準", "Taskbar edge")
+	case ctrlPositionBottom:
+		return a.localText("画面の一番下", "Screen bottom")
+	case ctrlOffsetUp:
+		return a.localText("上へ", "Up")
+	case ctrlOffsetDown:
+		return a.localText("下へ", "Down")
+	case ctrlLaneStaggered:
+		return a.localText("少しずらす", "Natural stagger")
+	case ctrlLaneAligned:
+		return a.localText("横一列", "Same baseline")
 	case ctrlLanguageCombo:
 		if a.lang == langEnglish {
 			return "English"
@@ -1899,6 +2119,68 @@ func (a *petApp) settingsButtonLabel(id int32) string {
 	}
 	if id >= ctrlPetNameBase && id < ctrlPetNameBase+maxPetCount {
 		return a.petDisplayName(int(id - ctrlPetNameBase))
+	}
+	return ""
+}
+
+func (a *petApp) settingsTooltipText(id int32) string {
+	switch id {
+	case ctrlTabAnimals:
+		return a.localText("出現数、毛色、名前を設定します。", "Set visible pets, coat colors, and names.")
+	case ctrlTabMotion:
+		return a.localText("歩き方、回し車、表示位置、個体の高さを設定します。", "Set motion, typing wheel, screen position, and pet height.")
+	case ctrlPetMinus:
+		return a.localText("出現数を1匹減らします。", "Decrease the visible pet count by one.")
+	case ctrlPetPlus:
+		return a.localText("出現数を1匹増やします。最大10匹です。", "Increase the visible pet count by one, up to 10.")
+	case ctrlCoatFixed:
+		return a.localText("全員を同じ毛色にします。", "Use one coat color for every pet.")
+	case ctrlCoatSelected:
+		return a.localText("1匹ずつ毛色を選びます。複数の色を同時に出せます。", "Choose a coat for each pet so multiple colors can appear together.")
+	case ctrlCoatRandom:
+		return a.localText("起動時や追加時に毛色をランダムに選びます。", "Pick coats randomly when pets appear.")
+	case ctrlVariantCombo:
+		return a.localText("固定モードで使う毛色を選びます。", "Choose the coat used in fixed mode.")
+	case ctrlNameLabels:
+		return a.localText("オンにすると名前を編集でき、デグーにカーソルを合わせると名前が出ます。", "Turn this on to edit names and show a name when the cursor hovers over a pet.")
+	case ctrlModeKeyboard:
+		return a.localText("キーボード入力に合わせて反応します。入力中だけ回し車も使えます。", "React to keyboard input. The typing wheel can run only while you type.")
+	case ctrlModeRandom:
+		return a.localText("入力に関係なく、歩く・止まる・食べるなどをランダムに行います。", "Move randomly regardless of typing: walk, pause, eat, and forage.")
+	case ctrlSpeedSlow:
+		return a.localText("ゆっくり移動します。", "Move slowly.")
+	case ctrlSpeedNormal:
+		return a.localText("標準の速さで移動します。", "Use the normal movement speed.")
+	case ctrlSpeedFast:
+		return a.localText("速めに移動します。", "Move faster.")
+	case ctrlTypingWheel:
+		return a.localText("キーボード入力中だけ、デグーが回し車で走ります。", "While you type, a degu runs in the wheel.")
+	case ctrlBidirectional:
+		return a.localText("左右どちらにも歩きます。オフにすると右向き中心になります。", "Allow walking both left and right. Turn off for mostly right-facing movement.")
+	case ctrlPositionTaskbar:
+		return a.localText("Windowsの作業領域を基準にします。通常はタスクバーのすぐ上です。", "Use the Windows work area, normally just above the taskbar.")
+	case ctrlPositionBottom:
+		return a.localText("画面の一番下を基準にします。左タスクバー環境でも横幅いっぱいに出せます。", "Use the physical screen bottom, useful when the taskbar is on the left.")
+	case ctrlOffsetUp:
+		return a.localText("表示位置を少し上げます。", "Move the overlay slightly upward.")
+	case ctrlOffsetDown:
+		return a.localText("表示位置を少し下げます。タスクバーから浮く場合に使います。", "Move the overlay slightly downward when pets float above the taskbar.")
+	case ctrlLaneStaggered:
+		return a.localText("個体ごとに0/5/10pxだけ高さをずらします。重なった時に見分けやすい自然な並びです。", "Offset pets by 0/5/10 px so overlapping pets are easier to distinguish.")
+	case ctrlLaneAligned:
+		return a.localText("全員を同じ接地ラインに揃えます。少し上に見える個体をなくします。", "Place every pet on the same baseline so none appears slightly higher.")
+	case ctrlLanguageCombo:
+		return a.localText("設定画面の表示言語を切り替えます。", "Switch the settings language.")
+	case ctrlReset:
+		return a.localText("表示位置を初期値に戻し、デグーを画面内に並べ直します。", "Reset display position and place pets back inside the screen.")
+	case ctrlClose, ctrlTopClose:
+		return a.localText("設定画面を閉じます。", "Close the settings window.")
+	}
+	if id >= ctrlPetVariantBase && id < ctrlPetVariantBase+maxPetCount {
+		return a.localText("このデグーの毛色を選びます。", "Choose this pet's coat.")
+	}
+	if id >= ctrlPetNameBase && id < ctrlPetNameBase+maxPetCount {
+		return a.localText("このデグーの名前を編集します。", "Edit this pet's name.")
 	}
 	return ""
 }
@@ -1929,6 +2211,14 @@ func (a *petApp) settingsButtonSelected(id int32) bool {
 		return a.wheelEnabled
 	case ctrlBidirectional:
 		return a.bidirectional
+	case ctrlPositionTaskbar:
+		return normalizeOverlayPositionMode(int(a.positionMode)) == positionTaskbarEdge
+	case ctrlPositionBottom:
+		return normalizeOverlayPositionMode(int(a.positionMode)) == positionScreenBottom
+	case ctrlLaneStaggered:
+		return normalizePetLaneMode(int(a.laneMode)) == laneStaggered
+	case ctrlLaneAligned:
+		return normalizePetLaneMode(int(a.laneMode)) == laneAligned
 	case ctrlNameLabels:
 		return a.nameLabels
 	}
@@ -1953,6 +2243,8 @@ func (a *petApp) settingsButtonBackplate(id int32) settingsRGB {
 		ctrlModeKeyboard, ctrlModeRandom,
 		ctrlSpeedSlow, ctrlSpeedNormal, ctrlSpeedFast,
 		ctrlTypingWheel, ctrlBidirectional,
+		ctrlPositionTaskbar, ctrlPositionBottom, ctrlOffsetUp, ctrlOffsetDown,
+		ctrlLaneStaggered, ctrlLaneAligned,
 		ctrlNameLabels, ctrlRenameOK, ctrlRenameCancel:
 		return rgb(235, 232, 220)
 	}
@@ -2002,6 +2294,9 @@ func (a *petApp) settingsPageTitle() string {
 }
 
 func (a *petApp) settingsPageLead() string {
+	if a.settingsHoverTip != "" {
+		return a.settingsHoverTip
+	}
 	if a.settingsTab == tabMotion {
 		return a.txt("motionPageLead")
 	}
@@ -2063,6 +2358,25 @@ func (a *petApp) petNameSectionLabel() string {
 		return a.localText("名前 / 個別カラー", "Names / coat colors")
 	}
 	return a.localText("名前", "Names")
+}
+
+func (a *petApp) positionSummary() string {
+	mode := a.localText("タスクバー基準", "Taskbar edge")
+	if normalizeOverlayPositionMode(int(a.positionMode)) == positionScreenBottom {
+		mode = a.localText("画面下基準", "Screen bottom")
+	}
+	offset := normalizeOverlayOffset(a.overlayOffsetY)
+	if offset >= 0 {
+		return fmt.Sprintf("%s / +%d px", mode, offset)
+	}
+	return fmt.Sprintf("%s / %d px", mode, offset)
+}
+
+func (a *petApp) laneSummary() string {
+	if normalizePetLaneMode(int(a.laneMode)) == laneAligned {
+		return a.localText("全員を同じ高さに揃える", "All pets use the same baseline")
+	}
+	return a.localText("少し高さをずらして重なりを軽減", "Small height offsets reduce overlap")
 }
 
 func (a *petApp) localText(ja, en string) string {
@@ -2218,6 +2532,8 @@ func (a *petApp) settingsWndProc(hwnd win.HWND, msg uint32, wParam, lParam uintp
 		win.SetBkMode(win.HDC(wParam), win.TRANSPARENT)
 		win.SetTextColor(win.HDC(wParam), win.RGB(32, 37, 31))
 		return uintptr(win.GetStockObject(win.NULL_BRUSH))
+	case win.WM_SETCURSOR:
+		a.updateSettingsHoverTip(win.HWND(wParam))
 	case win.WM_NCHITTEST:
 		if a.settingsDragHit(lParam) {
 			return uintptr(win.HTCAPTION)
@@ -2230,11 +2546,27 @@ func (a *petApp) settingsWndProc(hwnd win.HWND, msg uint32, wParam, lParam uintp
 		return 0
 	case win.WM_DESTROY:
 		if hwnd == a.settingsHwnd {
+			a.destroySettingsTooltip()
 			a.settingsHwnd = 0
 		}
 		return 0
 	}
 	return win.DefWindowProc(hwnd, msg, wParam, lParam)
+}
+
+func (a *petApp) updateSettingsHoverTip(hwnd win.HWND) {
+	if a.settingsHwnd == 0 {
+		return
+	}
+	tip := ""
+	if hwnd != 0 && hwnd != a.settingsHwnd {
+		tip = a.settingsTooltipText(getDlgCtrlID(hwnd))
+	}
+	if tip == a.settingsHoverTip {
+		return
+	}
+	a.settingsHoverTip = tip
+	win.InvalidateRect(a.settingsHwnd, nil, true)
 }
 
 func (a *petApp) settingsDragHit(lParam uintptr) bool {
@@ -2275,6 +2607,10 @@ func (a *petApp) syncSettingsWindow() {
 	a.setButtonChecked(ctrlSpeedFast, a.speed == 5)
 	a.setButtonChecked(ctrlTypingWheel, a.wheelEnabled)
 	a.setButtonChecked(ctrlBidirectional, a.bidirectional)
+	a.setButtonChecked(ctrlPositionTaskbar, a.positionMode == positionTaskbarEdge)
+	a.setButtonChecked(ctrlPositionBottom, a.positionMode == positionScreenBottom)
+	a.setButtonChecked(ctrlLaneStaggered, a.laneMode == laneStaggered)
+	a.setButtonChecked(ctrlLaneAligned, a.laneMode == laneAligned)
 	a.setButtonChecked(ctrlNameLabels, a.nameLabels)
 	a.setButtonChecked(ctrlCoatFixed, a.coatMode == coatFixed)
 	a.setButtonChecked(ctrlCoatSelected, a.coatMode == coatSelected)
@@ -2288,6 +2624,9 @@ func (a *petApp) syncSettingsWindow() {
 	a.syncSelectButton(ctrlLanguageCombo)
 	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlPetMinus), a.petCount > 1)
 	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlPetPlus), a.petCount < maxPetCount)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlOffsetUp), a.overlayOffsetY > minOverlayOffsetY)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlOffsetDown), a.overlayOffsetY < maxOverlayOffsetY)
+	win.InvalidateRect(a.settingsHwnd, nil, true)
 }
 
 func (a *petApp) setButtonChecked(id int32, checked bool) {
@@ -2376,7 +2715,22 @@ func (a *petApp) handleSettingsCommand(id int32, notify uint16) bool {
 		a.handleMenu(menuWheelToggle)
 	case ctrlBidirectional:
 		a.setBidirectional(!a.bidirectional)
+	case ctrlPositionTaskbar:
+		a.positionMode = positionTaskbarEdge
+	case ctrlPositionBottom:
+		a.positionMode = positionScreenBottom
+	case ctrlOffsetUp:
+		a.adjustOverlayOffset(-overlayOffsetStep)
+	case ctrlOffsetDown:
+		a.adjustOverlayOffset(overlayOffsetStep)
+	case ctrlLaneStaggered:
+		a.laneMode = laneStaggered
+		a.applyLaneOffsets()
+	case ctrlLaneAligned:
+		a.laneMode = laneAligned
+		a.applyLaneOffsets()
 	case ctrlReset:
+		a.resetOverlayPlacement()
 		a.resetPosition()
 		a.render()
 	case ctrlClose, ctrlTopClose, int32(win.IDCANCEL):
@@ -2561,6 +2915,7 @@ func (a *petApp) commitRenameDialog() {
 func (a *petApp) recreateSettingsWindow() {
 	if a.settingsHwnd != 0 {
 		a.rememberSettingsWindowPosition()
+		a.destroySettingsTooltip()
 		win.DestroyWindow(a.settingsHwnd)
 		a.settingsHwnd = 0
 	}
@@ -2607,7 +2962,7 @@ func (a *petApp) txt(key string) string {
 		case "motionPageTitle":
 			return "Motion behavior"
 		case "motionPageLead":
-			return "Tune keyboard reactions, random strolls, and turn behavior."
+			return "Tune keyboard reactions, random strolls, turn behavior, screen position, and pet alignment."
 		case "tabAnimals":
 			return "Animals"
 		case "tabMotion":
@@ -2653,7 +3008,7 @@ func (a *petApp) txt(key string) string {
 		case "naturalTurns":
 			return "Natural left/right turns"
 		case "reset":
-			return "Reset"
+			return "Reset layout"
 		case "close":
 			return "Close"
 		case "exit":
@@ -2674,7 +3029,7 @@ func (a *petApp) txt(key string) string {
 	case "motionPageTitle":
 		return "動きかた"
 	case "motionPageLead":
-		return "キーボードへの反応、ランダム散歩、左右ターンを調整します。"
+		return "キーボードへの反応、ランダム散歩、左右ターン、表示位置、個体の高さを調整します。"
 	case "tabAnimals":
 		return "動物"
 	case "tabMotion":
@@ -2720,7 +3075,7 @@ func (a *petApp) txt(key string) string {
 	case "naturalTurns":
 		return "自然な左右ターン"
 	case "reset":
-		return "整列"
+		return "配置リセット"
 	case "close":
 		return "閉じる"
 	case "exit":
@@ -3378,11 +3733,9 @@ func (a *petApp) showTrayMenu() {
 	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(modeMenu), syscall.StringToUTF16Ptr(a.txt("mode")))
 
 	countMenu := win.CreatePopupMenu()
-	appendChecked(countMenu, menuCount1, "1", a.petCount == 1)
-	appendChecked(countMenu, menuCount2, "2", a.petCount == 2)
-	appendChecked(countMenu, menuCount3, "3", a.petCount == 3)
-	appendChecked(countMenu, menuCount5, "5", a.petCount == 5)
-	appendChecked(countMenu, menuCount10, "10", a.petCount == 10)
+	for count := 1; count <= maxPetCount; count++ {
+		appendChecked(countMenu, menuIDForPetCount(count), fmt.Sprintf("%d", count), a.petCount == count)
+	}
 	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(countMenu), syscall.StringToUTF16Ptr(a.txt("deguCount")))
 
 	appendChecked(menu, menuWheelToggle, a.txt("typingWheel"), a.wheelEnabled)
@@ -3418,6 +3771,21 @@ func appendChecked(menu win.HMENU, id uint16, label string, checked bool) {
 	appendMenu(menu, flags, uintptr(id), syscall.StringToUTF16Ptr(label))
 }
 
+func menuIDForPetCount(count int) uint16 {
+	return menuCountBase + uint16(clamp(count, 1, maxPetCount))
+}
+
+func petCountFromMenuID(id uint16) (int, bool) {
+	if id <= menuCountBase {
+		return 0, false
+	}
+	count := int(id - menuCountBase)
+	if count < 1 || count > maxPetCount {
+		return 0, false
+	}
+	return count, true
+}
+
 func (a *petApp) handleMenu(id uint16) {
 	if !a.handleMenuCommand(id) {
 		return
@@ -3427,6 +3795,10 @@ func (a *petApp) handleMenu(id uint16) {
 }
 
 func (a *petApp) handleMenuCommand(id uint16) bool {
+	if count, ok := petCountFromMenuID(id); ok {
+		a.setPetCount(count)
+		return true
+	}
 	switch {
 	case id == menuExit:
 		a.closing.Store(true)
@@ -3455,16 +3827,6 @@ func (a *petApp) handleMenuCommand(id uint16) bool {
 		a.speed = 3
 	case id == menuSpeedFast:
 		a.speed = 5
-	case id == menuCount1:
-		a.setPetCount(1)
-	case id == menuCount2:
-		a.setPetCount(2)
-	case id == menuCount3:
-		a.setPetCount(3)
-	case id == menuCount5:
-		a.setPetCount(5)
-	case id == menuCount10:
-		a.setPetCount(10)
 	case id == menuWheelToggle:
 		a.wheelEnabled = !a.wheelEnabled
 		for i := range a.pets {
@@ -3492,6 +3854,7 @@ func (a *petApp) cleanup() {
 	win.KillTimer(a.hwnd, timerID)
 	a.persistSettings()
 	if a.settingsHwnd != 0 {
+		a.destroySettingsTooltip()
 		win.DestroyWindow(a.settingsHwnd)
 		a.settingsHwnd = 0
 	}
@@ -3598,6 +3961,14 @@ func setWindowText(hwnd win.HWND, text string) bool {
 	return ret != 0
 }
 
+func getDlgCtrlID(hwnd win.HWND) int32 {
+	if hwnd == 0 {
+		return 0
+	}
+	ret, _, _ := procGetDlgCtrlID.Call(uintptr(hwnd))
+	return int32(ret)
+}
+
 func getWindowText(hwnd win.HWND) string {
 	if hwnd == 0 {
 		return ""
@@ -3687,6 +4058,17 @@ func workArea() win.RECT {
 		rect = win.RECT{Left: 0, Top: 0, Right: 1280, Bottom: 720}
 	}
 	return rect
+}
+
+func screenArea() win.RECT {
+	left := int32(0)
+	top := int32(0)
+	width := win.GetSystemMetrics(win.SM_CXSCREEN)
+	height := win.GetSystemMetrics(win.SM_CYSCREEN)
+	if width <= 0 || height <= 0 {
+		return workArea()
+	}
+	return win.RECT{Left: left, Top: top, Right: left + width, Bottom: top + height}
 }
 
 func scaleImage(src *image.RGBA, factor int) *image.RGBA {

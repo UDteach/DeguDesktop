@@ -27,12 +27,15 @@ Last updated: 2026-06-21
 ## Current Windows Features
 
 - Transparent always-on-top taskbar overlay.
-- Tray menu and Japanese/English settings window for optional per-pet names, coat, speed, count, mode, typing wheel, update checks, settings, and exit.
+- Tray menu and Japanese/English settings window for optional per-pet names, coat, speed, count, mode, typing wheel, display position, update checks, settings, and exit.
 - Keyboard reaction and random stroll modes.
 - Typing wheel behavior.
 - Foraging props, eating, digging, and carrying behavior.
 - Grooming/social pause behavior.
 - Optional cursor-hover name labels above visible degus.
+- Windows overlay position can be switched between the taskbar work area and the physical screen bottom, with a saved vertical offset for fine tuning.
+- Tray count quick actions cover every visible count from 1 to 10.
+- Pet height alignment can be switched between natural staggered lanes and a same-baseline row.
 - Startup tray notification and GitHub Release based update check/install flow.
 - GitHub Pages and GitHub Release workflows, with Pages download metadata for version, update date, and commit.
 

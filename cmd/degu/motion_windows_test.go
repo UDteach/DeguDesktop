@@ -3,12 +3,19 @@
 package main
 
 import (
+	"archive/zip"
+	"bytes"
 	"encoding/json"
 	"image"
 	"math"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
+
+	"github.com/lxn/win"
 )
 
 func TestHorizontalMotionFramesUseStableRightFacingSequence(t *testing.T) {
@@ -176,19 +183,22 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	t.Setenv("APPDATA", configRoot)
 
 	a := &petApp{
-		variant:       4,
-		coatMode:      coatSelected,
-		selectedCoats: [maxPetCount]int{1, 3, 5, 7, 9, 0, 2, 4, 6, 8},
-		petNames:      [maxPetCount]string{"モカ", "Sora", "  Nagi  ", "", "", "", "", "", "", ""},
-		nameLabels:    true,
-		speed:         5,
-		mode:          modeKeyboard,
-		petCount:      10,
-		wheelEnabled:  false,
-		bidirectional: false,
-		lang:          langEnglish,
-		settingsX:     220,
-		settingsY:     180,
+		variant:        4,
+		coatMode:       coatSelected,
+		selectedCoats:  [maxPetCount]int{1, 3, 5, 7, 9, 0, 2, 4, 6, 8},
+		petNames:       [maxPetCount]string{"モカ", "Sora", "  Nagi  ", "", "", "", "", "", "", ""},
+		nameLabels:     true,
+		speed:          5,
+		mode:           modeKeyboard,
+		petCount:       10,
+		wheelEnabled:   false,
+		bidirectional:  false,
+		positionMode:   positionScreenBottom,
+		overlayOffsetY: 28,
+		laneMode:       laneAligned,
+		lang:           langEnglish,
+		settingsX:      220,
+		settingsY:      180,
 	}
 	if err := a.saveSettings(); err != nil {
 		t.Fatalf("saveSettings() error = %v", err)
@@ -206,6 +216,15 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	if saved.Version != 1 || saved.PetCount != 10 || saved.Mode != int(modeKeyboard) {
 		t.Fatalf("saved settings = %+v, want version 1 petCount 10 keyboard mode", saved)
 	}
+	if saved.PositionMode == nil || *saved.PositionMode != int(positionScreenBottom) {
+		t.Fatalf("saved PositionMode = %v, want screen bottom", saved.PositionMode)
+	}
+	if saved.VerticalOffset == nil || *saved.VerticalOffset != 28 {
+		t.Fatalf("saved VerticalOffset = %v, want 28", saved.VerticalOffset)
+	}
+	if saved.LaneMode == nil || *saved.LaneMode != int(laneAligned) {
+		t.Fatalf("saved LaneMode = %v, want aligned", saved.LaneMode)
+	}
 	if !saved.NameLabels {
 		t.Fatalf("saved NameLabels = false, want true")
 	}
@@ -217,17 +236,20 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	}
 
 	b := &petApp{
-		variant:       0,
-		coatMode:      coatRandom,
-		selectedCoats: [maxPetCount]int{0, 1, 2, 4, 8, 6, 3, 7, 5, 9},
-		speed:         3,
-		mode:          modeRandom,
-		petCount:      2,
-		wheelEnabled:  true,
-		bidirectional: true,
-		lang:          langJapanese,
-		settingsX:     120,
-		settingsY:     120,
+		variant:        0,
+		coatMode:       coatRandom,
+		selectedCoats:  [maxPetCount]int{0, 1, 2, 4, 8, 6, 3, 7, 5, 9},
+		speed:          3,
+		mode:           modeRandom,
+		petCount:       2,
+		wheelEnabled:   true,
+		bidirectional:  true,
+		positionMode:   positionTaskbarEdge,
+		overlayOffsetY: defaultOverlayOffsetY,
+		laneMode:       laneStaggered,
+		lang:           langJapanese,
+		settingsX:      120,
+		settingsY:      120,
 	}
 	if err := b.loadSettings(); err != nil {
 		t.Fatalf("loadSettings() error = %v", err)
@@ -237,6 +259,12 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	}
 	if b.wheelEnabled != a.wheelEnabled || b.bidirectional != a.bidirectional || b.lang != a.lang {
 		t.Fatalf("loaded flags = wheel:%v bidirectional:%v lang:%d", b.wheelEnabled, b.bidirectional, b.lang)
+	}
+	if b.positionMode != a.positionMode || b.overlayOffsetY != a.overlayOffsetY {
+		t.Fatalf("loaded position = mode:%d offset:%d, want mode:%d offset:%d", b.positionMode, b.overlayOffsetY, a.positionMode, a.overlayOffsetY)
+	}
+	if b.laneMode != a.laneMode {
+		t.Fatalf("loaded laneMode = %d, want %d", b.laneMode, a.laneMode)
 	}
 	if b.nameLabels != a.nameLabels {
 		t.Fatalf("loaded nameLabels = %v, want %v", b.nameLabels, a.nameLabels)
@@ -248,6 +276,120 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	}
 	if b.petNames[0] != "モカ" || b.petNames[1] != "Sora" || b.petNames[2] != "Nagi" {
 		t.Fatalf("loaded pet names = %#v", b.petNames[:3])
+	}
+}
+
+func TestOverlayRectSupportsTaskbarAndScreenBottomModes(t *testing.T) {
+	work := winRect(80, 0, 1920, 1040)
+	screen := winRect(0, 0, 1920, 1080)
+	a := &petApp{positionMode: positionTaskbarEdge, overlayOffsetY: 20}
+
+	got := a.overlayRectFor(work, screen)
+	if got.Left != work.Left || got.Right != work.Right {
+		t.Fatalf("taskbar overlay x bounds = %+v, want work area x bounds %+v", got, work)
+	}
+	if wantTop := int32(1040 - sceneH + 20); got.Top != wantTop {
+		t.Fatalf("taskbar overlay top = %d, want %d", got.Top, wantTop)
+	}
+
+	a.positionMode = positionScreenBottom
+	a.overlayOffsetY = 0
+	got = a.overlayRectFor(work, screen)
+	if got.Left != screen.Left || got.Right != screen.Right {
+		t.Fatalf("screen-bottom overlay x bounds = %+v, want screen x bounds %+v", got, screen)
+	}
+	if wantTop := int32(1080 - sceneH); got.Top != wantTop {
+		t.Fatalf("screen-bottom overlay top = %d, want %d", got.Top, wantTop)
+	}
+
+	a.positionMode = positionTaskbarEdge
+	a.overlayOffsetY = maxOverlayOffsetY
+	got = a.overlayRectFor(work, screen)
+	if got.Bottom != screen.Bottom {
+		t.Fatalf("large downward offset bottom = %d, want clamped to screen bottom %d", got.Bottom, screen.Bottom)
+	}
+}
+
+func TestDefaultOverlayOffsetSurvivesLegacySettings(t *testing.T) {
+	configRoot := t.TempDir()
+	t.Setenv("APPDATA", configRoot)
+	path := filepath.Join(configRoot, settingsDirName, settingsFileName)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(`{"version":1,"petCount":2,"speed":3,"mode":1}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	a := &petApp{positionMode: positionTaskbarEdge, overlayOffsetY: defaultOverlayOffsetY, laneMode: laneStaggered}
+	if err := a.loadSettings(); err != nil {
+		t.Fatalf("loadSettings() error = %v", err)
+	}
+	if a.positionMode != positionTaskbarEdge || a.overlayOffsetY != defaultOverlayOffsetY {
+		t.Fatalf("legacy position defaults = mode:%d offset:%d", a.positionMode, a.overlayOffsetY)
+	}
+	if a.laneMode != laneStaggered {
+		t.Fatalf("legacy laneMode = %d, want staggered", a.laneMode)
+	}
+}
+
+func winRect(left, top, right, bottom int32) win.RECT {
+	return win.RECT{Left: left, Top: top, Right: right, Bottom: bottom}
+}
+
+func TestTrayCountCommandsSupportEveryVisibleCount(t *testing.T) {
+	a := &petApp{
+		sceneW:   900,
+		speed:    3,
+		coatMode: coatFixed,
+		laneMode: laneAligned,
+		petCount: 1,
+	}
+
+	for count := 1; count <= maxPetCount; count++ {
+		if !a.handleMenuCommand(menuIDForPetCount(count)) {
+			t.Fatalf("handleMenuCommand count %d returned false", count)
+		}
+		if a.petCount != count || len(a.pets) != count {
+			t.Fatalf("count command %d left petCount=%d len=%d", count, a.petCount, len(a.pets))
+		}
+	}
+}
+
+func TestPetLaneModeControlsVerticalOffsets(t *testing.T) {
+	a := &petApp{
+		sceneW:   900,
+		speed:    3,
+		coatMode: coatFixed,
+		laneMode: laneStaggered,
+		petCount: 6,
+	}
+	a.setPetCount(6)
+	for i, want := range []int{0, 5, 10, 0, 5, 10} {
+		if got := a.pets[i].laneOffset; got != want {
+			t.Fatalf("staggered laneOffset[%d] = %d, want %d", i, got, want)
+		}
+	}
+
+	a.laneMode = laneAligned
+	a.applyLaneOffsets()
+	for i, pet := range a.pets {
+		if pet.laneOffset != 0 {
+			t.Fatalf("aligned laneOffset[%d] = %d, want 0", i, pet.laneOffset)
+		}
+	}
+}
+
+func TestSettingsTooltipsExplainLayoutControls(t *testing.T) {
+	a := &petApp{}
+	if got := a.settingsTooltipText(ctrlLaneStaggered); got == "" || !strings.Contains(got, "0/5/10") {
+		t.Fatalf("staggered tooltip = %q, want 0/5/10 explanation", got)
+	}
+	if got := a.settingsTooltipText(ctrlLaneAligned); got == "" || !strings.Contains(got, "同じ") {
+		t.Fatalf("aligned tooltip = %q, want same-baseline explanation", got)
+	}
+	if got := a.settingsTooltipText(ctrlReset); got == "" || !strings.Contains(got, "初期値") {
+		t.Fatalf("reset tooltip = %q, want initial-position explanation", got)
 	}
 }
 
@@ -315,6 +457,115 @@ func TestSelectUpdateAssetFindsWindowsZip(t *testing.T) {
 	asset = selectUpdateAsset(rel, "386")
 	if asset == nil || asset.BrowserDownloadURL != "https://example.test/app-x86.zip" {
 		t.Fatalf("selectUpdateAsset(386) = %+v", asset)
+	}
+}
+
+func TestFetchLatestReleaseFromUpdateAPI(t *testing.T) {
+	var sawUserAgent bool
+	var gotPath string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		sawUserAgent = strings.HasPrefix(r.Header.Get("User-Agent"), "DeguDesktop/")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{
+			"tag_name": "v9.9.9",
+			"html_url": "https://example.test/release",
+			"draft": false,
+			"prerelease": false,
+			"assets": [
+				{"name": "DeguDesktop-windows-amd64.zip", "browser_download_url": "https://example.test/app.zip", "size": 123}
+			]
+		}`))
+	}))
+	defer server.Close()
+	oldURL := updateAPIURL
+	updateAPIURL = server.URL + "/latest"
+	t.Cleanup(func() { updateAPIURL = oldURL })
+
+	rel, err := fetchLatestRelease()
+	if err != nil {
+		t.Fatalf("fetchLatestRelease() error = %v", err)
+	}
+	if gotPath != "/latest" {
+		t.Fatalf("path = %s, want /latest", gotPath)
+	}
+	if !sawUserAgent {
+		t.Fatalf("fetchLatestRelease did not send the DeguDesktop user agent")
+	}
+	if rel.TagName != "v9.9.9" || len(rel.Assets) != 1 {
+		t.Fatalf("release = %+v, want tag v9.9.9 with one asset", rel)
+	}
+}
+
+func TestFetchLatestReleaseRejectsHTTPErrorAndDraft(t *testing.T) {
+	tests := []struct {
+		name   string
+		status int
+		body   string
+	}{
+		{name: "http error", status: http.StatusInternalServerError, body: `server error`},
+		{name: "draft", status: http.StatusOK, body: `{"tag_name":"v9.9.9","draft":true}`},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(tt.status)
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer server.Close()
+			oldURL := updateAPIURL
+			updateAPIURL = server.URL
+			t.Cleanup(func() { updateAPIURL = oldURL })
+
+			if rel, err := fetchLatestRelease(); err == nil || rel != nil {
+				t.Fatalf("fetchLatestRelease() = (%+v, %v), want error", rel, err)
+			}
+		})
+	}
+}
+
+func TestDownloadFileAndExtractUpdateExe(t *testing.T) {
+	var zipBytes bytes.Buffer
+	zw := zip.NewWriter(&zipBytes)
+	exe, err := zw.Create("DeguDesktop.exe")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := exe.Write([]byte("fake exe payload")); err != nil {
+		t.Fatal(err)
+	}
+	readme, err := zw.Create("README.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := readme.Write([]byte("readme")); err != nil {
+		t.Fatal(err)
+	}
+	if err := zw.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/zip")
+		_, _ = w.Write(zipBytes.Bytes())
+	}))
+	defer server.Close()
+
+	tmp := t.TempDir()
+	zipPath := filepath.Join(tmp, "update.zip")
+	if err := downloadFile(server.URL, zipPath); err != nil {
+		t.Fatalf("downloadFile() error = %v", err)
+	}
+	exePath, err := extractUpdateExe(zipPath, tmp)
+	if err != nil {
+		t.Fatalf("extractUpdateExe() error = %v", err)
+	}
+	data, err := os.ReadFile(exePath)
+	if err != nil {
+		t.Fatalf("read extracted exe: %v", err)
+	}
+	if string(data) != "fake exe payload" {
+		t.Fatalf("extracted exe payload = %q", data)
 	}
 }
 

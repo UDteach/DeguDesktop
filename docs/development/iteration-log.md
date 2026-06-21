@@ -607,3 +607,67 @@ Bring the macOS release artifacts up to the Windows `v0.1.6` release.
 - `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go test -buildvcs=false ./...`
 - `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go vet -buildvcs=false ./...`
 - Local Windows amd64 GUI cross-build with `main.appVersion=v0.1.6`.
+
+## Iteration 17 - Windows Overlay Position Controls
+
+Date: 2026-06-21
+
+### Target
+
+Let users adjust the default Windows overlay position so degus do not have to float above the taskbar, and support setups where the taskbar is attached to the left edge.
+
+### Cause
+
+The Windows overlay used the work-area bottom directly for drawing, hit testing, and hover-name placement. That kept the app above a bottom taskbar and also made left-edge taskbar layouts inherit the reduced work-area width. Users need a saved way to choose a physical screen-bottom baseline and fine-tune the vertical offset.
+
+### Implementation
+
+- Added saved Windows settings for overlay position mode and vertical offset.
+- Added motion-tab controls for `Taskbar edge`, `Screen bottom`, `Up`, and `Down`.
+- Added a default +10 px downward offset for legacy settings that do not yet contain position fields.
+- Unified render placement, click hit testing, and hover-name positioning through the same overlay rectangle calculation.
+- Added primary-screen bottom placement so left-taskbar users can choose full screen-width bottom alignment.
+- Made the settings reset button restore the overlay position defaults.
+
+### Verification
+
+- Added tests for settings round-trip persistence, legacy settings defaults, and taskbar-vs-screen-bottom overlay rectangles.
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+
+## Iteration 18 - Tray Count, Pet Alignment Help, And v0.1.7 QA
+
+Date: 2026-06-21
+
+### Target
+
+Make the Windows tray count menu cover 6, 7, 8, and 9 as requested, explain why some degus appear slightly higher, let users choose same-baseline alignment, and prepare a v0.1.7 release with Pages updated.
+
+### Cause
+
+The tray menu used a fixed shortcut list of 1, 2, 3, 5, and 10. The runtime also staggered pet `laneOffset` values by 0/5/10 px so overlapping degus were easier to distinguish, but that behavior was not visible as a setting and looked like accidental vertical drift.
+
+### Implementation
+
+- Replaced fixed tray count commands with generated 1-10 count commands.
+- Added saved pet-height alignment with `Natural stagger` and `Same baseline` choices.
+- Added settings hover explanations in the page lead area, with standard Win32 tooltips still registered for controls.
+- Renamed the ambiguous Japanese reset label from `整列` to `配置リセット`.
+- Added update-check tests for GitHub release JSON validation, HTTP errors, draft releases, download, and update ZIP extraction.
+- Updated the GitHub Pages copy and Windows release label to `v0.1.7`.
+
+### Verification
+
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `git diff --check`
+- Built local Windows x64/x86 ZIPs with `main.appVersion=v0.1.7` and verified both contain `DeguDesktop.exe` and `README.md`.
+- Recreated release ZIPs from scratch and verified PE machine types: amd64 `0x8664`, x86 `0x014c`.
+- Visual settings QA screenshots:
+  - `.codex/qa/settings-animals-v017-hoverfix.png`
+  - `.codex/qa/settings-motion-clear-v017.png`
+  - `.codex/qa/settings-motion-hover-v017.png`
