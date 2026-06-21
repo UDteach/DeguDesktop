@@ -754,4 +754,8 @@ Iteration 20 only rebuilt and launched a local test binary. The public Windows d
 - Built local Windows x64/x86 ZIPs with `main.appVersion=v0.1.8`.
 - Verified ZIP contents include `DeguDesktop.exe` and `README.md`.
 - Verified PE machine types: amd64 `0x8664`, x86 `0x014c`.
-- Pending GitHub workflow and Pages verification after push/tag.
+- Pushed `main` and tag `v0.1.8`.
+- GitHub Release workflow `27898483118` completed successfully and published `DeguDesktop-windows-amd64.zip` and `DeguDesktop-windows-386.zip`.
+- GitHub Pages workflow `27898530576` completed successfully.
+- Verified live GitHub Pages shows Windows `v0.1.8`, Mac `v0.1.7`, build commit `2365b87`, and the random stroll wheel copy.
+- Verified GitHub Releases API reports `v0.1.8` as latest with both Windows assets.
