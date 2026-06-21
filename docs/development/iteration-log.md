@@ -900,7 +900,7 @@ The current public Windows release label was still `v0.1.8`, while the local app
 
 - Updated the GitHub Pages Windows latest label to `v0.1.9`.
 - Rebuilt local Windows x64/x86 download ZIPs with `main.appVersion=v0.1.9`.
-- Kept macOS links on the existing `v0.1.8` assets because no new macOS release artifacts were created in this pass.
+- Initially kept macOS links on the existing `v0.1.8` assets until matching macOS release artifacts were built in the follow-up sync.
 
 ### Verification
 
@@ -918,6 +918,42 @@ The current public Windows release label was still `v0.1.8`, while the local app
 - GitHub Release workflow `27918389775` completed successfully and published `DeguDesktop-windows-amd64.zip` and `DeguDesktop-windows-386.zip`.
 - GitHub Pages workflow `27918386994` completed successfully.
 - GitHub Pages workflow `27918482902` completed successfully after the release-verification log commit.
-- Verified live GitHub Pages shows Windows `v0.1.9`, Mac `v0.1.8`, and Pages build metadata stamped from the latest deployed commit.
+- Verified live GitHub Pages initially showed Windows `v0.1.9`, Mac `v0.1.8`, and Pages build metadata stamped from the latest deployed commit before the later macOS sync.
 - Verified GitHub Releases reports `v0.1.9` as latest with both Windows assets.
 - Verified latest download URLs for both Windows x64 and x86 return HTTP 200.
+
+## Iteration 27 - macOS v0.1.9 Release Sync
+
+Date: 2026-06-22
+
+### Target
+
+Bring the macOS release artifacts and download links up to the Windows `v0.1.9` release.
+
+### Cause
+
+The `v0.1.9` GitHub Release had the Windows x64/x86 ZIPs, while the public Mac links still pointed at the previous `v0.1.8` assets.
+
+### Implementation
+
+- Built `DeguDesktop-macos-arm64.zip` and `DeguDesktop-macos-amd64.zip` with `VERSION=v0.1.9`.
+- Built Big Sur compatibility ZIPs `DeguDesktop-macos-big-sur-arm64.zip` and `DeguDesktop-macos-big-sur-amd64.zip` with Go 1.24.11, `VERSION=v0.1.9-big-sur`, and `MACOS_MIN_VERSION=11.0`.
+- Uploaded all four macOS ZIPs to the existing GitHub Release `v0.1.9`.
+- Updated the GitHub Release notes with macOS `v0.1.9` download guidance.
+- Updated the GitHub Pages Mac direct links and visible Mac version from `v0.1.8` to `v0.1.9`.
+- Updated the README Big Sur compatibility build examples to `v0.1.9-big-sur`.
+
+### Verification
+
+- Verified macOS 12+ ZIPs have `CFBundleShortVersionString=v0.1.9`, `CFBundleVersion=v0.1.9`, `LSMinimumSystemVersion=12.0`, and Mach-O `LC_BUILD_VERSION minos 12.0`.
+- Verified Big Sur ZIPs have `CFBundleShortVersionString=v0.1.9-big-sur`, `CFBundleVersion=v0.1.9-big-sur`, `LSMinimumSystemVersion=11.0`, and Mach-O `LC_BUILD_VERSION minos 11.0`.
+- Verified all four ZIPs are ad-hoc signed and do not contain AppleDouble metadata.
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- Go 1.24.11 compatibility `go test -buildvcs=false ./...`
+- Go 1.24.11 compatibility `go vet -buildvcs=false ./...`
+- Local Windows amd64 GUI cross-build with `main.appVersion=v0.1.9`.
+
+### Remaining Risk
+
+- Big Sur support is statically checked and packaged, but not smoke-tested on a real macOS 11 machine.
