@@ -672,7 +672,34 @@ The tray menu used a fixed shortcut list of 1, 2, 3, 5, and 10. The runtime also
   - `.codex/qa/settings-motion-clear-v017.png`
   - `.codex/qa/settings-motion-hover-v017.png`
 
-## Iteration 19 - Random Stroll Wheel Choice
+## Iteration 19 - macOS v0.1.7 Release Sync
+
+Date: 2026-06-21
+
+### Target
+
+Bring the macOS release artifacts up to the Windows `v0.1.7` release.
+
+### Release Pass
+
+- Built `DeguDesktop-macos-arm64.zip` and `DeguDesktop-macos-amd64.zip` with `VERSION=v0.1.7`.
+- Built Big Sur compatibility ZIPs `DeguDesktop-macos-big-sur-arm64.zip` and `DeguDesktop-macos-big-sur-amd64.zip` with Go 1.24.11, `VERSION=v0.1.7-big-sur`, and `MACOS_MIN_VERSION=11.0`.
+- Uploaded all four macOS ZIPs to the existing GitHub Release `v0.1.7`.
+- Replaced the release note that pointed Mac users to `v0.1.6` with macOS `v0.1.7` download guidance.
+- Updated the GitHub Pages Mac direct links and visible Mac version from `v0.1.6` to `v0.1.7`.
+
+### Verification
+
+- Verified macOS 12+ ZIPs have `CFBundleShortVersionString=v0.1.7`, `LSMinimumSystemVersion=12.0`, and Mach-O `LC_BUILD_VERSION minos 12.0`.
+- Verified Big Sur ZIPs have `CFBundleShortVersionString=v0.1.7-big-sur`, `LSMinimumSystemVersion=11.0`, and Mach-O `LC_BUILD_VERSION minos 11.0`.
+- `codesign --verify --deep --strict` passed for all four extracted macOS app bundles.
+- `.codex/tools/go/bin/go test -buildvcs=false ./...`
+- `.codex/tools/go/bin/go vet -buildvcs=false ./...`
+- `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go test -buildvcs=false ./...`
+- `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go vet -buildvcs=false ./...`
+- Local Windows amd64 GUI cross-build with `main.appVersion=v0.1.7`.
+
+## Iteration 20 - Random Stroll Wheel Choice
 
 Date: 2026-06-21
 
@@ -700,7 +727,7 @@ The wheel state was only entered from `onTyping()`, and `onTyping()` intentional
 - `git diff --check`
 - `go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=v0.1.7-random-wheel-local" -o dist\DeguDesktop.exe ./cmd/degu`
 
-## Iteration 20 - v0.1.8 Release And Pages Refresh
+## Iteration 21 - v0.1.8 Release And Pages Refresh
 
 Date: 2026-06-21
 
@@ -710,13 +737,13 @@ Publish the random stroll wheel behavior as `v0.1.8` and refresh the GitHub Page
 
 ### Cause
 
-Iteration 19 only rebuilt and launched a local test binary. The public Windows download and Pages version label still pointed at `v0.1.7`, and the Mac links still pointed at older `v0.1.6` release assets even though `v0.1.7` Mac assets exist.
+Iteration 20 only rebuilt and launched a local test binary. The public Windows download and Pages version label still pointed at `v0.1.7`. The Mac links should remain on the existing `v0.1.7` Mac assets from Iteration 19.
 
 ### Implementation
 
 - Updated README and GitHub Pages copy to describe wheel use during typing and occasional random stroll.
 - Updated the Pages Windows latest label to `v0.1.8`.
-- Updated Pages Mac download links and label to the existing `v0.1.7` Mac assets.
+- Kept Pages Mac download links and label on the existing `v0.1.7` Mac assets.
 
 ### Verification
 
