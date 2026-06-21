@@ -580,3 +580,30 @@ The previous wheel source was a complete wheel illustration while the runtime al
 - `go vet -buildvcs=false ./...`
 - Local Windows x64/x86 build with `main.appVersion=v0.1.6`
 - `git diff --check`
+
+## Iteration 16 - macOS v0.1.6 Release Sync
+
+Date: 2026-06-21
+
+### Target
+
+Bring the macOS release artifacts up to the Windows `v0.1.6` release.
+
+### Release Pass
+
+- Built `DeguDesktop-macos-arm64.zip` and `DeguDesktop-macos-amd64.zip` with `VERSION=v0.1.6`.
+- Built Big Sur compatibility ZIPs `DeguDesktop-macos-big-sur-arm64.zip` and `DeguDesktop-macos-big-sur-amd64.zip` with Go 1.24.11, `VERSION=v0.1.6-big-sur`, and `MACOS_MIN_VERSION=11.0`.
+- Uploaded all four macOS ZIPs to the existing GitHub Release `v0.1.6`.
+- Updated the GitHub Release notes with macOS download guidance.
+- Updated the GitHub Pages Mac direct links and visible Mac version from `v0.1.5` to `v0.1.6`.
+
+### Verification
+
+- Verified macOS 12+ ZIPs have `CFBundleShortVersionString=v0.1.6`, `LSMinimumSystemVersion=12.0`, and Mach-O `LC_BUILD_VERSION minos 12.0`.
+- Verified Big Sur ZIPs have `CFBundleShortVersionString=v0.1.6-big-sur`, `LSMinimumSystemVersion=11.0`, and Mach-O `LC_BUILD_VERSION minos 11.0`.
+- `codesign --verify --deep --strict` passed for all four extracted macOS app bundles.
+- `.codex/tools/go/bin/go test -buildvcs=false ./...`
+- `.codex/tools/go/bin/go vet -buildvcs=false ./...`
+- `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go test -buildvcs=false ./...`
+- `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go vet -buildvcs=false ./...`
+- Local Windows amd64 GUI cross-build with `main.appVersion=v0.1.6`.

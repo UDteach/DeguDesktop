@@ -113,8 +113,8 @@ The macOS app runs as a menu-bar app and places a click-through transparent pet 
 Build macOS 11 Big Sur compatibility ZIPs with Go 1.24:
 
 ```bash
-GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=amd64 VERSION=v0.1.5-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
-GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=arm64 VERSION=v0.1.5-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
+GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=amd64 VERSION=v0.1.6-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
+GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=arm64 VERSION=v0.1.6-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
 ```
 
 These commands create `DeguDesktop-macos-big-sur-amd64.zip` for Intel Macs and `DeguDesktop-macos-big-sur-arm64.zip` for Apple Silicon Macs. Big Sur support depends on the Go 1.24 compatibility toolchain and should be smoke-tested on a real macOS 11 machine before publishing it as a fully verified release asset.
