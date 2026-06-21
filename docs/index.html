@@ -133,6 +133,7 @@
 
       .button {
         display: inline-flex;
+        max-width: 100%;
         min-height: 46px;
         align-items: center;
         justify-content: center;
@@ -140,7 +141,9 @@
         border: 1px solid var(--ink);
         background: var(--surface);
         text-decoration: none;
+        text-align: center;
         font-weight: 650;
+        line-height: 1.25;
       }
 
       .button.primary {
@@ -267,15 +270,22 @@
             <a class="button" href="download/DeguDesktop-windows-386.zip">
               Windows版 x86
             </a>
-            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/download/v0.1.4/DeguDesktop-macos-arm64.zip">
-              Mac版 Apple Silicon
+            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/download/v0.1.5/DeguDesktop-macos-arm64.zip">
+              Mac版 Apple Silicon macOS 12+
             </a>
-            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/download/v0.1.4/DeguDesktop-macos-amd64.zip">
-              Mac版 Intel
+            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/download/v0.1.5/DeguDesktop-macos-amd64.zip">
+              Mac版 Intel macOS 12+
+            </a>
+            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/download/v0.1.5/DeguDesktop-macos-big-sur-arm64.zip">
+              Mac Big Sur Apple Silicon macOS 11
+            </a>
+            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/download/v0.1.5/DeguDesktop-macos-big-sur-amd64.zip">
+              Mac Big Sur Intel macOS 11
             </a>
           </div>
           <p class="download-note">
-            Mac版はmacOS 12 Monterey以降対応です。M1 / M2 / M3 / M4などはApple Silicon版、Intel MacはIntel版を選んでください。
+            Mac版の通常ZIPはmacOS 12 Monterey以降対応です。M1 / M2 / M3 / M4などはApple Silicon版、Intel MacはIntel版を選んでください。
+            macOS 11 Big Surの場合はBig Sur版を選んでください。2015年頃のMacBookは多くの場合Intel版です。
           </p>
           <div class="release-meta" aria-label="Build information">
             <span>バージョン <strong data-build-version>dev-local</strong></span>
@@ -332,7 +342,7 @@
         </article>
         <article>
           <h2>配布ビルド</h2>
-          <p>このページのダウンロードリンクからWindows向けZIPを取得できます。Mac版はGitHub Releasesで配布します。現在のMac版はmacOS 12 Monterey以降対応です。</p>
+          <p>このページのダウンロードリンクからWindows向けZIPとMac向けZIPを取得できます。Mac版は通常のmacOS 12 Monterey以降向けと、macOS 11 Big Sur互換版を分けています。</p>
         </article>
       </section>
 
@@ -342,7 +352,7 @@
           Degu Desktop is a small desktop pet app for Windows and macOS. Pixel-art degus walk above the Windows taskbar
           or along the bottom edge above the Mac Dock and react to typing and clicks. The Windows build also supports
           foraging, eating, digging, grooming, smooth turns, and wheel running while you type. Download the Windows x64 or x86
-          ZIP from this page, or get the macOS ZIP from GitHub Releases.
+          ZIP from this page, or choose the macOS Apple Silicon, Intel, or Big Sur compatibility ZIP.
         </p>
       </section>
     </main>

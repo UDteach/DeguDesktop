@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-20
+Last updated: 2026-06-21
 
 ## Repository
 
@@ -46,9 +46,10 @@ Last updated: 2026-06-20
 - Click reactions are wired through global mouse monitoring while preserving the click-through overlay.
 - Optional cursor-hover name labels appear above visible degus.
 - macOS settings are persisted under the user's Application Support config directory.
-- Current macOS builds support macOS 12 Monterey or later because the release build uses Go 1.25; older macOS support would need a separately tested Go 1.24 compatibility build.
+- Default macOS builds support macOS 12 Monterey or later.
+- Optional Big Sur compatibility ZIPs target macOS 11 using Go 1.24.11 and `MACOS_MIN_VERSION=11.0`; real macOS 11 smoke testing is still outstanding.
 - Local packaging uses `scripts/build_macos.sh` to create ad-hoc-signed `DeguDesktop.app` ZIPs.
-- Local release packaging creates `DeguDesktop-macos-arm64.zip` and `DeguDesktop-macos-amd64.zip`; those ZIPs can be attached to GitHub Releases manually.
+- Local release packaging creates `DeguDesktop-macos-arm64.zip` and `DeguDesktop-macos-amd64.zip`; compatibility packaging can also create `DeguDesktop-macos-big-sur-arm64.zip` and `DeguDesktop-macos-big-sur-amd64.zip`. Those ZIPs can be attached to GitHub Releases manually.
 
 Known macOS gaps:
 

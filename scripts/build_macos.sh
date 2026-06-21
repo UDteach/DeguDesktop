@@ -5,9 +5,17 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 GO_CMD="${GO_CMD:-go}"
 VERSION="${VERSION:-dev}"
 ARCH="${GOARCH:-$("$GO_CMD" env GOARCH)}"
+HOST_GOOS="$("$GO_CMD" env GOHOSTOS)"
+HOST_GOARCH="$("$GO_CMD" env GOHOSTARCH)"
+MACOS_MIN_VERSION="${MACOS_MIN_VERSION:-12.0}"
+MACOS_COMPAT_LABEL="${MACOS_COMPAT_LABEL:-}"
 DIST_DIR="$ROOT_DIR/dist"
 APP_DIR="$DIST_DIR/DeguDesktop.app"
-ZIP_PATH="$DIST_DIR/DeguDesktop-macos-$ARCH.zip"
+ZIP_BASENAME="DeguDesktop-macos-$ARCH.zip"
+if [[ -n "$MACOS_COMPAT_LABEL" ]]; then
+  ZIP_BASENAME="DeguDesktop-macos-$MACOS_COMPAT_LABEL-$ARCH.zip"
+fi
+ZIP_PATH="$DIST_DIR/$ZIP_BASENAME"
 
 case "$ARCH" in
   arm64|amd64) ;;
@@ -17,17 +25,35 @@ case "$ARCH" in
     ;;
 esac
 
+case "$MACOS_MIN_VERSION" in
+  11.0|12.0|13.0|14.0|15.0|16.0|17.0|18.0|19.0|20.0|21.0|22.0|23.0|24.0|25.0|26.0) ;;
+  *)
+    echo "unsupported MACOS_MIN_VERSION: $MACOS_MIN_VERSION" >&2
+    exit 1
+    ;;
+esac
+
+export MACOSX_DEPLOYMENT_TARGET="$MACOS_MIN_VERSION"
+export CGO_CFLAGS="${CGO_CFLAGS:-} -mmacosx-version-min=$MACOS_MIN_VERSION"
+export CGO_CXXFLAGS="${CGO_CXXFLAGS:-} -mmacosx-version-min=$MACOS_MIN_VERSION"
+export CGO_LDFLAGS="${CGO_LDFLAGS:-} -mmacosx-version-min=$MACOS_MIN_VERSION"
+
 rm -rf "$APP_DIR"
 mkdir -p "$APP_DIR/Contents/MacOS" "$APP_DIR/Contents/Resources"
 
-python3 - "$ROOT_DIR/packaging/macos/Info.plist" "$APP_DIR/Contents/Info.plist" "$VERSION" <<'PY'
+python3 - "$ROOT_DIR/packaging/macos/Info.plist" "$APP_DIR/Contents/Info.plist" "$VERSION" "$MACOS_MIN_VERSION" <<'PY'
 from pathlib import Path
 import re
 import sys
 
-src, dst, version = sys.argv[1:]
+src, dst, version, min_macos = sys.argv[1:]
 safe = re.sub(r"[^0-9A-Za-z.+-]", "-", version).strip("-") or "dev"
-text = Path(src).read_text(encoding="utf-8").replace("__VERSION__", safe)
+text = (
+    Path(src)
+    .read_text(encoding="utf-8")
+    .replace("__VERSION__", safe)
+    .replace("__MIN_MACOS_VERSION__", min_macos)
+)
 Path(dst).write_text(text, encoding="utf-8")
 PY
 
@@ -184,7 +210,7 @@ func max(a, b int) int {
 	return b
 }
 GO
-"$GO_CMD" run "$ICON_TMP/make_icon.go" "$ROOT_DIR/assets/sprites/degu_wild_agouti_set00.png" "$ICONSET"
+GOOS="$HOST_GOOS" GOARCH="$HOST_GOARCH" CGO_ENABLED=0 "$GO_CMD" run "$ICON_TMP/make_icon.go" "$ROOT_DIR/assets/sprites/degu_wild_agouti_set00.png" "$ICONSET"
 iconutil -c icns "$ICONSET" -o "$APP_DIR/Contents/Resources/DeguDesktop.icns"
 
 CGO_ENABLED=1 GOOS=darwin GOARCH="$ARCH" "$GO_CMD" build \

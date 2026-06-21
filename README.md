@@ -30,7 +30,8 @@ macOS:
 - Multiple degus wandering along the bottom edge
 - Keyboard reaction through macOS event monitoring when system permissions allow it
 - Click reactions and optional cursor-hover name labels while preserving the click-through desktop layer
-- Supported OS for current builds: macOS 12 Monterey or later, Intel and Apple Silicon
+- Supported OS for default macOS builds: macOS 12 Monterey or later, Intel and Apple Silicon
+- Optional Big Sur compatibility ZIPs can be built separately for macOS 11, Intel and Apple Silicon
 
 ## ImageGen Asset Source
 
@@ -106,7 +107,16 @@ Build a macOS app bundle:
 GOARCH=arm64 VERSION=dev ./scripts/build_macos.sh
 ```
 
-The macOS app runs as a menu-bar app and places a click-through transparent pet layer at the bottom of the current screen, above the Dock area. The menu-bar icon opens a native settings window for visible count, coat selection, per-pet names, mode, speed, typing wheel, and exit. It does not show a Dock icon by default. Current builds support macOS 12 Monterey or later because they are built with Go 1.25. Global keyboard and mouse reaction can require macOS input monitoring/accessibility permission depending on the user's system settings.
+The macOS app runs as a menu-bar app and places a click-through transparent pet layer at the bottom of the current screen, above the Dock area. The menu-bar icon opens a native settings window for visible count, coat selection, per-pet names, mode, speed, typing wheel, and exit. It does not show a Dock icon by default. Default macOS builds target macOS 12 Monterey or later. Global keyboard and mouse reaction can require macOS input monitoring/accessibility permission depending on the user's system settings.
+
+Build macOS 11 Big Sur compatibility ZIPs with Go 1.24:
+
+```bash
+GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=amd64 VERSION=v0.1.5-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
+GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=arm64 VERSION=v0.1.5-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
+```
+
+These commands create `DeguDesktop-macos-big-sur-amd64.zip` for Intel Macs and `DeguDesktop-macos-big-sur-arm64.zip` for Apple Silicon Macs. Big Sur support depends on the Go 1.24 compatibility toolchain and should be smoke-tested on a real macOS 11 machine before publishing it as a fully verified release asset.
 
 ## Release
 
@@ -118,8 +128,10 @@ Release assets use:
 - `DeguDesktop-windows-386.zip`
 - `DeguDesktop-macos-arm64.zip`
 - `DeguDesktop-macos-amd64.zip`
+- `DeguDesktop-macos-big-sur-arm64.zip`
+- `DeguDesktop-macos-big-sur-amd64.zip`
 
-The Windows app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, stage a temporary updater script, exit, replace `DeguDesktop.exe`, and restart. The macOS app is currently packaged as an ad-hoc-signed app bundle for macOS 12 Monterey or later; Developer ID signing and notarization are still separate release-operator steps. Older macOS support would need a separate Go 1.24-based compatibility build and testing.
+The Windows app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, stage a temporary updater script, exit, replace `DeguDesktop.exe`, and restart. The macOS app is currently packaged as an ad-hoc-signed app bundle. Default ZIPs target macOS 12 Monterey or later, and optional Big Sur ZIPs target macOS 11 with Go 1.24. Developer ID signing and notarization are still separate release-operator steps.
 
 The GitHub Pages workflow also stamps the download area with the Pages build version, JST update date, and short commit ID.
 

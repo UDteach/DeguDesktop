@@ -498,3 +498,45 @@ The macOS settings window covered motion and coat controls, but did not yet expo
 
 - Synthetic live-click QA was blocked by macOS accessibility permission for `osascript`; the click reaction hit test is covered in Go tests.
 - No macOS foraging behavior, update installer, Developer ID signing, or notarization automation yet.
+
+## Iteration 14 - macOS Big Sur Compatibility Build Path
+
+Date: 2026-06-21
+
+### Target
+
+Create a macOS 11 Big Sur compatibility build path without requiring a real Big Sur test machine.
+
+### Cause
+
+Go 1.25 requires macOS 12 Monterey or later, so a Big Sur ZIP needs to be built with the last Go line that can run on macOS 11. The packaging script also previously hard-coded `LSMinimumSystemVersion` to `12.0`, which made every app bundle advertise Monterey or later even when a compatibility toolchain was used.
+
+### Packaging Pass
+
+- Lowered the module `go` directive to `1.24.0`.
+- Downgraded `golang.org/x/image` to `v0.36.0`, the latest checked version in this pass with a Go 1.24 module directive.
+- Added `MACOS_MIN_VERSION` to `scripts/build_macos.sh` and template `LSMinimumSystemVersion` into `Info.plist`.
+- Added `MACOS_COMPAT_LABEL` so Big Sur ZIPs are named `DeguDesktop-macos-big-sur-<arch>.zip` without changing the default Monterey-or-later ZIP names.
+- Exported `MACOSX_DEPLOYMENT_TARGET` and cgo `-mmacosx-version-min` flags so the Mach-O `LC_BUILD_VERSION` records the requested minimum OS.
+- Built the generated `.icns` helper for the host architecture, which keeps amd64 cross-packaging working on Apple Silicon hosts.
+- Documented the Big Sur compatibility commands and release asset names in `README.md` and the current-state file.
+
+### Verification
+
+- `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go test -buildvcs=false ./...`
+- `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go vet -buildvcs=false ./...`
+- `.codex/tools/go/bin/go test -buildvcs=false ./...`
+- `.codex/tools/go/bin/go vet -buildvcs=false ./...`
+- `GOTOOLCHAIN=local GO_CMD=.codex/tools/go1.24.11/bin/go GOARCH=amd64 VERSION=v0.1.5-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur scripts/build_macos.sh`
+- `GOTOOLCHAIN=local GO_CMD=.codex/tools/go1.24.11/bin/go GOARCH=arm64 VERSION=v0.1.5-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur scripts/build_macos.sh`
+- Verified both Big Sur ZIPs have `LSMinimumSystemVersion=11.0`, matching `CFBundleShortVersionString=v0.1.5-big-sur`, the expected Mach-O architecture, and `LC_BUILD_VERSION minos 11.0`.
+- `codesign --verify --deep --strict` passed for both extracted Big Sur app bundles.
+- `GO_CMD=.codex/tools/go/bin/go GOARCH=arm64 VERSION=v0.1.5 scripts/build_macos.sh`
+- Verified the default macOS ZIP still has `LSMinimumSystemVersion=12.0` and `LC_BUILD_VERSION minos 12.0`.
+- `GOOS=windows GOARCH=amd64 CGO_ENABLED=0 .codex/tools/go/bin/go test -buildvcs=false -c -o /tmp/degu-windows-amd64.test.exe ./cmd/degu`
+- `GOOS=windows GOARCH=amd64 CGO_ENABLED=0 .codex/tools/go/bin/go build -buildvcs=false -ldflags="-H=windowsgui -X main.appVersion=v0.1.5" -o /tmp/DeguDesktop.exe ./cmd/degu`
+
+### Remaining Risk
+
+- Big Sur support is statically checked and packaged, but not smoke-tested on a real macOS 11 machine.
+- Public distribution still needs Developer ID signing and notarization as release-operator steps.
