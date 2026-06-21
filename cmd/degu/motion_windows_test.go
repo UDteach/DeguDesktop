@@ -178,6 +178,85 @@ func TestTypingDoesNotStartWheelInRandomMode(t *testing.T) {
 	}
 }
 
+func TestRandomStrollCanStartWheelWithoutTyping(t *testing.T) {
+	a := &petApp{
+		mode:         modeRandom,
+		wheelEnabled: true,
+		wheelX:       400,
+		sceneW:       1200,
+		pets: []deguPet{
+			{state: stateWalk, item: noItem, moveSpeed: 3},
+		},
+	}
+
+	if !a.tryStartRandomWheel(&a.pets[0], 0) {
+		t.Fatalf("tryStartRandomWheel returned false, want true")
+	}
+	if got := a.pets[0].state; got != stateWheel {
+		t.Fatalf("random wheel state = %v, want stateWheel", got)
+	}
+	if got := a.pets[0].moveSpeed; got != 0 {
+		t.Fatalf("random wheel moveSpeed = %d, want 0", got)
+	}
+	if a.pets[0].stateTicks < randomWheelMinTicks || a.pets[0].stateTicks >= randomWheelMinTicks+randomWheelExtraTicks {
+		t.Fatalf("random wheel ticks = %d, want [%d, %d)", a.pets[0].stateTicks, randomWheelMinTicks, randomWheelMinTicks+randomWheelExtraTicks)
+	}
+	wantX := clamp(a.wheelX-wheelSize/2, 0, max(0, a.sceneW-spriteW))
+	if got := a.pets[0].x; got != wantX {
+		t.Fatalf("random wheel x = %d, want %d", got, wantX)
+	}
+}
+
+func TestRandomWheelRequiresRandomModeEnabledAndNoRunner(t *testing.T) {
+	tests := []struct {
+		name    string
+		makeApp func() *petApp
+		pet     deguPet
+	}{
+		{
+			name:    "keyboard mode",
+			makeApp: func() *petApp { return &petApp{mode: modeKeyboard, wheelEnabled: true, sceneW: 1000} },
+			pet:     deguPet{state: stateWalk, item: noItem},
+		},
+		{
+			name:    "wheel disabled",
+			makeApp: func() *petApp { return &petApp{mode: modeRandom, wheelEnabled: false, sceneW: 1000} },
+			pet:     deguPet{state: stateWalk, item: noItem},
+		},
+		{
+			name:    "roll outside chance",
+			makeApp: func() *petApp { return &petApp{mode: modeRandom, wheelEnabled: true, sceneW: 1000} },
+			pet:     deguPet{state: stateWalk, item: noItem},
+		},
+		{
+			name: "existing runner",
+			makeApp: func() *petApp {
+				return &petApp{
+					mode:         modeRandom,
+					wheelEnabled: true,
+					sceneW:       1000,
+					pets:         []deguPet{{state: stateWheel}},
+				}
+			},
+			pet: deguPet{state: stateWalk, item: noItem},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := tt.makeApp()
+			roll := 0
+			if tt.name == "roll outside chance" {
+				roll = randomWheelChance
+			}
+			pet := tt.pet
+			if got := a.tryStartRandomWheel(&pet, roll); got {
+				t.Fatalf("tryStartRandomWheel() = true, want false")
+			}
+		})
+	}
+}
+
 func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	configRoot := t.TempDir()
 	t.Setenv("APPDATA", configRoot)

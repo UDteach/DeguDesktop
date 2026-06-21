@@ -17,7 +17,7 @@ Windows:
 - Startup tray notification and GitHub Release based update checking from the tray menu
 - Social behavior: nearby degus can walk together and pause for grooming
 - Foraging behavior: hay, twigs, and low-key seed-like bits appear near the taskbar for sniffing, eating, digging, gnawing, and carrying
-- Wheel motion: in keyboard mode, a degu runs inside the wheel only while you are typing, then scurries away
+- Wheel motion: in keyboard mode, a degu runs inside the wheel while you are typing; in random stroll mode, a degu can occasionally choose the wheel as a natural action
 - Turn motion: eight ImageGen frames smooth direction changes instead of instant sprite flipping
 - Coat variants: wild agouti, black, blue-gray, gray, white/cream, sand/champagne, chocolate, black pied, agouti pied, blue pied, and cream pied
 - Pied coats use ImageGen coat-guide images for irregular white patch placement, not simple recolors or oval procedural masks
@@ -114,8 +114,8 @@ The macOS app runs as a menu-bar app and places a click-through transparent pet 
 Build macOS 11 Big Sur compatibility ZIPs with Go 1.24:
 
 ```bash
-GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=amd64 VERSION=v0.1.6-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
-GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=arm64 VERSION=v0.1.6-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
+GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=amd64 VERSION=v0.1.7-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
+GOTOOLCHAIN=local GO_CMD=/path/to/go1.24.11/bin/go GOARCH=arm64 VERSION=v0.1.7-big-sur MACOS_MIN_VERSION=11.0 MACOS_COMPAT_LABEL=big-sur ./scripts/build_macos.sh
 ```
 
 These commands create `DeguDesktop-macos-big-sur-amd64.zip` for Intel Macs and `DeguDesktop-macos-big-sur-arm64.zip` for Apple Silicon Macs. Big Sur support depends on the Go 1.24 compatibility toolchain and should be smoke-tested on a real macOS 11 machine before publishing it as a fully verified release asset.

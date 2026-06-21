@@ -29,7 +29,7 @@ Last updated: 2026-06-21
 - Transparent always-on-top taskbar overlay.
 - Tray menu and Japanese/English settings window for optional per-pet names, coat, speed, count, mode, typing wheel, display position, update checks, settings, and exit.
 - Keyboard reaction and random stroll modes.
-- Typing wheel behavior.
+- Typing wheel behavior; in random stroll mode, a degu can also occasionally choose the wheel as a random action.
 - Foraging props, eating, digging, and carrying behavior.
 - Grooming/social pause behavior.
 - Optional cursor-hover name labels above visible degus.

@@ -59,6 +59,9 @@ const (
 	minOverlayOffsetY           = -48
 	maxOverlayOffsetY           = 96
 	overlayOffsetStep           = 4
+	randomWheelChance           = 14
+	randomWheelMinTicks         = 120
+	randomWheelExtraTicks       = 120
 	wheelKeyHold                = 18
 	turnTicks                   = 16
 	reactionTicks               = 54
@@ -850,6 +853,9 @@ func (a *petApp) chooseRandomAction(p *deguPet) {
 	}
 	if a.bidirectional && p.state != stateTurn && rand.Intn(100) < 16 {
 		a.startTurn(p, -p.dir, stateWalk)
+		return
+	}
+	if a.tryStartRandomWheel(p, rand.Intn(100)) {
 		return
 	}
 	if roll < 18 && a.maybeAssignForageTarget(p) {
@@ -3147,6 +3153,22 @@ func drawFacingImage(dst *image.RGBA, src *image.RGBA, r image.Rectangle, dir in
 }
 
 func (a *petApp) enterWheelFromTyping(p *deguPet) {
+	a.enterWheel(p, wheelKeyHold)
+}
+
+func (a *petApp) enterWheelFromRandom(p *deguPet) {
+	a.enterWheel(p, randomWheelMinTicks+rand.Intn(randomWheelExtraTicks))
+}
+
+func (a *petApp) tryStartRandomWheel(p *deguPet, roll int) bool {
+	if a.mode != modeRandom || !a.wheelEnabled || p.item != noItem || a.hasWheelRunner() || roll >= randomWheelChance {
+		return false
+	}
+	a.enterWheelFromRandom(p)
+	return true
+}
+
+func (a *petApp) enterWheel(p *deguPet, ticks int) {
 	alreadyRunning := p.state == stateWheel
 	p.state = stateWheel
 	if !alreadyRunning {
@@ -3156,7 +3178,7 @@ func (a *petApp) enterWheelFromTyping(p *deguPet) {
 	p.item = noItem
 	p.carryKind = noItem
 	p.moveSpeed = 0
-	p.stateTicks = wheelKeyHold
+	p.stateTicks = max(1, ticks)
 	p.x = clamp(a.wheelX-wheelSize/2, 0, max(0, a.sceneW-spriteW))
 }
 

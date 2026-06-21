@@ -671,3 +671,60 @@ The tray menu used a fixed shortcut list of 1, 2, 3, 5, and 10. The runtime also
   - `.codex/qa/settings-animals-v017-hoverfix.png`
   - `.codex/qa/settings-motion-clear-v017.png`
   - `.codex/qa/settings-motion-hover-v017.png`
+
+## Iteration 19 - Random Stroll Wheel Choice
+
+Date: 2026-06-21
+
+### Target
+
+Let random stroll mode occasionally use the wheel without requiring keyboard input.
+
+### Cause
+
+The wheel state was only entered from `onTyping()`, and `onTyping()` intentionally ignores input while the app is in random stroll mode. That meant the wheel never appeared during random stroll even when the wheel option was enabled.
+
+### Implementation
+
+- Added a low-probability random wheel action to `chooseRandomAction`.
+- Kept only one wheel runner active at a time.
+- Gave random wheel sessions a longer hold time than typing-triggered wheel sessions.
+- Preserved the existing behavior that typing itself does not trigger the wheel in random stroll mode.
+
+### Verification
+
+- Added tests for random wheel entry, mode/setting/active-runner guards, and the existing typing guard in random mode.
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `git diff --check`
+- `go build -buildvcs=false -ldflags="-H=windowsgui -s -w -X main.appVersion=v0.1.7-random-wheel-local" -o dist\DeguDesktop.exe ./cmd/degu`
+
+## Iteration 20 - v0.1.8 Release And Pages Refresh
+
+Date: 2026-06-21
+
+### Target
+
+Publish the random stroll wheel behavior as `v0.1.8` and refresh the GitHub Pages download copy.
+
+### Cause
+
+Iteration 19 only rebuilt and launched a local test binary. The public Windows download and Pages version label still pointed at `v0.1.7`, and the Mac links still pointed at older `v0.1.6` release assets even though `v0.1.7` Mac assets exist.
+
+### Implementation
+
+- Updated README and GitHub Pages copy to describe wheel use during typing and occasional random stroll.
+- Updated the Pages Windows latest label to `v0.1.8`.
+- Updated Pages Mac download links and label to the existing `v0.1.7` Mac assets.
+
+### Verification
+
+- `go run ./cmd/importsheet`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `git diff --check`
+- Built local Windows x64/x86 ZIPs with `main.appVersion=v0.1.8`.
+- Verified ZIP contents include `DeguDesktop.exe` and `README.md`.
+- Verified PE machine types: amd64 `0x8664`, x86 `0x014c`.
+- Pending GitHub workflow and Pages verification after push/tag.
