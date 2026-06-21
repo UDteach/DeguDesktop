@@ -743,7 +743,7 @@ Iteration 20 only rebuilt and launched a local test binary. The public Windows d
 
 - Updated README and GitHub Pages copy to describe wheel use during typing and occasional random stroll.
 - Updated the Pages Windows latest label to `v0.1.8`.
-- Kept Pages Mac download links and label on the existing `v0.1.7` Mac assets.
+- Initially kept Pages Mac download links and label on the existing `v0.1.7` Mac assets until matching macOS artifacts were built.
 
 ### Verification
 
@@ -757,5 +757,32 @@ Iteration 20 only rebuilt and launched a local test binary. The public Windows d
 - Pushed `main` and tag `v0.1.8`.
 - GitHub Release workflow `27898483118` completed successfully and published `DeguDesktop-windows-amd64.zip` and `DeguDesktop-windows-386.zip`.
 - GitHub Pages workflow `27898530576` completed successfully.
-- Verified live GitHub Pages shows Windows `v0.1.8`, Mac `v0.1.7`, build commit `2365b87`, and the random stroll wheel copy.
+- Verified live GitHub Pages showed Windows `v0.1.8`, Mac `v0.1.7`, build commit `2365b87`, and the random stroll wheel copy before the later macOS sync.
 - Verified GitHub Releases API reports `v0.1.8` as latest with both Windows assets.
+
+## Iteration 22 - macOS v0.1.8 Release Sync
+
+Date: 2026-06-21
+
+### Target
+
+Bring the macOS release artifacts up to the Windows `v0.1.8` release.
+
+### Release Pass
+
+- Built `DeguDesktop-macos-arm64.zip` and `DeguDesktop-macos-amd64.zip` with `VERSION=v0.1.8`.
+- Built Big Sur compatibility ZIPs `DeguDesktop-macos-big-sur-arm64.zip` and `DeguDesktop-macos-big-sur-amd64.zip` with Go 1.24.11, `VERSION=v0.1.8-big-sur`, and `MACOS_MIN_VERSION=11.0`.
+- Uploaded all four macOS ZIPs to the existing GitHub Release `v0.1.8`.
+- Updated the GitHub Release notes with macOS `v0.1.8` download guidance.
+- Updated the GitHub Pages Mac direct links and visible Mac version from `v0.1.7` to `v0.1.8`.
+
+### Verification
+
+- Verified macOS 12+ ZIPs have `CFBundleShortVersionString=v0.1.8`, `LSMinimumSystemVersion=12.0`, and Mach-O `LC_BUILD_VERSION minos 12.0`.
+- Verified Big Sur ZIPs have `CFBundleShortVersionString=v0.1.8-big-sur`, `LSMinimumSystemVersion=11.0`, and Mach-O `LC_BUILD_VERSION minos 11.0`.
+- `codesign --verify --deep --strict` passed for all four extracted macOS app bundles.
+- `.codex/tools/go/bin/go test -buildvcs=false ./...`
+- `.codex/tools/go/bin/go vet -buildvcs=false ./...`
+- `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go test -buildvcs=false ./...`
+- `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go vet -buildvcs=false ./...`
+- Local Windows amd64 GUI cross-build with `main.appVersion=v0.1.8`.
