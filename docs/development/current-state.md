@@ -27,16 +27,17 @@ Last updated: 2026-06-21
 ## Current Windows Features
 
 - Transparent always-on-top taskbar overlay.
-- Tray menu and Japanese/English settings window for optional per-pet names, coat, speed, count, mode, typing wheel, display position, update checks, settings, and exit.
+- Tray menu and Japanese/English settings window with a home overview for optional per-pet names, coat, speed, count, mode, typing wheel, display selection, walking range, display position, update checks/installing, settings, and exit.
 - Keyboard reaction and random stroll modes.
 - Typing wheel behavior; in random stroll mode, a degu can also occasionally choose the wheel as a random action.
 - Foraging props, eating, digging, and carrying behavior.
 - Grooming/social pause behavior.
 - Optional cursor-hover name labels above visible degus.
-- Windows overlay position can be switched between the taskbar work area and the physical screen bottom, with a saved vertical offset for fine tuning.
+- Windows overlay position can be switched between the selected display's taskbar work area and the physical screen bottom, with a saved vertical offset for fine tuning.
+- Windows display settings include a monitor selector and a saved taskbar walking range, so users can constrain movement to a specific horizontal segment.
 - Tray count quick actions cover every visible count from 1 to 10.
 - Pet height alignment can be switched between natural staggered lanes and a same-baseline row.
-- Startup tray notification and GitHub Release based update check/install flow.
+- Startup tray notification and GitHub Release based update check/install flow from the tray menu or Updates settings tab.
 - GitHub Pages and GitHub Release workflows, with Pages download metadata for version, update date, and commit.
 
 ## Current macOS Port
@@ -106,21 +107,20 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 - Species and coat are not yet separate concepts.
 - Degu, chinchilla, and macaroni mouse are not yet independently modeled.
 - Some generated degu action frames have inconsistent orientation, so runtime frame selection avoids known unstable walk-cycle frames.
-- The current settings window is implemented with animal/motion tabs and Japanese/English labels, but it is still native Win32 rather than a fully custom-rendered UI.
+- The current settings window is implemented with home/animal/motion/display/update tabs and Japanese/English labels, but it is still native Win32 rather than a fully custom-rendered UI.
 - The current website describes Degu Desktop but does not yet present a multi-species roadmap.
 - Future art-style selection is not implemented yet. The user likes the more natural illustrated degu-sheet style from the latest attached reference, so style profiles should be modeled separately from coat variants when this is added.
 
 ## Current In-Progress Diff
 
-At the start of this baseline pass, `cmd/degu/main_windows.go` had local uncommitted changes for:
+The current local iteration is improving Windows display and update controls:
 
-- Natural turn-state motion.
-- Bidirectional walking.
-- A Win32 settings window.
-
-The active turn implementation uses eight ImageGen-generated frames at runtime frame indices 32-39. Right-to-left uses the source sequence directly; left-to-right mirrors the same sequence.
-
-The user later explicitly requested release publication, so the current finish line includes commit, push, tag, GitHub Release, and Pages verification.
+- A dedicated Display tab in the Win32 settings window.
+- A Home tab with summary cards and shortcuts into animal, motion, display, and update settings.
+- Multi-monitor selection for the taskbar overlay.
+- A saved left/right walking range over the selected taskbar area, with visible horizontal scrollbars.
+- A dedicated Updates tab that surfaces the installed version, latest release, matching Windows zip, check action, and install action.
+- Tests for saved display/range settings and overlay bounds, including negative monitor coordinates.
 
 ## Codex Config Application
 

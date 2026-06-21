@@ -786,3 +786,132 @@ Bring the macOS release artifacts up to the Windows `v0.1.8` release.
 - `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go test -buildvcs=false ./...`
 - `GOTOOLCHAIN=local .codex/tools/go1.24.11/bin/go vet -buildvcs=false ./...`
 - Local Windows amd64 GUI cross-build with `main.appVersion=v0.1.8`.
+
+## Iteration 23 - Display Tab And Taskbar Walking Range
+
+Date: 2026-06-21
+
+### Target
+
+Let users choose which display the Windows pet overlay uses and set a clear "from here to here" walking range over the taskbar area, with visible scrollbars in the settings window.
+
+### Cause
+
+The existing display controls were mixed into the motion tab and only adjusted vertical placement. Users with a left taskbar or multiple displays needed a more explicit display section, and there was no way to constrain horizontal roaming to a specific taskbar segment.
+
+### Implementation
+
+- Added a dedicated Windows Display tab to the Win32 settings panel.
+- Added saved `displayIndex`, `walkRangeStart`, and `walkRangeEnd` settings.
+- Added monitor enumeration with primary-first ordering and virtual-screen fallback.
+- Added two visible horizontal scrollbar controls for the walking range start/end, plus full/narrow/wide/left/right buttons.
+- Applied the walking range to the overlay bounds and clamped pets/forage into the updated scene width.
+- Moved display position and pet-height alignment controls from Motion to Display.
+- Fixed a QA-found crash where monitor enumeration created a new Windows callback every frame and eventually hit Go's callback limit.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go`
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- `git diff --check`
+- Added tests for settings persistence, walk-range bounds, negative monitor coordinates, repeated monitor enumeration, and Display-tab tooltips.
+- Launched `dist\DeguDesktop.exe`, opened Settings through the normal command handler, switched to Display, verified the app stayed running, and captured:
+  - `.codex/qa/settings-display-range-final.png`
+  - `.codex/qa/settings-display-range-narrow.png`
+
+## Iteration 24 - Updates Settings Tab
+
+Date: 2026-06-21
+
+### Target
+
+Make the existing GitHub Release update support visible and understandable from the settings window, not only the tray menu.
+
+### Cause
+
+The updater already supported release checking, matching Windows x64/x86 zip selection, download, installer staging, and restart. However, the primary settings surface did not show update state, current/latest version, matching package, or install action, so users had to discover it from the tray menu.
+
+### Implementation
+
+- Added a dedicated Updates tab to the Win32 settings panel.
+- Added update status, package, and action sections with Japanese/English text.
+- Wired the settings buttons to the existing `startUpdateCheck(true)` and `installLatestUpdate()` paths.
+- Disabled the check/install buttons while update work is running, and disabled install until a matching newer release asset is available.
+- Synced the settings window when async update checks complete or fail.
+- Added tests for update summary states, package size display, installability, and update-tab tooltips.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go`
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- `git diff --check`
+- Launched `dist\DeguDesktop.exe`, opened Settings through the normal command handler, switched to Updates, verified the app stayed running, and captured:
+  - `.codex/qa/settings-updates-tab.png`
+  - `.codex/qa/settings-updates-tab-result.png`
+
+## Iteration 25 - Settings Home Overview
+
+Date: 2026-06-21
+
+### Target
+
+Make the settings window easier to understand on first open by adding a MofuMouse-style overview entry point.
+
+### Cause
+
+After adding Display and Updates, the settings surface had the needed controls but still opened directly into a single detail section. Users needed a clearer landing view that summarizes current state and points them to the right category without guessing.
+
+### Implementation
+
+- Added a Home tab as the default settings tab.
+- Added four overview cards: Degu, Motion, Display, and Updates.
+- Added one-click Open buttons from Home into each detailed settings section.
+- Added concise summaries for coat/name state, motion mode/speed/wheel/turns, display/range/position, and update/package state.
+- Added Japanese/English labels and tooltips for the Home tab and shortcuts.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go`
+- `go test -buildvcs=false ./cmd/degu`
+- Built `dist\DeguDesktop.exe`, opened Settings through the normal command handler, verified Home renders first, then used the Display shortcut and confirmed the app stayed running.
+- Visual QA screenshot:
+  - `.codex/qa/settings-home-tab.png`
+
+## Iteration 26 - v0.1.9 Version Bump Prep
+
+Date: 2026-06-21
+
+### Target
+
+Prepare the Windows release line for `v0.1.9` after the display range, update tab, and home settings improvements.
+
+### Cause
+
+The current public Windows release label was still `v0.1.8`, while the local app now includes the new user-facing settings and display behavior.
+
+### Implementation
+
+- Updated the GitHub Pages Windows latest label to `v0.1.9`.
+- Rebuilt local Windows x64/x86 download ZIPs with `main.appVersion=v0.1.9`.
+- Kept macOS links on the existing `v0.1.8` assets because no new macOS release artifacts were created in this pass.
+
+### Verification
+
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `git diff --check`
+- Verified both local ZIPs contain exactly `DeguDesktop.exe` and `README.md`.
+- Verified x64 ZIP contents use PE machine `0x8664`, x86 ZIP contents use PE machine `0x014c`, and both staged executables contain `v0.1.9`.
+- Replaced and relaunched the local `dist\DeguDesktop.exe` from the x64 `v0.1.9` build.
+
+### Release Status
+
+- Pending publication. GitHub workflow IDs and live verification will be recorded after `main` and tag `v0.1.9` are pushed.

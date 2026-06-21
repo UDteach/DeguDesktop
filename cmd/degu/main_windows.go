@@ -20,6 +20,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -59,6 +60,10 @@ const (
 	minOverlayOffsetY           = -48
 	maxOverlayOffsetY           = 96
 	overlayOffsetStep           = 4
+	defaultWalkRangeStart       = 0
+	defaultWalkRangeEnd         = 100
+	minWalkRangeSpan            = 25
+	walkRangeStep               = 5
 	randomWheelChance           = 14
 	randomWheelMinTicks         = 120
 	randomWheelExtraTicks       = 120
@@ -70,6 +75,7 @@ const (
 	settingsDirName             = "DeguDesktop"
 	settingsFileName            = "settings.json"
 	defaultUpdateAPIURL         = "https://api.github.com/repos/UDteach/DeguDesktop/releases/latest"
+	monitorPrimaryFlag          = 1
 )
 
 const (
@@ -134,37 +140,55 @@ const (
 )
 
 const (
-	ctrlTabAnimals      int32 = 1000
-	ctrlTabMotion       int32 = 1001
-	ctrlVariantCombo    int32 = 1002
-	ctrlPetMinus        int32 = 1003
-	ctrlPetPlus         int32 = 1004
-	ctrlLanguageCombo   int32 = 1005
-	ctrlCoatFixed       int32 = 1006
-	ctrlCoatSelected    int32 = 1007
-	ctrlCoatRandom      int32 = 1008
-	ctrlModeKeyboard    int32 = 1011
-	ctrlModeRandom      int32 = 1012
-	ctrlSpeedSlow       int32 = 1021
-	ctrlSpeedNormal     int32 = 1022
-	ctrlSpeedFast       int32 = 1023
-	ctrlTypingWheel     int32 = 1031
-	ctrlBidirectional   int32 = 1032
-	ctrlPositionTaskbar int32 = 1033
-	ctrlPositionBottom  int32 = 1034
-	ctrlOffsetUp        int32 = 1035
-	ctrlOffsetDown      int32 = 1036
-	ctrlLaneStaggered   int32 = 1037
-	ctrlLaneAligned     int32 = 1038
-	ctrlReset           int32 = 1041
-	ctrlClose           int32 = 1042
-	ctrlTopClose        int32 = 1043
-	ctrlNameLabels      int32 = 1044
-	ctrlPetVariantBase  int32 = 1050
-	ctrlPetNameBase     int32 = 1070
-	ctrlRenameEdit      int32 = 1100
-	ctrlRenameOK        int32 = 1101
-	ctrlRenameCancel    int32 = 1102
+	ctrlTabHome          int32 = 999
+	ctrlTabAnimals       int32 = 1000
+	ctrlTabMotion        int32 = 1001
+	ctrlTabDisplay       int32 = 1009
+	ctrlTabUpdates       int32 = 1010
+	ctrlVariantCombo     int32 = 1002
+	ctrlPetMinus         int32 = 1003
+	ctrlPetPlus          int32 = 1004
+	ctrlLanguageCombo    int32 = 1005
+	ctrlCoatFixed        int32 = 1006
+	ctrlCoatSelected     int32 = 1007
+	ctrlCoatRandom       int32 = 1008
+	ctrlModeKeyboard     int32 = 1011
+	ctrlModeRandom       int32 = 1012
+	ctrlSpeedSlow        int32 = 1021
+	ctrlSpeedNormal      int32 = 1022
+	ctrlSpeedFast        int32 = 1023
+	ctrlTypingWheel      int32 = 1031
+	ctrlBidirectional    int32 = 1032
+	ctrlPositionTaskbar  int32 = 1033
+	ctrlPositionBottom   int32 = 1034
+	ctrlOffsetUp         int32 = 1035
+	ctrlOffsetDown       int32 = 1036
+	ctrlLaneStaggered    int32 = 1037
+	ctrlLaneAligned      int32 = 1038
+	ctrlReset            int32 = 1041
+	ctrlClose            int32 = 1042
+	ctrlTopClose         int32 = 1043
+	ctrlNameLabels       int32 = 1044
+	ctrlPetVariantBase   int32 = 1050
+	ctrlPetNameBase      int32 = 1070
+	ctrlRenameEdit       int32 = 1100
+	ctrlRenameOK         int32 = 1101
+	ctrlRenameCancel     int32 = 1102
+	ctrlDisplayPrev      int32 = 1110
+	ctrlDisplayNext      int32 = 1111
+	ctrlRangeFull        int32 = 1112
+	ctrlRangeNarrow      int32 = 1113
+	ctrlRangeWide        int32 = 1114
+	ctrlRangeLeft        int32 = 1115
+	ctrlRangeRight       int32 = 1116
+	ctrlRangeStartScroll int32 = 1117
+	ctrlRangeEndScroll   int32 = 1118
+	ctrlUpdateCheck      int32 = 1120
+	ctrlUpdateInstall    int32 = 1121
+	ctrlHomeAnimals      int32 = 1130
+	ctrlHomeMotion       int32 = 1131
+	ctrlHomeDisplay      int32 = 1132
+	ctrlHomeUpdates      int32 = 1133
 )
 
 var appVersion = "dev"
@@ -231,8 +255,11 @@ const (
 type settingsTab int
 
 const (
-	tabAnimals settingsTab = iota
+	tabHome settingsTab = iota
+	tabAnimals
 	tabMotion
+	tabDisplay
+	tabUpdates
 )
 
 type coatMode int
@@ -343,6 +370,9 @@ type petApp struct {
 	positionMode       overlayPositionMode
 	overlayOffsetY     int
 	laneMode           petLaneMode
+	displayIndex       int
+	walkRangeStart     int
+	walkRangeEnd       int
 	settingsHwnd       win.HWND
 	settingsTab        settingsTab
 	lang               language
@@ -383,6 +413,9 @@ type appSettings struct {
 	PositionMode   *int     `json:"positionMode,omitempty"`
 	VerticalOffset *int     `json:"verticalOffset,omitempty"`
 	LaneMode       *int     `json:"laneMode,omitempty"`
+	DisplayIndex   *int     `json:"displayIndex,omitempty"`
+	WalkRangeStart *int     `json:"walkRangeStart,omitempty"`
+	WalkRangeEnd   *int     `json:"walkRangeEnd,omitempty"`
 	Language       int      `json:"language"`
 	SettingsX      int32    `json:"settingsX"`
 	SettingsY      int32    `json:"settingsY"`
@@ -393,22 +426,35 @@ type appSettings struct {
 var app *petApp
 
 var (
-	user32                 = syscall.NewLazyDLL("user32.dll")
-	ntdll                  = syscall.NewLazyDLL("ntdll.dll")
-	procAppendMenuW        = user32.NewProc("AppendMenuW")
-	procGetDlgCtrlID       = user32.NewProc("GetDlgCtrlID")
-	procSetWindowTextW     = user32.NewProc("SetWindowTextW")
-	procSetWindowsHookExW  = user32.NewProc("SetWindowsHookExW")
-	procUnhookWindowsHook  = user32.NewProc("UnhookWindowsHookEx")
-	procCallNextHookExProc = user32.NewProc("CallNextHookEx")
-	procUpdateLayeredWin   = user32.NewProc("UpdateLayeredWindow")
-	procRtlMoveMemory      = ntdll.NewProc("RtlMoveMemory")
+	user32                  = syscall.NewLazyDLL("user32.dll")
+	ntdll                   = syscall.NewLazyDLL("ntdll.dll")
+	procAppendMenuW         = user32.NewProc("AppendMenuW")
+	procGetDlgCtrlID        = user32.NewProc("GetDlgCtrlID")
+	procSetWindowTextW      = user32.NewProc("SetWindowTextW")
+	procSetWindowsHookExW   = user32.NewProc("SetWindowsHookExW")
+	procUnhookWindowsHook   = user32.NewProc("UnhookWindowsHookEx")
+	procCallNextHookExProc  = user32.NewProc("CallNextHookEx")
+	procUpdateLayeredWin    = user32.NewProc("UpdateLayeredWindow")
+	procEnumDisplayMonitors = user32.NewProc("EnumDisplayMonitors")
+	procRtlMoveMemory       = ntdll.NewProc("RtlMoveMemory")
 )
 
 const (
-	acSrcOver      = 0
-	ulwAlpha       = 0x00000002
-	spiGetWorkArea = 0x0030
+	acSrcOver       = 0
+	ulwAlpha        = 0x00000002
+	spiGetWorkArea  = 0x0030
+	sbsHorz         = 0x0000
+	sbmSetPos       = 0x00E0
+	sbmSetRange     = 0x00E2
+	sbLineLeft      = 0
+	sbLineRight     = 1
+	sbPageLeft      = 2
+	sbPageRight     = 3
+	sbThumbPosition = 4
+	sbThumbTrack    = 5
+	sbLeft          = 6
+	sbRight         = 7
+	sbEndScroll     = 8
 )
 
 func main() {
@@ -432,7 +478,10 @@ func main() {
 		positionMode:   positionTaskbarEdge,
 		overlayOffsetY: defaultOverlayOffsetY,
 		laneMode:       laneStaggered,
-		settingsTab:    tabAnimals,
+		displayIndex:   0,
+		walkRangeStart: defaultWalkRangeStart,
+		walkRangeEnd:   defaultWalkRangeEnd,
+		settingsTab:    tabHome,
 		lang:           langJapanese,
 		settingsX:      120,
 		settingsY:      120,
@@ -603,6 +652,20 @@ func (a *petApp) loadSettings() error {
 	if settings.LaneMode != nil {
 		a.laneMode = normalizePetLaneMode(*settings.LaneMode)
 	}
+	if settings.DisplayIndex != nil {
+		a.displayIndex = normalizeDisplayIndex(*settings.DisplayIndex, len(monitorAreas()))
+	}
+	if settings.WalkRangeStart != nil || settings.WalkRangeEnd != nil {
+		start := a.walkRangeStart
+		end := a.walkRangeEnd
+		if settings.WalkRangeStart != nil {
+			start = *settings.WalkRangeStart
+		}
+		if settings.WalkRangeEnd != nil {
+			end = *settings.WalkRangeEnd
+		}
+		a.walkRangeStart, a.walkRangeEnd = normalizeWalkRange(start, end)
+	}
 	a.nameLabels = settings.NameLabels
 	a.lang = normalizeLanguage(settings.Language)
 	if settings.SettingsX != 0 || settings.SettingsY != 0 {
@@ -630,6 +693,8 @@ func (a *petApp) saveSettings() error {
 	positionMode := int(normalizeOverlayPositionMode(int(a.positionMode)))
 	verticalOffset := normalizeOverlayOffset(a.overlayOffsetY)
 	laneMode := int(normalizePetLaneMode(int(a.laneMode)))
+	displayIndex := normalizeDisplayIndex(a.displayIndex, len(monitorAreas()))
+	walkStart, walkEnd := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
 	settings := appSettings{
 		Version:        1,
 		Variant:        clamp(a.variant, 0, len(variants)-1),
@@ -643,6 +708,9 @@ func (a *petApp) saveSettings() error {
 		PositionMode:   &positionMode,
 		VerticalOffset: &verticalOffset,
 		LaneMode:       &laneMode,
+		DisplayIndex:   &displayIndex,
+		WalkRangeStart: &walkStart,
+		WalkRangeEnd:   &walkEnd,
 		Language:       int(normalizeLanguage(int(a.lang))),
 		SettingsX:      a.settingsX,
 		SettingsY:      a.settingsY,
@@ -729,6 +797,36 @@ func normalizeOverlayPositionMode(mode int) overlayPositionMode {
 
 func normalizeOverlayOffset(offset int) int {
 	return clamp(offset, minOverlayOffsetY, maxOverlayOffsetY)
+}
+
+func normalizeDisplayIndex(index int, count int) int {
+	if count <= 0 {
+		return 0
+	}
+	return clamp(index, 0, count-1)
+}
+
+func normalizeWalkRange(start, end int) (int, int) {
+	start = clamp(start, 0, 100)
+	end = clamp(end, 0, 100)
+	if end < start {
+		start, end = end, start
+	}
+	if end-start >= minWalkRangeSpan {
+		return start, end
+	}
+	mid := (start + end) / 2
+	start = mid - minWalkRangeSpan/2
+	end = start + minWalkRangeSpan
+	if start < 0 {
+		start = 0
+		end = minWalkRangeSpan
+	}
+	if end > 100 {
+		end = 100
+		start = 100 - minWalkRangeSpan
+	}
+	return start, end
 }
 
 func normalizePetLaneMode(mode int) petLaneMode {
@@ -895,9 +993,7 @@ func (a *petApp) chooseRandomAction(p *deguPet) {
 }
 
 func (a *petApp) render() {
-	work := workArea()
-	screen := screenArea()
-	overlay := a.overlayRectFor(work, screen)
+	overlay := a.overlayRect()
 	a.syncScene(overlay)
 	canvas := image.NewRGBA(image.Rect(0, 0, a.sceneW, sceneH))
 	draw.Draw(canvas, canvas.Bounds(), image.Transparent, image.Point{}, draw.Src)
@@ -1105,8 +1201,9 @@ func (a *petApp) showNameWindow(index int) {
 		a.hideNameWindow()
 		return
 	}
-	overlay := a.overlayRect()
-	screen := screenArea()
+	display := a.selectedDisplayArea()
+	overlay := a.overlayRectFor(display.Work, display.Screen)
+	screen := display.Screen
 	p := a.pets[index]
 	runes := []rune(name)
 	w := clamp(34+len(runes)*12, 72, 220)
@@ -1187,7 +1284,8 @@ func (a *petApp) syncScene(bounds win.RECT) {
 }
 
 func (a *petApp) overlayRect() win.RECT {
-	return a.overlayRectFor(workArea(), screenArea())
+	display := a.selectedDisplayArea()
+	return a.overlayRectFor(display.Work, display.Screen)
 }
 
 func (a *petApp) overlayRectFor(work, screen win.RECT) win.RECT {
@@ -1205,6 +1303,7 @@ func (a *petApp) overlayRectFor(work, screen win.RECT) win.RECT {
 		base.Top = screen.Top
 		base.Bottom = screen.Bottom
 	}
+	base = a.applyWalkRange(base)
 	y := int(base.Bottom) - sceneH + offset
 	minY := int(screen.Top)
 	maxY := max(minY, int(screen.Bottom)-sceneH)
@@ -1217,13 +1316,77 @@ func (a *petApp) overlayRectFor(work, screen win.RECT) win.RECT {
 	}
 }
 
+func (a *petApp) applyWalkRange(base win.RECT) win.RECT {
+	width := int(base.Right - base.Left)
+	if width <= 0 {
+		return base
+	}
+	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	left := int(base.Left) + width*start/100
+	right := int(base.Left) + width*end/100
+	if right-left < spriteW {
+		mid := (left + right) / 2
+		left = mid - spriteW/2
+		right = left + spriteW
+	}
+	left = clamp(left, int(base.Left), max(int(base.Left), int(base.Right)-spriteW))
+	right = clamp(right, left+spriteW, int(base.Right))
+	base.Left = int32(left)
+	base.Right = int32(right)
+	return base
+}
+
 func (a *petApp) resetOverlayPlacement() {
 	a.positionMode = positionTaskbarEdge
 	a.overlayOffsetY = defaultOverlayOffsetY
+	a.walkRangeStart = defaultWalkRangeStart
+	a.walkRangeEnd = defaultWalkRangeEnd
 }
 
 func (a *petApp) adjustOverlayOffset(delta int) {
 	a.overlayOffsetY = normalizeOverlayOffset(a.overlayOffsetY + delta)
+}
+
+func (a *petApp) setWalkRange(start, end int) {
+	a.walkRangeStart, a.walkRangeEnd = normalizeWalkRange(start, end)
+	a.syncScene(a.overlayRect())
+	a.clampPetsToScene()
+}
+
+func (a *petApp) adjustWalkRangeWidth(delta int) {
+	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	a.setWalkRange(start-delta, end+delta)
+}
+
+func (a *petApp) shiftWalkRange(delta int) {
+	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	span := end - start
+	start = clamp(start+delta, 0, 100-span)
+	a.setWalkRange(start, start+span)
+}
+
+func (a *petApp) clampPetsToScene() {
+	limit := max(0, a.sceneW-spriteW)
+	for i := range a.pets {
+		a.pets[i].x = clamp(a.pets[i].x, 0, limit)
+	}
+	for i := range a.forage {
+		if a.forage[i].active {
+			a.forage[i].x = clamp(a.forage[i].x, 24, max(24, a.sceneW-24))
+		}
+	}
+}
+
+func (a *petApp) adjustDisplayIndex(delta int) {
+	areas := monitorAreas()
+	count := len(areas)
+	if count <= 0 {
+		a.displayIndex = 0
+		return
+	}
+	current := normalizeDisplayIndex(a.displayIndex, count)
+	a.displayIndex = (current + delta + count) % count
+	a.resetPosition()
 }
 
 func (a *petApp) laneOffsetFor(index int) int {
@@ -1703,10 +1866,18 @@ func (a *petApp) createSettingsWindow() {
 	a.ensureSettingsFonts()
 
 	a.createButton(hwnd, ctrlTopClose, "x", 716, 18, 28, 28, 0)
-	a.createButton(hwnd, ctrlTabAnimals, a.txt("tabAnimals"), 24, 122, 154, 38, win.WS_GROUP)
-	a.createButton(hwnd, ctrlTabMotion, a.txt("tabMotion"), 24, 170, 154, 38, 0)
+	a.createButton(hwnd, ctrlTabHome, a.txt("tabHome"), 24, 122, 154, 38, win.WS_GROUP)
+	a.createButton(hwnd, ctrlTabAnimals, a.txt("tabAnimals"), 24, 170, 154, 38, 0)
+	a.createButton(hwnd, ctrlTabMotion, a.txt("tabMotion"), 24, 218, 154, 38, 0)
+	a.createButton(hwnd, ctrlTabDisplay, a.txt("tabDisplay"), 24, 266, 154, 38, 0)
+	a.createButton(hwnd, ctrlTabUpdates, a.txt("tabUpdates"), 24, 314, 154, 38, 0)
 
-	if a.settingsTab == tabAnimals {
+	if a.settingsTab == tabHome {
+		a.createButton(hwnd, ctrlHomeAnimals, a.settingsButtonLabel(ctrlHomeAnimals), 600, 166, 88, 30, win.WS_GROUP)
+		a.createButton(hwnd, ctrlHomeMotion, a.settingsButtonLabel(ctrlHomeMotion), 600, 280, 88, 30, 0)
+		a.createButton(hwnd, ctrlHomeDisplay, a.settingsButtonLabel(ctrlHomeDisplay), 600, 394, 88, 30, 0)
+		a.createButton(hwnd, ctrlHomeUpdates, a.settingsButtonLabel(ctrlHomeUpdates), 600, 508, 88, 30, 0)
+	} else if a.settingsTab == tabAnimals {
 		a.createButton(hwnd, ctrlPetMinus, "-", 408, 150, 42, 32, 0)
 		a.createButton(hwnd, ctrlPetPlus, "+", 506, 150, 42, 32, 0)
 
@@ -1726,7 +1897,7 @@ func (a *petApp) createSettingsWindow() {
 				}
 			}
 		}
-	} else {
+	} else if a.settingsTab == tabMotion {
 		a.createButton(hwnd, ctrlModeKeyboard, a.txt("modeKeyboard"), 250, 164, 210, 32, win.WS_GROUP)
 		a.createButton(hwnd, ctrlModeRandom, a.txt("modeRandom"), 478, 164, 210, 32, 0)
 
@@ -1736,14 +1907,28 @@ func (a *petApp) createSettingsWindow() {
 
 		a.createButton(hwnd, ctrlTypingWheel, a.txt("typingWheel"), 250, 378, 210, 32, win.WS_GROUP)
 		a.createButton(hwnd, ctrlBidirectional, a.txt("naturalTurns"), 478, 378, 210, 32, 0)
+	} else if a.settingsTab == tabDisplay {
+		a.createButton(hwnd, ctrlDisplayPrev, a.settingsButtonLabel(ctrlDisplayPrev), 250, 154, 46, 30, win.WS_GROUP)
+		a.createButton(hwnd, ctrlDisplayNext, a.settingsButtonLabel(ctrlDisplayNext), 642, 154, 46, 30, 0)
 
-		a.createButton(hwnd, ctrlPositionTaskbar, a.settingsButtonLabel(ctrlPositionTaskbar), 250, 466, 134, 30, win.WS_GROUP)
-		a.createButton(hwnd, ctrlPositionBottom, a.settingsButtonLabel(ctrlPositionBottom), 392, 466, 160, 30, 0)
-		a.createButton(hwnd, ctrlOffsetUp, a.settingsButtonLabel(ctrlOffsetUp), 560, 466, 62, 30, 0)
-		a.createButton(hwnd, ctrlOffsetDown, a.settingsButtonLabel(ctrlOffsetDown), 628, 466, 62, 30, 0)
+		a.createScrollBar(hwnd, ctrlRangeStartScroll, 322, 258, 288, 18)
+		a.createScrollBar(hwnd, ctrlRangeEndScroll, 322, 292, 288, 18)
+		a.createButton(hwnd, ctrlRangeFull, a.settingsButtonLabel(ctrlRangeFull), 250, 326, 74, 30, win.WS_GROUP)
+		a.createButton(hwnd, ctrlRangeNarrow, a.settingsButtonLabel(ctrlRangeNarrow), 334, 326, 74, 30, 0)
+		a.createButton(hwnd, ctrlRangeWide, a.settingsButtonLabel(ctrlRangeWide), 418, 326, 74, 30, 0)
+		a.createButton(hwnd, ctrlRangeLeft, a.settingsButtonLabel(ctrlRangeLeft), 502, 326, 74, 30, 0)
+		a.createButton(hwnd, ctrlRangeRight, a.settingsButtonLabel(ctrlRangeRight), 586, 326, 74, 30, 0)
 
-		a.createButton(hwnd, ctrlLaneStaggered, a.settingsButtonLabel(ctrlLaneStaggered), 250, 532, 180, 30, win.WS_GROUP)
-		a.createButton(hwnd, ctrlLaneAligned, a.settingsButtonLabel(ctrlLaneAligned), 446, 532, 180, 30, 0)
+		a.createButton(hwnd, ctrlPositionTaskbar, a.settingsButtonLabel(ctrlPositionTaskbar), 250, 426, 134, 30, win.WS_GROUP)
+		a.createButton(hwnd, ctrlPositionBottom, a.settingsButtonLabel(ctrlPositionBottom), 392, 426, 160, 30, 0)
+		a.createButton(hwnd, ctrlOffsetUp, a.settingsButtonLabel(ctrlOffsetUp), 560, 426, 62, 30, 0)
+		a.createButton(hwnd, ctrlOffsetDown, a.settingsButtonLabel(ctrlOffsetDown), 628, 426, 62, 30, 0)
+
+		a.createButton(hwnd, ctrlLaneStaggered, a.settingsButtonLabel(ctrlLaneStaggered), 250, 522, 180, 30, win.WS_GROUP)
+		a.createButton(hwnd, ctrlLaneAligned, a.settingsButtonLabel(ctrlLaneAligned), 446, 522, 180, 30, 0)
+	} else {
+		a.createButton(hwnd, ctrlUpdateCheck, a.settingsButtonLabel(ctrlUpdateCheck), 250, 428, 190, 32, win.WS_GROUP)
+		a.createButton(hwnd, ctrlUpdateInstall, a.settingsButtonLabel(ctrlUpdateInstall), 456, 428, 232, 32, 0)
 	}
 
 	a.createButton(hwnd, ctrlLanguageCombo, "", 322, 574, 180, 34, 0)
@@ -1806,16 +1991,28 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 	drawRoundFill(hdc, win.RECT{Left: 226, Top: 96, Right: 736, Bottom: 566}, rgb(255, 255, 251), 18)
 	drawRoundFill(hdc, win.RECT{Left: 226, Top: 574, Right: 736, Bottom: 612}, rgb(255, 255, 251), 14)
 
-	if a.settingsTab == tabAnimals {
+	if a.settingsTab == tabHome {
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 118, Right: 708, Bottom: 214}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 232, Right: 708, Bottom: 328}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 346, Right: 708, Bottom: 442}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 460, Right: 708, Bottom: 558}, rgb(238, 242, 237), 14)
+	} else if a.settingsTab == tabAnimals {
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 142, Right: 708, Bottom: 192}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 238, Right: 708, Bottom: 292}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 338, Right: 708, Bottom: 502}, rgb(238, 242, 237), 14)
-	} else {
+	} else if a.settingsTab == tabMotion {
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 150, Right: 708, Bottom: 208}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 256, Right: 708, Bottom: 314}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 364, Right: 708, Bottom: 424}, rgb(238, 242, 237), 14)
-		drawRoundFill(hdc, win.RECT{Left: 238, Top: 438, Right: 708, Bottom: 502}, rgb(238, 242, 237), 14)
-		drawRoundFill(hdc, win.RECT{Left: 238, Top: 508, Right: 708, Bottom: 566}, rgb(238, 242, 237), 14)
+	} else if a.settingsTab == tabDisplay {
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 118, Right: 708, Bottom: 198}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 214, Right: 708, Bottom: 372}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 390, Right: 708, Bottom: 466}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 486, Right: 708, Bottom: 566}, rgb(238, 242, 237), 14)
+	} else {
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 118, Right: 708, Bottom: 236}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 254, Right: 708, Bottom: 370}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 390, Right: 708, Bottom: 500}, rgb(238, 242, 237), 14)
 	}
 
 	drawTextLine(hdc, a.txt("settingsHeader"), win.RECT{Left: 24, Top: 28, Right: 178, Bottom: 56}, a.settingsTitleFont, rgb(245, 250, 244), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
@@ -1832,7 +2029,23 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 	drawTextLine(hdc, a.settingsPageLead(), leadRect, a.settingsSmallFont, rgb(91, 104, 96), leadFlags)
 
 	labelColor := rgb(50, 61, 55)
-	if a.settingsTab == tabAnimals {
+	if a.settingsTab == tabHome {
+		drawTextLine(hdc, a.localText("デグー", "Pets"), win.RECT{Left: 246, Top: 126, Right: 390, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.settingsSidebarStatus(), win.RECT{Left: 250, Top: 158, Right: 584, Bottom: 184}, a.settingsFont, rgb(27, 36, 32), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		drawTextLine(hdc, a.homePetDetail(), win.RECT{Left: 250, Top: 188, Right: 584, Bottom: 206}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+
+		drawTextLine(hdc, a.localText("動き", "Motion"), win.RECT{Left: 246, Top: 240, Right: 390, Bottom: 264}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.homeMotionSummary(), win.RECT{Left: 250, Top: 272, Right: 584, Bottom: 298}, a.settingsFont, rgb(27, 36, 32), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		drawTextLine(hdc, a.homeMotionDetail(), win.RECT{Left: 250, Top: 302, Right: 584, Bottom: 320}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+
+		drawTextLine(hdc, a.localText("表示", "Display"), win.RECT{Left: 246, Top: 354, Right: 390, Bottom: 378}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.displaySummary(), win.RECT{Left: 250, Top: 386, Right: 584, Bottom: 412}, a.settingsFont, rgb(27, 36, 32), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		drawTextLine(hdc, a.homeDisplayDetail(), win.RECT{Left: 250, Top: 416, Right: 584, Bottom: 434}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+
+		drawTextLine(hdc, a.localText("更新", "Updates"), win.RECT{Left: 246, Top: 468, Right: 390, Bottom: 492}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.updateStatusSummary(), win.RECT{Left: 250, Top: 500, Right: 584, Bottom: 526}, a.settingsFont, rgb(27, 36, 32), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		drawTextLine(hdc, a.updatePackageSummary(), win.RECT{Left: 250, Top: 530, Right: 584, Bottom: 550}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+	} else if a.settingsTab == tabAnimals {
 		drawTextLine(hdc, a.txt("animalSection"), win.RECT{Left: 246, Top: 116, Right: 470, Bottom: 140}, a.settingsFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("deguCount"), win.RECT{Left: 250, Top: 154, Right: 390, Bottom: 184}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, fmt.Sprintf("%d", a.petCount), win.RECT{Left: 464, Top: 154, Right: 498, Bottom: 184}, a.settingsFont, rgb(25, 49, 40), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
@@ -1847,16 +2060,55 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 		} else {
 			drawTextLine(hdc, a.localText("オンにすると、名前の編集とカーソルホバー表示を使えます。", "Turn this on to edit names and show them on hover."), win.RECT{Left: 254, Top: 386, Right: 682, Bottom: 430}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_WORDBREAK|win.DT_NOPREFIX)
 		}
-	} else {
+	} else if a.settingsTab == tabMotion {
 		drawTextLine(hdc, a.txt("mode"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("speed"), win.RECT{Left: 246, Top: 232, Right: 400, Bottom: 256}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("motion"), win.RECT{Left: 246, Top: 340, Right: 400, Bottom: 364}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
-		drawTextLine(hdc, a.localText("表示位置", "Position"), win.RECT{Left: 246, Top: 444, Right: 380, Bottom: 466}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
-		drawTextLine(hdc, a.positionSummary(), win.RECT{Left: 382, Top: 444, Right: 690, Bottom: 466}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
-		drawTextLine(hdc, a.localText("個体の高さ", "Pet height"), win.RECT{Left: 246, Top: 514, Right: 380, Bottom: 534}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
-		drawTextLine(hdc, a.laneSummary(), win.RECT{Left: 382, Top: 514, Right: 690, Bottom: 534}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+	} else if a.settingsTab == tabDisplay {
+		drawTextLine(hdc, a.localText("表示する画面", "Display"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.displaySummary(), win.RECT{Left: 304, Top: 154, Right: 634, Bottom: 184}, a.settingsFont, rgb(27, 36, 32), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+
+		drawTextLine(hdc, a.localText("歩く範囲", "Walking range"), win.RECT{Left: 246, Top: 222, Right: 390, Bottom: 244}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.walkRangeSummary(), win.RECT{Left: 394, Top: 222, Right: 688, Bottom: 244}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		a.drawWalkRangePreview(hdc)
+		drawTextLine(hdc, a.localText("左端", "Left edge"), win.RECT{Left: 250, Top: 254, Right: 316, Bottom: 280}, a.settingsSmallFont, labelColor, win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.localText("右端", "Right edge"), win.RECT{Left: 250, Top: 288, Right: 316, Bottom: 314}, a.settingsSmallFont, labelColor, win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+		drawTextLine(hdc, fmt.Sprintf("%d%%", start), win.RECT{Left: 616, Top: 254, Right: 680, Bottom: 280}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, fmt.Sprintf("%d%%", end), win.RECT{Left: 616, Top: 288, Right: 680, Bottom: 314}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+
+		drawTextLine(hdc, a.localText("表示位置", "Position"), win.RECT{Left: 246, Top: 398, Right: 380, Bottom: 420}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.positionSummary(), win.RECT{Left: 382, Top: 398, Right: 690, Bottom: 420}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		drawTextLine(hdc, a.localText("個体の高さ", "Pet height"), win.RECT{Left: 246, Top: 494, Right: 380, Bottom: 516}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.laneSummary(), win.RECT{Left: 382, Top: 494, Right: 690, Bottom: 516}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+	} else {
+		drawTextLine(hdc, a.localText("更新状態", "Update status"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.updateStatusSummary(), win.RECT{Left: 250, Top: 158, Right: 688, Bottom: 184}, a.settingsFont, rgb(27, 36, 32), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		drawTextLine(hdc, a.updateStatusDetail(), win.RECT{Left: 250, Top: 188, Right: 688, Bottom: 226}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_WORDBREAK|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+
+		drawTextLine(hdc, a.localText("配布パッケージ", "Package"), win.RECT{Left: 246, Top: 262, Right: 400, Bottom: 286}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.updatePackageSummary(), win.RECT{Left: 250, Top: 294, Right: 688, Bottom: 324}, a.settingsFont, rgb(27, 36, 32), win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		drawTextLine(hdc, a.updatePackageDetail(), win.RECT{Left: 250, Top: 326, Right: 688, Bottom: 360}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_WORDBREAK|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+
+		drawTextLine(hdc, a.localText("操作", "Actions"), win.RECT{Left: 246, Top: 398, Right: 400, Bottom: 422}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.updateActionNote(), win.RECT{Left: 250, Top: 468, Right: 688, Bottom: 492}, a.settingsSmallFont, rgb(69, 78, 72), win.DT_LEFT|win.DT_WORDBREAK|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
 	}
 	drawTextLine(hdc, a.txt("language"), win.RECT{Left: 226, Top: 582, Right: 314, Bottom: 606}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+}
+
+func (a *petApp) drawWalkRangePreview(hdc win.HDC) {
+	track := win.RECT{Left: 250, Top: 246, Right: 688, Bottom: 252}
+	drawRoundFill(hdc, track, rgb(215, 221, 213), 6)
+	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	width := int(track.Right - track.Left)
+	selected := win.RECT{
+		Left:   track.Left + int32(width*start/100),
+		Top:    track.Top - 2,
+		Right:  track.Left + int32(width*end/100),
+		Bottom: track.Bottom + 2,
+	}
+	drawRoundFill(hdc, selected, rgb(70, 104, 87), 8)
+	drawRoundOutline(hdc, win.RECT{Left: 246, Top: 242, Right: 692, Bottom: 256}, rgb(230, 233, 224), 10)
 }
 
 func (a *petApp) createStatic(parent win.HWND, text string, x, y, w, h int32) win.HWND {
@@ -1891,6 +2143,20 @@ func (a *petApp) createButton(parent win.HWND, id int32, text string, x, y, w, h
 	)
 	a.setControlFont(hwnd, a.settingsFont)
 	a.addSettingsTooltip(hwnd, id, parent)
+	return hwnd
+}
+
+func (a *petApp) createScrollBar(parent win.HWND, id int32, x, y, w, h int32) win.HWND {
+	hwnd := win.CreateWindowEx(
+		0,
+		syscall.StringToUTF16Ptr("SCROLLBAR"),
+		nil,
+		win.WS_CHILD|win.WS_VISIBLE|win.WS_TABSTOP|sbsHorz,
+		x, y, w, h,
+		parent, win.HMENU(uintptr(id)), a.hinst, nil,
+	)
+	a.addSettingsTooltip(hwnd, id, parent)
+	a.setScrollRangeAndPos(id, a.walkRangeScrollValue(id))
 	return hwnd
 }
 
@@ -2060,10 +2326,16 @@ func (a *petApp) drawSettingsButton(dis *win.DRAWITEMSTRUCT) bool {
 
 func (a *petApp) settingsButtonLabel(id int32) string {
 	switch id {
+	case ctrlTabHome:
+		return a.txt("tabHome")
 	case ctrlTabAnimals:
 		return a.txt("tabAnimals")
 	case ctrlTabMotion:
 		return a.txt("tabMotion")
+	case ctrlTabDisplay:
+		return a.txt("tabDisplay")
+	case ctrlTabUpdates:
+		return a.txt("tabUpdates")
 	case ctrlPetMinus:
 		return "-"
 	case ctrlPetPlus:
@@ -2102,6 +2374,26 @@ func (a *petApp) settingsButtonLabel(id int32) string {
 		return a.localText("少しずらす", "Natural stagger")
 	case ctrlLaneAligned:
 		return a.localText("横一列", "Same baseline")
+	case ctrlDisplayPrev:
+		return "<"
+	case ctrlDisplayNext:
+		return ">"
+	case ctrlRangeFull:
+		return a.localText("全幅", "Full")
+	case ctrlRangeNarrow:
+		return a.localText("狭く", "Narrow")
+	case ctrlRangeWide:
+		return a.localText("広く", "Wider")
+	case ctrlRangeLeft:
+		return a.localText("左へ", "Left")
+	case ctrlRangeRight:
+		return a.localText("右へ", "Right")
+	case ctrlUpdateCheck:
+		return a.localText("更新を確認", "Check for updates")
+	case ctrlUpdateInstall:
+		return a.localText("更新をインストール", "Install update")
+	case ctrlHomeAnimals, ctrlHomeMotion, ctrlHomeDisplay, ctrlHomeUpdates:
+		return a.localText("開く", "Open")
 	case ctrlLanguageCombo:
 		if a.lang == langEnglish {
 			return "English"
@@ -2131,10 +2423,16 @@ func (a *petApp) settingsButtonLabel(id int32) string {
 
 func (a *petApp) settingsTooltipText(id int32) string {
 	switch id {
+	case ctrlTabHome:
+		return a.localText("よく使う設定と現在の状態をまとめて確認します。", "Review the most-used settings and current status in one place.")
 	case ctrlTabAnimals:
 		return a.localText("出現数、毛色、名前を設定します。", "Set visible pets, coat colors, and names.")
 	case ctrlTabMotion:
-		return a.localText("歩き方、回し車、表示位置、個体の高さを設定します。", "Set motion, typing wheel, screen position, and pet height.")
+		return a.localText("歩き方、回し車、左右ターンを設定します。", "Set motion, typing wheel, and turn behavior.")
+	case ctrlTabDisplay:
+		return a.localText("表示する画面、タスクバー上で歩く範囲、高さを設定します。", "Set the display, taskbar walking range, and height.")
+	case ctrlTabUpdates:
+		return a.localText("現在のバージョン、最新リリース、更新の確認とインストールを表示します。", "Show the current version, latest release, update checks, and installation.")
 	case ctrlPetMinus:
 		return a.localText("出現数を1匹減らします。", "Decrease the visible pet count by one.")
 	case ctrlPetPlus:
@@ -2175,6 +2473,36 @@ func (a *petApp) settingsTooltipText(id int32) string {
 		return a.localText("個体ごとに0/5/10pxだけ高さをずらします。重なった時に見分けやすい自然な並びです。", "Offset pets by 0/5/10 px so overlapping pets are easier to distinguish.")
 	case ctrlLaneAligned:
 		return a.localText("全員を同じ接地ラインに揃えます。少し上に見える個体をなくします。", "Place every pet on the same baseline so none appears slightly higher.")
+	case ctrlDisplayPrev:
+		return a.localText("前のディスプレイへ切り替えます。", "Switch to the previous display.")
+	case ctrlDisplayNext:
+		return a.localText("次のディスプレイへ切り替えます。", "Switch to the next display.")
+	case ctrlRangeFull:
+		return a.localText("タスクバー上の歩く範囲を端から端までに戻します。", "Use the full taskbar width.")
+	case ctrlRangeNarrow:
+		return a.localText("歩く範囲を中央寄せで少し狭くします。", "Make the walking range narrower around the center.")
+	case ctrlRangeWide:
+		return a.localText("歩く範囲を中央寄せで少し広げます。", "Make the walking range wider around the center.")
+	case ctrlRangeLeft:
+		return a.localText("歩く範囲全体を左へ動かします。", "Move the whole walking range left.")
+	case ctrlRangeRight:
+		return a.localText("歩く範囲全体を右へ動かします。", "Move the whole walking range right.")
+	case ctrlRangeStartScroll:
+		return a.localText("タスクバーのここから歩く、という左端の位置を決めます。", "Set where the taskbar walking range starts.")
+	case ctrlRangeEndScroll:
+		return a.localText("タスクバーのここまで歩く、という右端の位置を決めます。", "Set where the taskbar walking range ends.")
+	case ctrlUpdateCheck:
+		return a.localText("GitHub Releases から最新バージョンを確認します。", "Check GitHub Releases for the latest version.")
+	case ctrlUpdateInstall:
+		return a.localText("見つかった更新をダウンロードし、Degu Desktop を再起動して適用します。", "Download the found update and restart Degu Desktop to apply it.")
+	case ctrlHomeAnimals:
+		return a.localText("デグーの数、毛色、名前の設定へ移動します。", "Open pet count, coat color, and name settings.")
+	case ctrlHomeMotion:
+		return a.localText("動き方、速度、回し車、左右ターンの設定へ移動します。", "Open motion, speed, wheel, and turn settings.")
+	case ctrlHomeDisplay:
+		return a.localText("表示画面、歩く範囲、表示高さの設定へ移動します。", "Open display, walking range, and height settings.")
+	case ctrlHomeUpdates:
+		return a.localText("バージョン確認とアップデート操作へ移動します。", "Open version check and update actions.")
 	case ctrlLanguageCombo:
 		return a.localText("設定画面の表示言語を切り替えます。", "Switch the settings language.")
 	case ctrlReset:
@@ -2193,10 +2521,16 @@ func (a *petApp) settingsTooltipText(id int32) string {
 
 func (a *petApp) settingsButtonSelected(id int32) bool {
 	switch id {
+	case ctrlTabHome:
+		return a.settingsTab == tabHome
 	case ctrlTabAnimals:
 		return a.settingsTab == tabAnimals
 	case ctrlTabMotion:
 		return a.settingsTab == tabMotion
+	case ctrlTabDisplay:
+		return a.settingsTab == tabDisplay
+	case ctrlTabUpdates:
+		return a.settingsTab == tabUpdates
 	case ctrlCoatFixed:
 		return a.coatMode == coatFixed
 	case ctrlCoatSelected:
@@ -2236,12 +2570,12 @@ func (a *petApp) settingsSelectButton(id int32) bool {
 }
 
 func (a *petApp) settingsSidebarButton(id int32) bool {
-	return id == ctrlTabAnimals || id == ctrlTabMotion
+	return id == ctrlTabHome || id == ctrlTabAnimals || id == ctrlTabMotion || id == ctrlTabDisplay || id == ctrlTabUpdates
 }
 
 func (a *petApp) settingsButtonBackplate(id int32) settingsRGB {
 	switch id {
-	case ctrlTabAnimals, ctrlTabMotion:
+	case ctrlTabHome, ctrlTabAnimals, ctrlTabMotion, ctrlTabDisplay, ctrlTabUpdates:
 		return rgb(22, 45, 38)
 	case ctrlTopClose:
 		return rgb(247, 248, 244)
@@ -2251,6 +2585,10 @@ func (a *petApp) settingsButtonBackplate(id int32) settingsRGB {
 		ctrlTypingWheel, ctrlBidirectional,
 		ctrlPositionTaskbar, ctrlPositionBottom, ctrlOffsetUp, ctrlOffsetDown,
 		ctrlLaneStaggered, ctrlLaneAligned,
+		ctrlDisplayPrev, ctrlDisplayNext,
+		ctrlRangeFull, ctrlRangeNarrow, ctrlRangeWide, ctrlRangeLeft, ctrlRangeRight,
+		ctrlUpdateCheck, ctrlUpdateInstall,
+		ctrlHomeAnimals, ctrlHomeMotion, ctrlHomeDisplay, ctrlHomeUpdates,
 		ctrlNameLabels, ctrlRenameOK, ctrlRenameCancel:
 		return rgb(235, 232, 220)
 	}
@@ -2293,6 +2631,15 @@ func (a *petApp) settingsSidebarStatus() string {
 }
 
 func (a *petApp) settingsPageTitle() string {
+	if a.settingsTab == tabHome {
+		return a.txt("homePageTitle")
+	}
+	if a.settingsTab == tabUpdates {
+		return a.txt("updatesPageTitle")
+	}
+	if a.settingsTab == tabDisplay {
+		return a.txt("displayPageTitle")
+	}
 	if a.settingsTab == tabMotion {
 		return a.txt("motionPageTitle")
 	}
@@ -2302,6 +2649,15 @@ func (a *petApp) settingsPageTitle() string {
 func (a *petApp) settingsPageLead() string {
 	if a.settingsHoverTip != "" {
 		return a.settingsHoverTip
+	}
+	if a.settingsTab == tabHome {
+		return a.txt("homePageLead")
+	}
+	if a.settingsTab == tabUpdates {
+		return a.txt("updatesPageLead")
+	}
+	if a.settingsTab == tabDisplay {
+		return a.txt("displayPageLead")
 	}
 	if a.settingsTab == tabMotion {
 		return a.txt("motionPageLead")
@@ -2364,6 +2720,197 @@ func (a *petApp) petNameSectionLabel() string {
 		return a.localText("名前 / 個別カラー", "Names / coat colors")
 	}
 	return a.localText("名前", "Names")
+}
+
+func (a *petApp) homePetDetail() string {
+	coat := a.localText("固定カラー", "Fixed coat")
+	switch a.coatMode {
+	case coatSelected:
+		coat = a.localText("個別カラー", "Per-pet coats")
+	case coatRandom:
+		coat = a.localText("ランダムカラー", "Random coats")
+	}
+	names := a.localText("名前表示オフ", "Names off")
+	if a.nameLabels {
+		names = a.localText("名前表示オン", "Names on")
+	}
+	return fmt.Sprintf("%s / %s", coat, names)
+}
+
+func (a *petApp) homeMotionSummary() string {
+	mode := a.txt("modeKeyboard")
+	if normalizeBehaviorMode(int(a.mode)) == modeRandom {
+		mode = a.txt("modeRandom")
+	}
+	return fmt.Sprintf("%s / %s", mode, a.speedLabel())
+}
+
+func (a *petApp) homeMotionDetail() string {
+	wheel := a.localText("回し車オフ", "Wheel off")
+	if a.wheelEnabled {
+		wheel = a.localText("回し車オン", "Wheel on")
+	}
+	turns := a.localText("右向き中心", "Mostly right-facing")
+	if a.bidirectional {
+		turns = a.localText("左右ターン自然", "Natural left/right turns")
+	}
+	return fmt.Sprintf("%s / %s", wheel, turns)
+}
+
+func (a *petApp) homeDisplayDetail() string {
+	return fmt.Sprintf("%s / %s", a.walkRangeSummary(), a.positionSummary())
+}
+
+func (a *petApp) speedLabel() string {
+	switch normalizeSpeed(a.speed) {
+	case 2:
+		return a.txt("speedSlow")
+	case 5:
+		return a.txt("speedFast")
+	default:
+		return a.txt("speedNormal")
+	}
+}
+
+func (a *petApp) displaySummary() string {
+	areas := monitorAreas()
+	if len(areas) == 0 {
+		return a.localText("現在の画面", "Current display")
+	}
+	index := normalizeDisplayIndex(a.displayIndex, len(areas))
+	area := areas[index]
+	width := max(0, int(area.Screen.Right-area.Screen.Left))
+	height := max(0, int(area.Screen.Bottom-area.Screen.Top))
+	primary := ""
+	if area.Primary {
+		primary = a.localText(" / メイン", " / primary")
+	}
+	return fmt.Sprintf("%s %d/%d%s  %dx%d", a.localText("ディスプレイ", "Display"), index+1, len(areas), primary, width, height)
+}
+
+func (a *petApp) walkRangeSummary() string {
+	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	if start == 0 && end == 100 {
+		return a.localText("全幅（0%〜100%）", "Full width (0%-100%)")
+	}
+	return fmt.Sprintf("%d%% - %d%%", start, end)
+}
+
+func (a *petApp) updateSnapshot() (*githubRelease, string, bool, bool) {
+	a.update.mu.Lock()
+	defer a.update.mu.Unlock()
+	var rel *githubRelease
+	if a.update.latest != nil {
+		cp := *a.update.latest
+		cp.Assets = append([]githubReleaseAsset(nil), a.update.latest.Assets...)
+		rel = &cp
+	}
+	return rel, a.update.lastError, a.update.checking.Load(), a.update.installing.Load()
+}
+
+func (a *petApp) updateStatusSummary() string {
+	rel, lastErr, checking, installing := a.updateSnapshot()
+	current := appVersion
+	if current == "" {
+		current = "dev"
+	}
+	switch {
+	case installing:
+		return a.localText("更新を適用中", "Installing update")
+	case checking:
+		return a.localText("最新バージョンを確認中", "Checking for updates")
+	case lastErr != "":
+		return a.localText("確認に失敗しました", "Update check failed")
+	case rel == nil:
+		return a.localText("まだ確認していません", "Not checked yet")
+	case !isNewerVersion(rel.TagName, current):
+		return a.localText("最新版です", "Up to date")
+	case selectUpdateAsset(rel, runtime.GOARCH) == nil:
+		return a.localText("更新はありますが、この環境用zipがありません", "Update found, but no package matches this PC")
+	default:
+		return a.localText(fmt.Sprintf("%s が利用できます", rel.TagName), fmt.Sprintf("%s is available", rel.TagName))
+	}
+}
+
+func (a *petApp) updateStatusDetail() string {
+	rel, lastErr, checking, installing := a.updateSnapshot()
+	current := appVersion
+	if current == "" {
+		current = "dev"
+	}
+	switch {
+	case installing:
+		return a.localText("ダウンロード後に本体を終了し、新しいバージョンで再起動します。", "After download, the app will exit and restart with the new version.")
+	case checking:
+		return a.localText("GitHub Releases から最新リリース情報を取得しています。", "Fetching the latest release from GitHub Releases.")
+	case lastErr != "":
+		return lastErr
+	case rel == nil:
+		return a.localText(fmt.Sprintf("現在のバージョン: %s。必要な時に手動で確認できます。", current), fmt.Sprintf("Current version: %s. You can check manually when needed.", current))
+	default:
+		return a.localText(fmt.Sprintf("現在: %s / 最新: %s", current, rel.TagName), fmt.Sprintf("Current: %s / Latest: %s", current, rel.TagName))
+	}
+}
+
+func (a *petApp) updatePackageSummary() string {
+	rel, _, _, _ := a.updateSnapshot()
+	want := updateAssetName(runtime.GOARCH)
+	if rel == nil {
+		return want
+	}
+	asset := selectUpdateAsset(rel, runtime.GOARCH)
+	if asset == nil {
+		return a.localText(want+" は未検出", want+" not found")
+	}
+	size := formatUpdateSize(asset.Size)
+	if size == "" {
+		return asset.Name
+	}
+	return fmt.Sprintf("%s / %s", asset.Name, size)
+}
+
+func (a *petApp) updatePackageDetail() string {
+	rel, _, _, _ := a.updateSnapshot()
+	want := updateAssetName(runtime.GOARCH)
+	if rel == nil {
+		return a.localText("このPCに合うWindows用zipを確認します。", "The updater checks for the Windows zip that matches this PC.")
+	}
+	asset := selectUpdateAsset(rel, runtime.GOARCH)
+	if asset == nil {
+		return a.localText(want+" がReleaseにないため、この画面からは適用できません。", want+" is missing from the release, so it cannot be installed from here.")
+	}
+	return a.localText("見つかったzipを一時フォルダへダウンロードして適用します。", "The found zip will be downloaded to a temporary folder and applied.")
+}
+
+func (a *petApp) updateActionNote() string {
+	_, lastErr, checking, installing := a.updateSnapshot()
+	switch {
+	case installing:
+		return a.localText("適用中です。完了するとDegu Desktopを再起動します。", "Installing. Degu Desktop will restart when it is ready.")
+	case checking:
+		return a.localText("確認中です。完了するとこの画面と通知に結果が出ます。", "Checking. Results will appear here and in a notification.")
+	case lastErr != "":
+		return a.localText("通信状態を確認して、もう一度「更新を確認」を押してください。", "Check your connection, then press Check for updates again.")
+	case a.hasInstallableUpdate():
+		return a.localText("インストールを押すと、ダウンロード後にアプリを再起動します。", "Press Install to download and restart the app.")
+	default:
+		return a.localText("まず「更新を確認」を押すと、利用可能な更新があるか分かります。", "Press Check for updates first to see whether an update is available.")
+	}
+}
+
+func formatUpdateSize(size int64) string {
+	if size <= 0 {
+		return ""
+	}
+	const mb = 1024 * 1024
+	if size >= mb {
+		return fmt.Sprintf("%.1f MB", float64(size)/mb)
+	}
+	const kb = 1024
+	if size >= kb {
+		return fmt.Sprintf("%.0f KB", float64(size)/kb)
+	}
+	return fmt.Sprintf("%d B", size)
 }
 
 func (a *petApp) positionSummary() string {
@@ -2523,6 +3070,10 @@ func (a *petApp) settingsWndProc(hwnd win.HWND, msg uint32, wParam, lParam uintp
 		if a.handleSettingsCommand(id, notify) {
 			return 0
 		}
+	case win.WM_HSCROLL:
+		if a.handleRangeScroll(getDlgCtrlID(win.HWND(lParam)), wParam) {
+			return 0
+		}
 	case win.WM_PAINT:
 		a.paintSettingsWindow(hwnd)
 		return 0
@@ -2604,8 +3155,11 @@ func (a *petApp) syncSettingsWindow() {
 		return
 	}
 	setWindowText(a.settingsHwnd, a.txt("settingsTitle"))
+	a.setButtonChecked(ctrlTabHome, a.settingsTab == tabHome)
 	a.setButtonChecked(ctrlTabAnimals, a.settingsTab == tabAnimals)
 	a.setButtonChecked(ctrlTabMotion, a.settingsTab == tabMotion)
+	a.setButtonChecked(ctrlTabDisplay, a.settingsTab == tabDisplay)
+	a.setButtonChecked(ctrlTabUpdates, a.settingsTab == tabUpdates)
 	a.setButtonChecked(ctrlModeKeyboard, a.mode == modeKeyboard)
 	a.setButtonChecked(ctrlModeRandom, a.mode == modeRandom)
 	a.setButtonChecked(ctrlSpeedSlow, a.speed == 2)
@@ -2632,6 +3186,17 @@ func (a *petApp) syncSettingsWindow() {
 	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlPetPlus), a.petCount < maxPetCount)
 	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlOffsetUp), a.overlayOffsetY > minOverlayOffsetY)
 	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlOffsetDown), a.overlayOffsetY < maxOverlayOffsetY)
+	a.syncRangeScrollBars()
+	monitorCount := len(monitorAreas())
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplayPrev), monitorCount > 1)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplayNext), monitorCount > 1)
+	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlRangeNarrow), end-start > minWalkRangeSpan)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlRangeWide), start > 0 || end < 100)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlRangeLeft), start > 0)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlRangeRight), end < 100)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlUpdateCheck), !a.updateChecking())
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlUpdateInstall), a.hasInstallableUpdate() && !a.updateChecking())
 	win.InvalidateRect(a.settingsHwnd, nil, true)
 }
 
@@ -2657,6 +3222,76 @@ func (a *petApp) syncSelectButton(id int32) {
 	win.InvalidateRect(h, nil, true)
 }
 
+func (a *petApp) syncRangeScrollBars() {
+	a.setScrollRangeAndPos(ctrlRangeStartScroll, a.walkRangeScrollValue(ctrlRangeStartScroll))
+	a.setScrollRangeAndPos(ctrlRangeEndScroll, a.walkRangeScrollValue(ctrlRangeEndScroll))
+}
+
+func (a *petApp) setScrollRangeAndPos(id int32, pos int) {
+	if a.settingsHwnd == 0 {
+		return
+	}
+	h := win.GetDlgItem(a.settingsHwnd, id)
+	if h == 0 {
+		return
+	}
+	pos = clamp(pos, 0, 100)
+	win.SendMessage(h, sbmSetRange, 0, 100)
+	win.SendMessage(h, sbmSetPos, uintptr(pos), 1)
+	win.InvalidateRect(h, nil, true)
+}
+
+func (a *petApp) walkRangeScrollValue(id int32) int {
+	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	if id == ctrlRangeEndScroll {
+		return end
+	}
+	return start
+}
+
+func (a *petApp) handleRangeScroll(id int32, wParam uintptr) bool {
+	if id != ctrlRangeStartScroll && id != ctrlRangeEndScroll {
+		return false
+	}
+	code := int(uint16(wParam & 0xffff))
+	thumb := int(uint16((wParam >> 16) & 0xffff))
+	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	pos := start
+	if id == ctrlRangeEndScroll {
+		pos = end
+	}
+	switch code {
+	case sbLineLeft:
+		pos--
+	case sbLineRight:
+		pos++
+	case sbPageLeft:
+		pos -= walkRangeStep
+	case sbPageRight:
+		pos += walkRangeStep
+	case sbThumbPosition, sbThumbTrack:
+		pos = thumb
+	case sbLeft:
+		pos = 0
+	case sbRight:
+		pos = 100
+	case sbEndScroll:
+		return true
+	default:
+		return true
+	}
+	if id == ctrlRangeStartScroll {
+		start = clamp(pos, 0, end-minWalkRangeSpan)
+	} else {
+		end = clamp(pos, start+minWalkRangeSpan, 100)
+	}
+	a.setWalkRange(start, end)
+	a.syncSettingsWindow()
+	a.persistSettings()
+	a.render()
+	return true
+}
+
 func (a *petApp) handleSettingsCommand(id int32, notify uint16) bool {
 	if id == ctrlNameLabels {
 		a.nameLabels = !a.nameLabels
@@ -2676,11 +3311,32 @@ func (a *petApp) handleSettingsCommand(id int32, notify uint16) bool {
 		return true
 	}
 	switch id {
+	case ctrlTabHome:
+		a.settingsTab = tabHome
+		a.recreateSettingsWindow()
 	case ctrlTabAnimals:
 		a.settingsTab = tabAnimals
 		a.recreateSettingsWindow()
 	case ctrlTabMotion:
 		a.settingsTab = tabMotion
+		a.recreateSettingsWindow()
+	case ctrlTabDisplay:
+		a.settingsTab = tabDisplay
+		a.recreateSettingsWindow()
+	case ctrlTabUpdates:
+		a.settingsTab = tabUpdates
+		a.recreateSettingsWindow()
+	case ctrlHomeAnimals:
+		a.settingsTab = tabAnimals
+		a.recreateSettingsWindow()
+	case ctrlHomeMotion:
+		a.settingsTab = tabMotion
+		a.recreateSettingsWindow()
+	case ctrlHomeDisplay:
+		a.settingsTab = tabDisplay
+		a.recreateSettingsWindow()
+	case ctrlHomeUpdates:
+		a.settingsTab = tabUpdates
 		a.recreateSettingsWindow()
 	case ctrlVariantCombo:
 		sel, ok := a.pickVariantFromMenu(id, a.variant)
@@ -2735,6 +3391,24 @@ func (a *petApp) handleSettingsCommand(id int32, notify uint16) bool {
 	case ctrlLaneAligned:
 		a.laneMode = laneAligned
 		a.applyLaneOffsets()
+	case ctrlDisplayPrev:
+		a.adjustDisplayIndex(-1)
+	case ctrlDisplayNext:
+		a.adjustDisplayIndex(1)
+	case ctrlRangeFull:
+		a.setWalkRange(defaultWalkRangeStart, defaultWalkRangeEnd)
+	case ctrlRangeNarrow:
+		a.adjustWalkRangeWidth(-walkRangeStep)
+	case ctrlRangeWide:
+		a.adjustWalkRangeWidth(walkRangeStep)
+	case ctrlRangeLeft:
+		a.shiftWalkRange(-walkRangeStep)
+	case ctrlRangeRight:
+		a.shiftWalkRange(walkRangeStep)
+	case ctrlUpdateCheck:
+		a.startUpdateCheck(true)
+	case ctrlUpdateInstall:
+		a.installLatestUpdate()
 	case ctrlReset:
 		a.resetOverlayPlacement()
 		a.resetPosition()
@@ -2961,6 +3635,10 @@ func (a *petApp) txt(key string) string {
 			return "Degu Desktop"
 		case "settingsLead":
 			return "Taskbar companion controls"
+		case "homePageTitle":
+			return "Overview"
+		case "homePageLead":
+			return "Review the key settings and jump directly to the section you need."
 		case "animalPageTitle":
 			return "Pets and coats"
 		case "animalPageLead":
@@ -2968,11 +3646,25 @@ func (a *petApp) txt(key string) string {
 		case "motionPageTitle":
 			return "Motion behavior"
 		case "motionPageLead":
-			return "Tune keyboard reactions, random strolls, turn behavior, screen position, and pet alignment."
+			return "Tune keyboard reactions, random strolls, wheel behavior, and turn behavior."
+		case "displayPageTitle":
+			return "Display and walking range"
+		case "displayPageLead":
+			return "Choose the monitor and the exact taskbar segment where degus can roam."
+		case "updatesPageTitle":
+			return "Updates"
+		case "updatesPageLead":
+			return "Check the installed version and install a newer GitHub Release when available."
 		case "tabAnimals":
 			return "Animals"
 		case "tabMotion":
 			return "Motion"
+		case "tabDisplay":
+			return "Display"
+		case "tabUpdates":
+			return "Updates"
+		case "tabHome":
+			return "Home"
 		case "animalSection":
 			return "Degu"
 		case "deguCount":
@@ -3028,6 +3720,10 @@ func (a *petApp) txt(key string) string {
 		return "デグーデスクトップ"
 	case "settingsLead":
 		return "タスクバーで遊ぶペットの設定"
+	case "homePageTitle":
+		return "ホーム"
+	case "homePageLead":
+		return "よく使う設定と状態をまとめて確認し、必要な場所へ移動できます。"
 	case "animalPageTitle":
 		return "デグーの数と毛色"
 	case "animalPageLead":
@@ -3035,11 +3731,25 @@ func (a *petApp) txt(key string) string {
 	case "motionPageTitle":
 		return "動きかた"
 	case "motionPageLead":
-		return "キーボードへの反応、ランダム散歩、左右ターン、表示位置、個体の高さを調整します。"
+		return "キーボードへの反応、ランダム散歩、回し車、左右ターンを調整します。"
+	case "displayPageTitle":
+		return "表示と歩く範囲"
+	case "displayPageLead":
+		return "表示する画面と、デグーがタスクバー上で歩く区間を指定します。"
+	case "updatesPageTitle":
+		return "更新"
+	case "updatesPageLead":
+		return "インストール済みのバージョンと、GitHub Release の更新を確認します。"
 	case "tabAnimals":
 		return "動物"
 	case "tabMotion":
 		return "動き"
+	case "tabDisplay":
+		return "表示"
+	case "tabUpdates":
+		return "更新"
+	case "tabHome":
+		return "ホーム"
 	case "animalSection":
 		return "デグー"
 	case "deguCount":
@@ -3341,6 +4051,7 @@ func (a *petApp) startUpdateCheck(manual bool) {
 		}
 		return
 	}
+	a.syncSettingsWindow()
 	go func() {
 		rel, err := fetchLatestRelease()
 		a.setUpdateResult(rel, err)
@@ -3358,6 +4069,7 @@ func (a *petApp) startUpdateCheck(manual bool) {
 
 func (a *petApp) onUpdateReady(manual bool) {
 	a.update.checking.Store(false)
+	a.syncSettingsWindow()
 	rel := a.currentRelease()
 	if rel == nil {
 		if manual {
@@ -3399,6 +4111,7 @@ func (a *petApp) onUpdateReady(manual bool) {
 func (a *petApp) onUpdateFailed(notify bool) {
 	a.update.checking.Store(false)
 	a.update.installing.Store(false)
+	a.syncSettingsWindow()
 	if !notify {
 		return
 	}
@@ -3432,6 +4145,7 @@ func (a *petApp) installLatestUpdate() {
 		)
 		return
 	}
+	a.syncSettingsWindow()
 	a.showTrayBalloon(
 		a.localText("アップデートを開始", "Starting update"),
 		a.localText("ダウンロード後に Degu Desktop を再起動します。", "Degu Desktop will restart after download."),
@@ -3448,6 +4162,7 @@ func (a *petApp) installLatestUpdate() {
 }
 
 func (a *petApp) onUpdateInstallReady() {
+	a.syncSettingsWindow()
 	a.showTrayBalloon(
 		a.localText("アップデートを適用します", "Applying update"),
 		a.localText("本体を終了して、新しいバージョンで再起動します。", "The app will close and restart with the new version."),
@@ -4074,6 +4789,64 @@ func updateLayeredWindow(hwnd win.HWND, img *image.RGBA, x, y int) {
 	updateLayeredWindowNative(hwnd, screenDC, &ptDst, &size, memDC, &ptSrc, 0, &blend, ulwAlpha)
 }
 
+type displayArea struct {
+	Work    win.RECT
+	Screen  win.RECT
+	Primary bool
+}
+
+var (
+	monitorEnumCallback = syscall.NewCallback(monitorEnumProc)
+	monitorEnumMu       sync.Mutex
+	monitorEnumAreas    *[]displayArea
+)
+
+func monitorEnumProc(hMonitor win.HMONITOR, _ win.HDC, _ *win.RECT, lParam uintptr) uintptr {
+	if monitorEnumAreas == nil {
+		return 0
+	}
+	info := win.MONITORINFO{CbSize: uint32(unsafe.Sizeof(win.MONITORINFO{}))}
+	if win.GetMonitorInfo(hMonitor, &info) {
+		*monitorEnumAreas = append(*monitorEnumAreas, displayArea{
+			Work:    info.RcWork,
+			Screen:  info.RcMonitor,
+			Primary: info.DwFlags&monitorPrimaryFlag != 0,
+		})
+	}
+	return 1
+}
+
+func (a *petApp) selectedDisplayArea() displayArea {
+	areas := monitorAreas()
+	if len(areas) == 0 {
+		return displayArea{Work: workArea(), Screen: screenArea(), Primary: true}
+	}
+	a.displayIndex = normalizeDisplayIndex(a.displayIndex, len(areas))
+	return areas[a.displayIndex]
+}
+
+func monitorAreas() []displayArea {
+	areas := make([]displayArea, 0, 4)
+	monitorEnumMu.Lock()
+	monitorEnumAreas = &areas
+	ret, _, _ := procEnumDisplayMonitors.Call(0, 0, monitorEnumCallback, 0)
+	monitorEnumAreas = nil
+	monitorEnumMu.Unlock()
+	if ret == 0 || len(areas) == 0 {
+		return nil
+	}
+	sort.SliceStable(areas, func(i, j int) bool {
+		if areas[i].Primary != areas[j].Primary {
+			return areas[i].Primary
+		}
+		if areas[i].Screen.Left != areas[j].Screen.Left {
+			return areas[i].Screen.Left < areas[j].Screen.Left
+		}
+		return areas[i].Screen.Top < areas[j].Screen.Top
+	})
+	return areas
+}
+
 func workArea() win.RECT {
 	var rect win.RECT
 	if !win.SystemParametersInfo(spiGetWorkArea, 0, unsafe.Pointer(&rect), 0) {
@@ -4083,10 +4856,16 @@ func workArea() win.RECT {
 }
 
 func screenArea() win.RECT {
-	left := int32(0)
-	top := int32(0)
-	width := win.GetSystemMetrics(win.SM_CXSCREEN)
-	height := win.GetSystemMetrics(win.SM_CYSCREEN)
+	left := int32(win.GetSystemMetrics(win.SM_XVIRTUALSCREEN))
+	top := int32(win.GetSystemMetrics(win.SM_YVIRTUALSCREEN))
+	width := win.GetSystemMetrics(win.SM_CXVIRTUALSCREEN)
+	height := win.GetSystemMetrics(win.SM_CYVIRTUALSCREEN)
+	if width <= 0 || height <= 0 {
+		left = 0
+		top = 0
+		width = win.GetSystemMetrics(win.SM_CXSCREEN)
+		height = win.GetSystemMetrics(win.SM_CYSCREEN)
+	}
 	if width <= 0 || height <= 0 {
 		return workArea()
 	}

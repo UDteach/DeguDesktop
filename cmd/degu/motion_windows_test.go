@@ -6,12 +6,14 @@ import (
 	"archive/zip"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"image"
 	"math"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -275,6 +277,9 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 		positionMode:   positionScreenBottom,
 		overlayOffsetY: 28,
 		laneMode:       laneAligned,
+		displayIndex:   1,
+		walkRangeStart: 15,
+		walkRangeEnd:   85,
 		lang:           langEnglish,
 		settingsX:      220,
 		settingsY:      180,
@@ -303,6 +308,16 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	}
 	if saved.LaneMode == nil || *saved.LaneMode != int(laneAligned) {
 		t.Fatalf("saved LaneMode = %v, want aligned", saved.LaneMode)
+	}
+	wantDisplayIndex := normalizeDisplayIndex(a.displayIndex, len(monitorAreas()))
+	if saved.DisplayIndex == nil || *saved.DisplayIndex != wantDisplayIndex {
+		t.Fatalf("saved DisplayIndex = %v, want %d", saved.DisplayIndex, wantDisplayIndex)
+	}
+	if saved.WalkRangeStart == nil || *saved.WalkRangeStart != 15 {
+		t.Fatalf("saved WalkRangeStart = %v, want 15", saved.WalkRangeStart)
+	}
+	if saved.WalkRangeEnd == nil || *saved.WalkRangeEnd != 85 {
+		t.Fatalf("saved WalkRangeEnd = %v, want 85", saved.WalkRangeEnd)
 	}
 	if !saved.NameLabels {
 		t.Fatalf("saved NameLabels = false, want true")
@@ -345,6 +360,12 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 	if b.laneMode != a.laneMode {
 		t.Fatalf("loaded laneMode = %d, want %d", b.laneMode, a.laneMode)
 	}
+	if b.displayIndex != wantDisplayIndex {
+		t.Fatalf("loaded displayIndex = %d, want %d", b.displayIndex, wantDisplayIndex)
+	}
+	if b.walkRangeStart != 15 || b.walkRangeEnd != 85 {
+		t.Fatalf("loaded walk range = %d-%d, want 15-85", b.walkRangeStart, b.walkRangeEnd)
+	}
 	if b.nameLabels != a.nameLabels {
 		t.Fatalf("loaded nameLabels = %v, want %v", b.nameLabels, a.nameLabels)
 	}
@@ -361,7 +382,7 @@ func TestSettingsRoundTripPersistsCoreOptions(t *testing.T) {
 func TestOverlayRectSupportsTaskbarAndScreenBottomModes(t *testing.T) {
 	work := winRect(80, 0, 1920, 1040)
 	screen := winRect(0, 0, 1920, 1080)
-	a := &petApp{positionMode: positionTaskbarEdge, overlayOffsetY: 20}
+	a := &petApp{positionMode: positionTaskbarEdge, overlayOffsetY: 20, walkRangeEnd: 100}
 
 	got := a.overlayRectFor(work, screen)
 	if got.Left != work.Left || got.Right != work.Right {
@@ -386,6 +407,61 @@ func TestOverlayRectSupportsTaskbarAndScreenBottomModes(t *testing.T) {
 	got = a.overlayRectFor(work, screen)
 	if got.Bottom != screen.Bottom {
 		t.Fatalf("large downward offset bottom = %d, want clamped to screen bottom %d", got.Bottom, screen.Bottom)
+	}
+}
+
+func TestOverlayRectAppliesWalkRange(t *testing.T) {
+	work := winRect(100, 0, 1100, 1040)
+	screen := winRect(100, 0, 1100, 1080)
+	a := &petApp{
+		positionMode:   positionTaskbarEdge,
+		overlayOffsetY: 0,
+		walkRangeStart: 20,
+		walkRangeEnd:   80,
+	}
+
+	got := a.overlayRectFor(work, screen)
+	if got.Left != 300 || got.Right != 900 {
+		t.Fatalf("overlay walk range = left:%d right:%d, want 300-900", got.Left, got.Right)
+	}
+}
+
+func TestOverlayRectHandlesNegativeMonitorCoordinates(t *testing.T) {
+	work := winRect(-1920, 0, 0, 1040)
+	screen := winRect(-1920, 0, 0, 1080)
+	a := &petApp{
+		positionMode:   positionScreenBottom,
+		overlayOffsetY: 0,
+		walkRangeStart: 50,
+		walkRangeEnd:   100,
+	}
+
+	got := a.overlayRectFor(work, screen)
+	if got.Left != -960 || got.Right != 0 {
+		t.Fatalf("negative-coordinate overlay = left:%d right:%d, want -960-0", got.Left, got.Right)
+	}
+	if got.Top != 1080-sceneH {
+		t.Fatalf("negative-coordinate overlay top = %d, want %d", got.Top, 1080-sceneH)
+	}
+}
+
+func TestNormalizeWalkRangeKeepsMinimumSpan(t *testing.T) {
+	start, end := normalizeWalkRange(52, 53)
+	if end-start != minWalkRangeSpan {
+		t.Fatalf("normalized span = %d, want %d", end-start, minWalkRangeSpan)
+	}
+	if start < 0 || end > 100 {
+		t.Fatalf("normalized range escaped bounds: %d-%d", start, end)
+	}
+	start, end = normalizeWalkRange(95, 10)
+	if start != 10 || end != 95 {
+		t.Fatalf("reordered range = %d-%d, want 10-95", start, end)
+	}
+}
+
+func TestMonitorAreasCanBeCalledRepeatedly(t *testing.T) {
+	for i := 0; i < 2500; i++ {
+		_ = monitorAreas()
 	}
 }
 
@@ -461,6 +537,24 @@ func TestPetLaneModeControlsVerticalOffsets(t *testing.T) {
 
 func TestSettingsTooltipsExplainLayoutControls(t *testing.T) {
 	a := &petApp{}
+	if got := a.settingsTooltipText(ctrlTabHome); got == "" || !strings.Contains(got, "まとめ") {
+		t.Fatalf("home tab tooltip = %q, want overview explanation", got)
+	}
+	if got := a.settingsTooltipText(ctrlTabDisplay); got == "" || !strings.Contains(got, "タスクバー") {
+		t.Fatalf("display tab tooltip = %q, want taskbar explanation", got)
+	}
+	if got := a.settingsTooltipText(ctrlRangeStartScroll); got == "" || !strings.Contains(got, "ここから") {
+		t.Fatalf("range start tooltip = %q, want here-from explanation", got)
+	}
+	if got := a.settingsTooltipText(ctrlRangeEndScroll); got == "" || !strings.Contains(got, "ここまで") {
+		t.Fatalf("range end tooltip = %q, want here-to explanation", got)
+	}
+	if got := a.settingsTooltipText(ctrlTabUpdates); got == "" || !strings.Contains(got, "バージョン") {
+		t.Fatalf("updates tab tooltip = %q, want version explanation", got)
+	}
+	if got := a.settingsTooltipText(ctrlUpdateInstall); got == "" || !strings.Contains(got, "再起動") {
+		t.Fatalf("update install tooltip = %q, want restart explanation", got)
+	}
 	if got := a.settingsTooltipText(ctrlLaneStaggered); got == "" || !strings.Contains(got, "0/5/10") {
 		t.Fatalf("staggered tooltip = %q, want 0/5/10 explanation", got)
 	}
@@ -469,6 +563,34 @@ func TestSettingsTooltipsExplainLayoutControls(t *testing.T) {
 	}
 	if got := a.settingsTooltipText(ctrlReset); got == "" || !strings.Contains(got, "初期値") {
 		t.Fatalf("reset tooltip = %q, want initial-position explanation", got)
+	}
+}
+
+func TestHomeSettingsSummariesShowUsefulState(t *testing.T) {
+	a := &petApp{
+		petCount:       5,
+		coatMode:       coatSelected,
+		nameLabels:     true,
+		speed:          5,
+		mode:           modeRandom,
+		wheelEnabled:   true,
+		bidirectional:  true,
+		positionMode:   positionScreenBottom,
+		overlayOffsetY: -4,
+		walkRangeStart: 10,
+		walkRangeEnd:   90,
+	}
+	if got := a.homePetDetail(); !strings.Contains(got, "個別") || !strings.Contains(got, "名前") {
+		t.Fatalf("homePetDetail() = %q, want coat and name state", got)
+	}
+	if got := a.homeMotionSummary(); !strings.Contains(got, "ランダム") || !strings.Contains(got, "はやい") {
+		t.Fatalf("homeMotionSummary() = %q, want mode and speed", got)
+	}
+	if got := a.homeMotionDetail(); !strings.Contains(got, "回し車") || !strings.Contains(got, "左右") {
+		t.Fatalf("homeMotionDetail() = %q, want wheel and turn state", got)
+	}
+	if got := a.homeDisplayDetail(); !strings.Contains(got, "10%") || !strings.Contains(got, "-4 px") {
+		t.Fatalf("homeDisplayDetail() = %q, want range and offset", got)
 	}
 }
 
@@ -536,6 +658,52 @@ func TestSelectUpdateAssetFindsWindowsZip(t *testing.T) {
 	asset = selectUpdateAsset(rel, "386")
 	if asset == nil || asset.BrowserDownloadURL != "https://example.test/app-x86.zip" {
 		t.Fatalf("selectUpdateAsset(386) = %+v", asset)
+	}
+}
+
+func TestUpdateSettingsSummariesExplainStates(t *testing.T) {
+	oldVersion := appVersion
+	appVersion = "v1.0.0"
+	t.Cleanup(func() { appVersion = oldVersion })
+
+	a := &petApp{}
+	if got := a.updateStatusSummary(); got == "" || !strings.Contains(got, "まだ") {
+		t.Fatalf("initial update summary = %q, want not-checked guidance", got)
+	}
+	if got := a.updatePackageSummary(); got != updateAssetName(runtime.GOARCH) {
+		t.Fatalf("initial package summary = %q, want asset name", got)
+	}
+
+	a.update.checking.Store(true)
+	if got := a.updateStatusSummary(); got == "" || !strings.Contains(got, "確認中") {
+		t.Fatalf("checking update summary = %q, want checking state", got)
+	}
+	a.update.checking.Store(false)
+
+	a.setUpdateResult(&githubRelease{
+		TagName: "v1.2.0",
+		Assets: []githubReleaseAsset{{
+			Name:               updateAssetName(runtime.GOARCH),
+			BrowserDownloadURL: "https://example.test/app.zip",
+			Size:               2 * 1024 * 1024,
+		}},
+	}, nil)
+	if !a.hasInstallableUpdate() {
+		t.Fatalf("hasInstallableUpdate() = false, want true")
+	}
+	if got := a.updateStatusSummary(); got == "" || !strings.Contains(got, "v1.2.0") {
+		t.Fatalf("available update summary = %q, want release tag", got)
+	}
+	if got := a.updatePackageSummary(); got == "" || !strings.Contains(got, "2.0 MB") {
+		t.Fatalf("package summary = %q, want formatted size", got)
+	}
+
+	a.setUpdateResult(nil, fmt.Errorf("network down"))
+	if got := a.updateStatusSummary(); got == "" || !strings.Contains(got, "失敗") {
+		t.Fatalf("error update summary = %q, want failure state", got)
+	}
+	if got := a.updateStatusDetail(); got != "network down" {
+		t.Fatalf("error detail = %q, want raw error", got)
 	}
 }
 
