@@ -914,4 +914,9 @@ The current public Windows release label was still `v0.1.8`, while the local app
 
 ### Release Status
 
-- Pending publication. GitHub workflow IDs and live verification will be recorded after `main` and tag `v0.1.9` are pushed.
+- Pushed `main` and tag `v0.1.9`.
+- GitHub Release workflow `27918389775` completed successfully and published `DeguDesktop-windows-amd64.zip` and `DeguDesktop-windows-386.zip`.
+- GitHub Pages workflow `27918386994` completed successfully.
+- Verified live GitHub Pages shows Windows `v0.1.9`, Mac `v0.1.8`, build version `pages-8c6c87d`, and commit `8c6c87d`.
+- Verified GitHub Releases reports `v0.1.9` as latest with both Windows assets.
+- Verified latest download URLs for both Windows x64 and x86 return HTTP 200.
