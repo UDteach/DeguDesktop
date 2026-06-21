@@ -44,7 +44,7 @@ const (
 	timerInterval              = 55
 	frameW                     = 96
 	frameH                     = 64
-	frameCount                 = 56
+	frameCount                 = 62
 	motionSets                 = 10
 	scale                      = 1
 	spriteW                    = frameW * scale
@@ -71,38 +71,41 @@ const (
 )
 
 const (
-	idleStart    = 0
-	idleFrames   = 4
-	walkStart    = 4
-	walkFrames   = 8
-	scurryStart  = 12
-	scurryFrames = 8
-	nibbleStart  = 20
-	nibbleFrames = 6
-	hopStart     = 26
-	hopFrames    = 6
-	turnStart    = 32
-	turnFrames   = 8
-	eatStart     = 40
-	eatFrames    = 4
-	digStart     = 44
-	digFrames    = 4
-	standStart   = 48
-	standFrames  = 4
-	groomStart   = 52
-	groomFrames  = 4
+	idleStart      = 0
+	idleFrames     = 4
+	walkStart      = 4
+	walkFrames     = 8
+	scurryStart    = 12
+	scurryFrames   = 8
+	nibbleStart    = 20
+	nibbleFrames   = 6
+	hopStart       = 26
+	hopFrames      = 6
+	turnStart      = 32
+	turnFrames     = 8
+	eatStart       = 40
+	eatFrames      = 4
+	digStart       = 44
+	digFrames      = 4
+	standStart     = 48
+	standFrames    = 4
+	groomStart     = 52
+	groomFrames    = 4
+	wheelRunStart  = 56
+	wheelRunFrames = 6
 )
 
 var (
-	idleFrameSeq   = []int{idleStart, idleStart + 1, idleStart + 3, idleStart + 1}
-	walkFrameSeq   = []int{walkStart, walkStart + 1, walkStart + 3, walkStart + 1}
-	nibbleFrameSeq = []int{nibbleStart, nibbleStart + 1, nibbleStart + 2, nibbleStart + 1}
-	hopFrameSeq    = []int{hopStart, hopStart + 1, hopStart + 2, hopStart + 3}
-	turnFrameSeq   = []int{turnStart, turnStart + 1, turnStart + 2, turnStart + 3, turnStart + 4, turnStart + 5, turnStart + 6, turnStart + 7}
-	eatFrameSeq    = []int{eatStart, eatStart + 1, eatStart + 2, eatStart + 3}
-	digFrameSeq    = []int{digStart, digStart + 1, digStart + 2, digStart + 3}
-	standFrameSeq  = []int{standStart, standStart + 1, standStart + 2, standStart + 3}
-	groomFrameSeq  = []int{groomStart, groomStart + 1, groomStart + 2, groomStart + 3}
+	idleFrameSeq     = []int{idleStart, idleStart + 1, idleStart + 3, idleStart + 1}
+	walkFrameSeq     = []int{walkStart, walkStart + 1, walkStart + 3, walkStart + 1}
+	nibbleFrameSeq   = []int{nibbleStart, nibbleStart + 1, nibbleStart + 2, nibbleStart + 1}
+	hopFrameSeq      = []int{hopStart, hopStart + 1, hopStart + 2, hopStart + 3}
+	turnFrameSeq     = []int{turnStart, turnStart + 1, turnStart + 2, turnStart + 3, turnStart + 4, turnStart + 5, turnStart + 6, turnStart + 7}
+	eatFrameSeq      = []int{eatStart, eatStart + 1, eatStart + 2, eatStart + 3}
+	digFrameSeq      = []int{digStart, digStart + 1, digStart + 2, digStart + 3}
+	standFrameSeq    = []int{standStart, standStart + 1, standStart + 2, standStart + 3}
+	groomFrameSeq    = []int{groomStart, groomStart + 1, groomStart + 2, groomStart + 3}
+	wheelRunFrameSeq = []int{wheelRunStart, wheelRunStart + 1, wheelRunStart + 2, wheelRunStart + 3, wheelRunStart + 4, wheelRunStart + 5}
 )
 
 const (
@@ -876,8 +879,10 @@ func currentFrame(state behaviorState, frame int) int {
 		return frameFromSeq(idleFrameSeq, frame, 5)
 	case stateWalk, stateForage, stateCarry:
 		return frameFromSeq(walkFrameSeq, frame, 2)
-	case stateScurry, stateWheel:
+	case stateScurry:
 		return frameFromSeq(walkFrameSeq, frame, 1)
+	case stateWheel:
+		return frameFromSeq(wheelRunFrameSeq, frame, 1)
 	case stateNibble:
 		return frameFromSeq(nibbleFrameSeq, frame, 3)
 	case stateHop:
@@ -3801,12 +3806,12 @@ func drawWheelBack(dst *image.RGBA, x, y int, wheel *image.RGBA) {
 }
 
 func drawWheelRunner(dst *image.RGBA, x, y int, src *image.RGBA, frame int) {
-	runnerW := 68
-	runnerH := 46
+	runnerW := 56
+	runnerH := 38
 	scaled := fitVisibleImageTo(src, runnerW, runnerH)
 	bob := int(math.Sin(float64(frame)/2.0) * 2)
 	dstX := x + (wheelSize-runnerW)/2
-	dstY := y + wheelSize/2 - runnerH/2 + 6 + bob
+	dstY := y + wheelSize/2 - runnerH/2 + 2 + bob
 	draw.Draw(dst, image.Rect(dstX, dstY, dstX+runnerW, dstY+runnerH), scaled, image.Point{}, draw.Over)
 }
 

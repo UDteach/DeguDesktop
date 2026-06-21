@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	totalFrames = 56
+	totalFrames = 62
 	motionSets  = 10
 	atlasRows   = 11
-	atlasCols   = 56
+	atlasCols   = 62
 	coatRows    = 5
 	coatCols    = 7
 	frameW      = 96
@@ -36,26 +36,28 @@ const (
 )
 
 const (
-	idleStart    = 0
-	idleFrames   = 4
-	walkStart    = 4
-	walkFrames   = 8
-	scurryStart  = 12
-	scurryFrames = 8
-	nibbleStart  = 20
-	nibbleFrames = 6
-	hopStart     = 26
-	hopFrames    = 6
-	turnStart    = 32
-	turnFrames   = 8
-	eatStart     = 40
-	eatFrames    = 4
-	digStart     = 44
-	digFrames    = 4
-	standStart   = 48
-	standFrames  = 4
-	groomStart   = 52
-	groomFrames  = 4
+	idleStart      = 0
+	idleFrames     = 4
+	walkStart      = 4
+	walkFrames     = 8
+	scurryStart    = 12
+	scurryFrames   = 8
+	nibbleStart    = 20
+	nibbleFrames   = 6
+	hopStart       = 26
+	hopFrames      = 6
+	turnStart      = 32
+	turnFrames     = 8
+	eatStart       = 40
+	eatFrames      = 4
+	digStart       = 44
+	digFrames      = 4
+	standStart     = 48
+	standFrames    = 4
+	groomStart     = 52
+	groomFrames    = 4
+	wheelRunStart  = 56
+	wheelRunFrames = 6
 )
 
 type rowSpec struct {
@@ -90,6 +92,7 @@ var rows = []rowSpec{
 	{Name: "dig", Row: 7, Cols: 4, Offset: 44},
 	{Name: "stand", Row: 8, Cols: 4, Offset: 48},
 	{Name: "groomface", Row: 9, Cols: 4, Offset: 52},
+	{Name: "wheelrun", Row: 10, Cols: 6, Offset: 56},
 }
 
 type report struct {
@@ -140,7 +143,7 @@ type frameSpec struct {
 }
 
 func main() {
-	source := flag.String("source", filepath.FromSlash("assets/source/imagegen-sheet-clean.png"), "single 56x11 ImageGen atlas")
+	source := flag.String("source", filepath.FromSlash("assets/source/imagegen-sheet-clean.png"), "single 62x11 ImageGen atlas")
 	poseDir := flag.String("pose-dir", filepath.FromSlash("assets/source/poses"), "directory containing one clean ImageGen pose per coat")
 	frameDir := flag.String("frame-dir", filepath.FromSlash("assets/source/frames"), "directory containing one ImageGen PNG per runtime frame")
 	sourceDir := flag.String("source-dir", filepath.FromSlash("assets/source/coats"), "directory containing one 8x5 ImageGen sheet per coat")
@@ -530,6 +533,33 @@ func cleanArtwork(src *image.RGBA) *image.RGBA {
 	src = removeEdgeBackground(src)
 	src = keepPrimaryArtwork(src)
 	return src
+}
+
+func cleanWheelArtwork(src *image.RGBA) *image.RGBA {
+	src = cleanArtwork(src)
+	b := src.Bounds()
+	dst := image.NewRGBA(b)
+	draw.Draw(dst, b, src, image.Point{}, draw.Src)
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			if isBakedCheckerPixel(dst.RGBAAt(x, y)) {
+				dst.SetRGBA(x, y, color.RGBA{})
+			}
+		}
+	}
+	return keepPrimaryArtwork(dst)
+}
+
+func isBakedCheckerPixel(c color.RGBA) bool {
+	if c.A < 32 {
+		return true
+	}
+	if c.A < 230 {
+		return false
+	}
+	maxc := max3(c.R, c.G, c.B)
+	minc := min3(c.R, c.G, c.B)
+	return maxc > 214 && maxc-minc < 28
 }
 
 type coatPalette struct {
@@ -1598,7 +1628,7 @@ func writeWheelSprite(sourcePath, outPath string) {
 		fmt.Println("warning: wheel source not found:", err)
 		return
 	}
-	cleaned := cleanArtwork(toRGBA(src))
+	cleaned := cleanWheelArtwork(toRGBA(src))
 	content := alphaBounds(cleaned)
 	if content.Empty() {
 		fmt.Println("warning: wheel source has no visible content")
@@ -1666,6 +1696,8 @@ func variantMotionSheet(base *image.RGBA, set int) *image.RGBA {
 func motionSetShift(set int, frame int) image.Point {
 	actionOffset := frame
 	switch {
+	case frame >= wheelRunStart:
+		actionOffset = frame - wheelRunStart
 	case frame >= groomStart:
 		actionOffset = frame - groomStart
 	case frame >= standStart:

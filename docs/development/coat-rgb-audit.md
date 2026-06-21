@@ -26,7 +26,7 @@ Reference pages:
 ## Implementation Notes
 
 - Runtime sprites stay on a fixed `96x64` canvas for every frame.
-- The base `wild_agouti` motion set is 56 ImageGen frame PNGs.
+- The base `wild_agouti` motion set is 62 ImageGen frame PNGs.
 - Pied variants use ImageGen coat-guide files under `assets/source/coat-guides`.
 - The importer transfers each guide's irregular light patch map across every motion frame, then applies the coat palette.
 - Contact-sheet QA is local-only under `.codex/qa` and is not used as runtime source material.

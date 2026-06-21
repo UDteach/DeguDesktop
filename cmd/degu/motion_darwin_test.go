@@ -27,6 +27,25 @@ func TestDarwinHorizontalMotionFramesUseStableSequence(t *testing.T) {
 	}
 }
 
+func TestDarwinKeyboardWheelUsesDedicatedRunFrames(t *testing.T) {
+	a := &darwinPetApp{
+		sceneW:       500,
+		wheelEnabled: true,
+		pets: []darwinPet{
+			{x: 20, dir: 1, speed: 2, nextPause: 50},
+		},
+	}
+
+	for tick := 0; tick < wheelRunFrames*2; tick++ {
+		a.keyHold = 2
+		a.tickPets()
+		got := a.pets[0].frame
+		if got < wheelRunStart || got >= wheelRunStart+wheelRunFrames {
+			t.Fatalf("wheel keyboard frame at tick %d = %d, want dedicated wheelrun frame", tick, got)
+		}
+	}
+}
+
 func TestDarwinTickWalksInDirectionWithStableFrame(t *testing.T) {
 	allowed := map[int]bool{
 		walkStart:     true,

@@ -21,7 +21,7 @@ Last updated: 2026-06-21
 - The macOS port lives in `cmd/degu/main_darwin.go` and `cmd/degu/darwin_cocoa_darwin.m`.
 - Coat variants are represented by a global `variants` list.
 - Runtime sprites are normalized to 96x64 frames.
-- Existing animations are `idle`, `walk`, `scurry`, `nibble`, `hop`, `turn`, `eat`, `dig`, `stand`, and `groomface`.
+- Existing animations are `idle`, `walk`, `scurry`, `nibble`, `hop`, `turn`, `eat`, `dig`, `stand`, `groomface`, and `wheelrun`.
 - The app currently has degu-only sprite assets, with coat variants handled as degu coats.
 
 ## Current Windows Features
@@ -72,7 +72,7 @@ assets/sprites/degu_<coat_id>.png
 
 The current format does not yet separate animal species from coat.
 
-The canonical ImageGen motion set is `wild_agouti`. The importer normalizes 56 source frames and expands them into all configured coat variants.
+The canonical ImageGen motion set is `wild_agouti`. The importer normalizes 62 source frames and expands them into all configured coat variants.
 
 Pied variants additionally use ImageGen coat guides:
 
@@ -89,6 +89,14 @@ assets/source/imagegen-icon.png
 ```
 
 The importer normalizes it into `assets/tray.ico`.
+
+The typing wheel uses an ImageGen back-layer source:
+
+```text
+assets/source/imagegen-wheel.png
+```
+
+The runtime draws the rotating front spokes and hub over that back layer, so the wheel source should not include front spokes or a hub cap. The degu running inside the wheel uses six dedicated one-frame ImageGen `wheelrun` source PNGs instead of reusing the normal walk cycle.
 
 ## Known Problems
 

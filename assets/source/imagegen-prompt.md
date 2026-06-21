@@ -14,8 +14,14 @@ go run ./cmd/importsheet
 
 There is no local art fallback. The ImageGen coat sheets are the source of truth.
 
+Wheel-run frame prompt shape:
+
+```text
+Create one production-ready transparent PNG sprite frame for a Windows desktop pet app. Subject: one cute wild agouti degu only, side view facing right, running inside an exercise wheel posture, frame <n> of 6. No wheel, no cage, no prop, no text, no labels, no background, no shadow. Match the same camera, scale, pixel-art style, agouti coat, ear size, tail length, and silhouette across all six wheelrun frames. Fixed square transparent canvas with generous padding, full animal visible, crisp clean 32-bit pixel art, readable at 96x64 runtime size, no cropped ears/tail/feet/whiskers, no extra fragments.
+```
+
 Wheel source prompt:
 
 ```text
-Create a single transparent PNG asset for a Windows desktop pet app: a cute pixel-art degu exercise wheel, side view, no animal, no background, no text, no labels. Crisp 32-bit pixel art style, warm gray-brown wooden/metal wheel, circular rim, simple spokes, small stable base, centered with generous transparent padding. Fixed square canvas, full object visible, no cropped edges, no extra artifacts, no decorative background.
+Create one production-ready transparent PNG asset for a Windows desktop pet app. Subject: a cute pixel-art degu exercise wheel back layer only, side view, no animal. The runtime draws the rotating front spokes separately, so this image must have a circular outer rim, subtle rear wooden running surface, small stable base/stand, open clear center, no front spokes, no hub cap, no animal, no text, no labels, no decorative background, no shadow. Crisp clean 32-bit pixel art, warm gray-brown wood and muted metal, readable at 72x72 pixels, centered on a square transparent canvas with generous padding. Full object visible, no cropped edges, no checkerboard baked into the image, no artifacts, no dirt, no extra parts.
 ```

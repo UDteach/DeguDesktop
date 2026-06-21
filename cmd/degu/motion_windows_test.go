@@ -4,6 +4,8 @@ package main
 
 import (
 	"encoding/json"
+	"image"
+	"math"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,7 +20,6 @@ func TestHorizontalMotionFramesUseStableRightFacingSequence(t *testing.T) {
 	states := []behaviorState{
 		stateWalk,
 		stateScurry,
-		stateWheel,
 		stateForage,
 		stateCarry,
 	}
@@ -31,6 +32,64 @@ func TestHorizontalMotionFramesUseStableRightFacingSequence(t *testing.T) {
 			}
 		}
 	}
+}
+
+func TestWheelUsesDedicatedRunFrames(t *testing.T) {
+	for frame := 0; frame < wheelRunFrames*2; frame++ {
+		got := currentFrame(stateWheel, frame)
+		if got < wheelRunStart || got >= wheelRunStart+wheelRunFrames {
+			t.Fatalf("currentFrame(stateWheel, %d) = %d, want dedicated wheelrun frame", frame, got)
+		}
+	}
+	if got := currentFrame(stateWheel, wheelRunFrames); got != wheelRunStart {
+		t.Fatalf("wheelrun loop frame = %d, want %d", got, wheelRunStart)
+	}
+}
+
+func TestWheelRunnerFitsInsideRimAcrossCoatSets(t *testing.T) {
+	spriteSets := loadSprites()
+	center := float64(wheelSize) / 2
+	allowedRadius := float64(wheelSize/2 - 5)
+
+	for _, variant := range variants {
+		sets := spriteSets[variant.ID]
+		if len(sets) != motionSets {
+			t.Fatalf("%s sets = %d, want %d", variant.ID, len(sets), motionSets)
+		}
+		for setIndex, frames := range sets {
+			for frame := wheelRunStart; frame < wheelRunStart+wheelRunFrames; frame++ {
+				canvas := image.NewRGBA(image.Rect(0, 0, wheelSize, wheelSize))
+				drawWheelRunner(canvas, 0, 0, frames[frame], frame)
+				outside, total := wheelRunnerOutsidePixels(canvas, center, allowedRadius)
+				if total == 0 {
+					t.Fatalf("%s set %d frame %d produced no runner pixels", variant.ID, setIndex, frame)
+				}
+				if outside != 0 {
+					t.Fatalf("%s set %d frame %d outside wheel rim = %d/%d pixels", variant.ID, setIndex, frame, outside, total)
+				}
+			}
+		}
+	}
+}
+
+func wheelRunnerOutsidePixels(img *image.RGBA, center, allowedRadius float64) (int, int) {
+	outside := 0
+	total := 0
+	b := img.Bounds()
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			if img.RGBAAt(x, y).A == 0 {
+				continue
+			}
+			total++
+			dx := float64(x) + 0.5 - center
+			dy := float64(y) + 0.5 - center
+			if math.Sqrt(dx*dx+dy*dy) > allowedRadius {
+				outside++
+			}
+		}
+	}
+	return outside, total
 }
 
 func TestFrameFromSeqHandlesEmptyAndBadDivisor(t *testing.T) {

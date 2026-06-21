@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/png"
 	"os"
@@ -40,6 +41,7 @@ func TestGeneratedSpritesContainPoseMotion(t *testing.T) {
 		assertPoseMotion(t, img, path, actionSpec("scurry"), 120)
 		assertPoseMotion(t, img, path, actionSpec("nibble"), 50)
 		assertPoseMotion(t, img, path, actionSpec("hop"), 120)
+		assertPoseMotion(t, img, path, actionSpec("wheelrun"), 120)
 	}
 }
 
@@ -106,6 +108,50 @@ func TestGeneratedSpriteSetCount(t *testing.T) {
 	paths := spriteSheetPaths(t)
 	if got, want := len(paths), len(variants)*motionSets; got != want {
 		t.Fatalf("sprite set count = %d, want %d", got, want)
+	}
+}
+
+func TestCleanWheelArtworkRemovesEnclosedBakedChecker(t *testing.T) {
+	src := image.NewRGBA(image.Rect(0, 0, 24, 24))
+	for y := 0; y < 24; y++ {
+		for x := 0; x < 24; x++ {
+			if (x/2+y/2)%2 == 0 {
+				src.SetRGBA(x, y, color.RGBA{R: 238, G: 238, B: 238, A: 255})
+			} else {
+				src.SetRGBA(x, y, color.RGBA{R: 252, G: 252, B: 252, A: 255})
+			}
+		}
+	}
+	wood := color.RGBA{R: 120, G: 80, B: 42, A: 255}
+	for y := 5; y <= 18; y++ {
+		for x := 5; x <= 18; x++ {
+			if x <= 7 || x >= 16 || y <= 7 || y >= 16 {
+				src.SetRGBA(x, y, wood)
+			}
+		}
+	}
+
+	cleaned := cleanWheelArtwork(src)
+	if got := cleaned.RGBAAt(12, 12).A; got != 0 {
+		t.Fatalf("enclosed checker alpha = %d, want 0", got)
+	}
+	if got := cleaned.RGBAAt(6, 12).A; got == 0 {
+		t.Fatalf("wheel rim was removed")
+	}
+}
+
+func TestGeneratedWheelSpriteHasTransparentCenter(t *testing.T) {
+	path := filepath.Join("..", "..", "assets", "sprites", "wheel.png")
+	img := openTestPNG(t, path)
+	if got, want := img.Bounds().Dx(), wheelW; got != want {
+		t.Fatalf("wheel width = %d, want %d", got, want)
+	}
+	if got, want := img.Bounds().Dy(), wheelH; got != want {
+		t.Fatalf("wheel height = %d, want %d", got, want)
+	}
+	_, _, _, alpha := img.At(wheelW/2, wheelH/2).RGBA()
+	if alpha != 0 {
+		t.Fatalf("wheel center alpha = %#x, want transparent", alpha)
 	}
 }
 

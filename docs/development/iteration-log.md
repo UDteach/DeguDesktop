@@ -540,3 +540,43 @@ Go 1.25 requires macOS 12 Monterey or later, so a Big Sur ZIP needs to be built 
 
 - Big Sur support is statically checked and packaged, but not smoke-tested on a real macOS 11 machine.
 - Public distribution still needs Developer ID signing and notarization as release-operator steps.
+
+## Iteration 15 - Wheel Rim Fit And Dedicated Wheel-Run Frames
+
+Date: 2026-06-21
+
+### Target
+
+Make the typing wheel look physically coherent by keeping the degu inside the wheel rim and replacing the normal walk-cycle reuse with dedicated wheel-running frames.
+
+### Cause
+
+The previous wheel source was a complete wheel illustration while the runtime also drew rotating front spokes and a hub. The degu inside the wheel also reused `walkFrameSeq`, so feet and tail could look like they belonged to ground walking rather than wheel running, and the original 68x46 runner draw size visibly protruded outside the rim.
+
+### Asset Pass
+
+- Generated a new ImageGen wheel back-layer source with an open center, rim, rear running surface, and stable base.
+- Added `cleanWheelArtwork` so enclosed baked checker pixels inside the wheel opening become transparent.
+- Generated six separate ImageGen source PNGs for `wheelrun`.
+- Added them as `assets/source/frames/wild_agouti/56_wheelrun_00.png` through `61_wheelrun_05.png`.
+- Expanded the runtime frame contract from 56 to 62 frames.
+- Updated Windows `stateWheel` and macOS keyboard-wheel rendering to use `wheelRunFrameSeq` instead of `walkFrameSeq`.
+- Tuned wheel runner drawing from 68x46+6px to 56x38+2px so all coat variants visually stay inside the rim.
+- Updated source docs and prompts to define the wheel as a back layer and `wheelrun` as one-frame-per-image production input.
+
+### Verification
+
+- `go run ./cmd/importsheet`
+- QA images:
+  - `.codex/qa/wheel-72px-zoom.png`
+  - `.codex/qa/wheelrun-source-contact.png`
+  - `.codex/qa/wheelrun-normalized-contact.png`
+  - `.codex/qa/wheelrun-fit-candidates.png`
+  - `.codex/qa/wheelrun-all-colors-composite.png`
+- Final wheel-run fit audit across all 11 coat variants had a max outside-inner-wheel ratio of `0.0000`, visually contained within the wheel rim.
+- `go test -buildvcs=false ./cmd/importsheet`
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- Local Windows x64/x86 build with `main.appVersion=v0.1.6`
+- `git diff --check`

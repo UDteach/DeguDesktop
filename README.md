@@ -43,8 +43,8 @@ assets/source/frames/wild_agouti/<frame>_<action>_<step>.png
 
 Runtime frame contract:
 
-- 56 files for the canonical `wild_agouti` motion set
-- actions: idle, walk, scurry, nibble, hop, turn, eat, dig, stand, groomface
+- 62 files for the canonical `wild_agouti` motion set
+- actions: idle, walk, scurry, nibble, hop, turn, eat, dig, stand, groomface, wheelrun
 - each file contains one complete degu, not a grid
 - the importer normalizes every frame into a fixed 96x64 runtime canvas
 - the importer expands the canonical motion set into all coat variants
@@ -78,6 +78,7 @@ assets/source/imagegen-eat.png
 assets/source/imagegen-dig.png
 assets/source/imagegen-stand.png
 assets/source/imagegen-groomface.png
+assets/source/imagegen-wheelrun.png
 ```
 
 Import and validate:

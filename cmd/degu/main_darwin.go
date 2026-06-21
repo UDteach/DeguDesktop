@@ -18,6 +18,7 @@ import (
 	"image/draw"
 	"image/png"
 	"io/fs"
+	"math"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -33,7 +34,7 @@ import (
 const (
 	frameW        = 96
 	frameH        = 64
-	frameCount    = 56
+	frameCount    = 62
 	spriteW       = frameW
 	spriteH       = frameH
 	sceneH        = 92
@@ -46,16 +47,18 @@ const (
 )
 
 const (
-	idleStart    = 0
-	idleFrames   = 4
-	walkStart    = 4
-	walkFrames   = 8
-	scurryStart  = 12
-	scurryFrames = 8
-	nibbleStart  = 20
-	nibbleFrames = 6
-	hopStart     = 26
-	hopFrames    = 6
+	idleStart      = 0
+	idleFrames     = 4
+	walkStart      = 4
+	walkFrames     = 8
+	scurryStart    = 12
+	scurryFrames   = 8
+	nibbleStart    = 20
+	nibbleFrames   = 6
+	hopStart       = 26
+	hopFrames      = 6
+	wheelRunStart  = 56
+	wheelRunFrames = 6
 )
 
 const (
@@ -83,10 +86,11 @@ const (
 )
 
 var (
-	idleFrameSeq   = []int{idleStart, idleStart + 1, idleStart + 3, idleStart + 1}
-	walkFrameSeq   = []int{walkStart, walkStart + 1, walkStart + 3, walkStart + 1}
-	nibbleFrameSeq = []int{nibbleStart, nibbleStart + 1, nibbleStart + 2, nibbleStart + 1}
-	hopFrameSeq    = []int{hopStart, hopStart + 1, hopStart + 2, hopStart + 3}
+	idleFrameSeq     = []int{idleStart, idleStart + 1, idleStart + 3, idleStart + 1}
+	walkFrameSeq     = []int{walkStart, walkStart + 1, walkStart + 3, walkStart + 1}
+	nibbleFrameSeq   = []int{nibbleStart, nibbleStart + 1, nibbleStart + 2, nibbleStart + 1}
+	hopFrameSeq      = []int{hopStart, hopStart + 1, hopStart + 2, hopStart + 3}
+	wheelRunFrameSeq = []int{wheelRunStart, wheelRunStart + 1, wheelRunStart + 2, wheelRunStart + 3, wheelRunStart + 4, wheelRunStart + 5}
 )
 
 type darwinCoatVariant struct {
@@ -805,8 +809,10 @@ func (a *darwinPetApp) tickPets() {
 	for i := range a.pets {
 		p := &a.pets[i]
 		if a.keyHold > 0 && i == 0 {
-			p.frame = seqFrameFrom(walkFrameSeq, a.tick, 1)
-			if !a.wheelEnabled {
+			if a.wheelEnabled {
+				p.frame = seqFrameFrom(wheelRunFrameSeq, a.tick, 1)
+			} else {
+				p.frame = seqFrameFrom(walkFrameSeq, a.tick, 1)
 				a.movePet(p, p.speed+1)
 			}
 			continue
@@ -899,8 +905,13 @@ func (a *darwinPetApp) render() *image.RGBA {
 			draw.Draw(canvas, image.Rect(wheelX, wheelY, wheelX+wheelSize, wheelY+wheelSize), a.wheel, image.Point{}, draw.Over)
 		}
 		if frames := a.frames[a.variantID(a.pets[0].variant)]; len(frames) > a.pets[0].frame {
-			runner := scaleNearest(frames[a.pets[0].frame], 66, 44)
-			drawFacingImage(canvas, runner, image.Rect(wheelX+3, wheelY+22, wheelX+69, wheelY+66), 1)
+			runnerW := 56
+			runnerH := 38
+			runner := fitVisibleImageTo(frames[a.pets[0].frame], runnerW, runnerH)
+			bob := int(math.Sin(float64(a.pets[0].frame)/2.0) * 2)
+			dstX := wheelX + (wheelSize-runnerW)/2
+			dstY := wheelY + wheelSize/2 - runnerH/2 + 2 + bob
+			drawFacingImage(canvas, runner, image.Rect(dstX, dstY, dstX+runnerW, dstY+runnerH), 1)
 		}
 	}
 
@@ -1050,6 +1061,26 @@ func scaleNearest(src *image.RGBA, width, height int) *image.RGBA {
 			dst.SetRGBA(x, y, src.RGBAAt(sx, sy))
 		}
 	}
+	return dst
+}
+
+func fitVisibleImageTo(src *image.RGBA, width, height int) *image.RGBA {
+	if src == nil || width <= 0 || height <= 0 {
+		return image.NewRGBA(image.Rect(0, 0, max(1, width), max(1, height)))
+	}
+	content := cropVisible(src)
+	cb := content.Bounds()
+	if cb.Dx() <= 0 || cb.Dy() <= 0 {
+		return scaleNearest(src, width, height)
+	}
+	scale := math.Min(float64(width)/float64(cb.Dx()), float64(height)/float64(cb.Dy()))
+	outW := max(1, int(math.Round(float64(cb.Dx())*scale)))
+	outH := max(1, int(math.Round(float64(cb.Dy())*scale)))
+	scaled := scaleNearest(content, outW, outH)
+	dst := image.NewRGBA(image.Rect(0, 0, width, height))
+	offX := (width - outW) / 2
+	offY := height - outH
+	draw.Draw(dst, image.Rect(offX, offY, offX+outW, offY+outH), scaled, image.Point{}, draw.Over)
 	return dst
 }
 

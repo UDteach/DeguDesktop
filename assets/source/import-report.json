@@ -1,8 +1,8 @@
 {
   "source": "assets\\source\\frames",
   "source_width": 1536,
-  "source_height": 1024,
-  "columns": 56,
+  "source_height": 1254,
+  "columns": 62,
   "rows": 11,
   "frame_width": 96,
   "frame_height": 64,
@@ -1016,6 +1016,114 @@
       "output": "assets/sprites/degu_wild_agouti.png"
     },
     {
+      "variant": "wild_agouti",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
+      "variant": "wild_agouti",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_wild_agouti.png"
+    },
+    {
       "variant": "black",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -2024,6 +2132,114 @@
       "output": "assets/sprites/degu_black.png"
     },
     {
+      "variant": "black",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
+      "variant": "black",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_black.png"
+    },
+    {
       "variant": "blue",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -3032,6 +3248,114 @@
       "output": "assets/sprites/degu_blue.png"
     },
     {
+      "variant": "blue",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
+      "variant": "blue",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_blue.png"
+    },
+    {
       "variant": "gray",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -4040,6 +4364,114 @@
       "output": "assets/sprites/degu_gray.png"
     },
     {
+      "variant": "gray",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
+      "variant": "gray",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_gray.png"
+    },
+    {
       "variant": "white_cream",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -5048,6 +5480,114 @@
       "output": "assets/sprites/degu_white_cream.png"
     },
     {
+      "variant": "white_cream",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
+      "variant": "white_cream",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_white_cream.png"
+    },
+    {
       "variant": "sand_champagne",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -6056,6 +6596,114 @@
       "output": "assets/sprites/degu_sand_champagne.png"
     },
     {
+      "variant": "sand_champagne",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
+      "variant": "sand_champagne",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_sand_champagne.png"
+    },
+    {
       "variant": "chocolate",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -7064,6 +7712,114 @@
       "output": "assets/sprites/degu_chocolate.png"
     },
     {
+      "variant": "chocolate",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
+      "variant": "chocolate",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_chocolate.png"
+    },
+    {
       "variant": "black_pied",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -8072,6 +8828,114 @@
       "output": "assets/sprites/degu_black_pied.png"
     },
     {
+      "variant": "black_pied",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
+      "variant": "black_pied",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_black_pied.png"
+    },
+    {
       "variant": "agouti_pied",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -9080,6 +9944,114 @@
       "output": "assets/sprites/degu_agouti_pied.png"
     },
     {
+      "variant": "agouti_pied",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
+      "variant": "agouti_pied",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_agouti_pied.png"
+    },
+    {
       "variant": "blue_pied",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -10088,6 +11060,114 @@
       "output": "assets/sprites/degu_blue_pied.png"
     },
     {
+      "variant": "blue_pied",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
+      "variant": "blue_pied",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
+      },
+      "output": "assets/sprites/degu_blue_pied.png"
+    },
+    {
       "variant": "cream_pied",
       "frame": 0,
       "sheet": "wild_agouti/00_idle_00.png",
@@ -11092,6 +12172,114 @@
         "y": 185,
         "w": 1132,
         "h": 633
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 56,
+      "sheet": "wild_agouti/56_wheelrun_00.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1254,
+        "h": 1254
+      },
+      "content_rect": {
+        "x": 47,
+        "y": 326,
+        "w": 1132,
+        "h": 517
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 57,
+      "sheet": "wild_agouti/57_wheelrun_01.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 115,
+        "w": 1149,
+        "h": 675
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 58,
+      "sheet": "wild_agouti/58_wheelrun_02.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 147,
+        "y": 196,
+        "w": 1231,
+        "h": 527
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 59,
+      "sheet": "wild_agouti/59_wheelrun_03.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 213,
+        "y": 123,
+        "w": 1095,
+        "h": 690
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 60,
+      "sheet": "wild_agouti/60_wheelrun_04.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 201,
+        "y": 114,
+        "w": 1148,
+        "h": 709
+      },
+      "output": "assets/sprites/degu_cream_pied.png"
+    },
+    {
+      "variant": "cream_pied",
+      "frame": 61,
+      "sheet": "wild_agouti/61_wheelrun_05.png",
+      "source_rect": {
+        "x": 0,
+        "y": 0,
+        "w": 1536,
+        "h": 1024
+      },
+      "content_rect": {
+        "x": 247,
+        "y": 206,
+        "w": 1064,
+        "h": 565
       },
       "output": "assets/sprites/degu_cream_pied.png"
     }
