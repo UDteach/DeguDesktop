@@ -204,6 +204,89 @@
         border-color: var(--leaf);
       }
 
+      .setup-guide {
+        margin-top: 34px;
+        border-top: 1px solid var(--line);
+        padding-top: 28px;
+      }
+
+      .section-heading {
+        display: grid;
+        gap: 8px;
+        max-width: 720px;
+      }
+
+      .section-heading p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .setup-steps {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 20px;
+      }
+
+      .setup-step {
+        min-height: 150px;
+        border: 1px solid var(--line);
+        background: rgba(255, 253, 247, 0.82);
+        padding: 16px;
+      }
+
+      .step-number {
+        display: inline-flex;
+        width: 30px;
+        height: 30px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--leaf);
+        background: var(--leaf);
+        color: #fff;
+        font-weight: 700;
+      }
+
+      .setup-step h3 {
+        margin: 12px 0 8px;
+        font-size: 16px;
+      }
+
+      .setup-step p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .settings-shots {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+        margin: 24px 0 0;
+      }
+
+      .settings-shot {
+        margin: 0;
+      }
+
+      .settings-shot img {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: #fff;
+        border: 1px solid var(--line);
+        box-shadow: 0 12px 34px rgba(42, 49, 43, 0.08);
+      }
+
+      .settings-shot figcaption {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
       h2 {
         margin: 0 0 8px;
         font-size: 18px;
@@ -228,7 +311,9 @@
 
       @media (max-width: 760px) {
         header,
-        .features {
+        .features,
+        .setup-steps,
+        .settings-shots {
           grid-template-columns: 1fr;
         }
 
@@ -251,6 +336,7 @@
         <div class="brand">Degu Desktop</div>
         <div class="navlinks">
           <a href="#download">ダウンロード</a>
+          <a href="#settings">設定方法</a>
           <a href="#english">English</a>
           <a href="https://github.com/UDteach/DeguDesktop">GitHub</a>
         </div>
@@ -348,6 +434,53 @@
         </article>
       </section>
 
+      <section class="setup-guide" id="settings">
+        <div class="section-heading">
+          <h2>設定方法</h2>
+          <p>
+            Windows版はタスクトレイのデグーアイコンから設定を開きます。表示数、色、名前、動き、回し車、表示する画面、タスクバー上の歩く範囲、更新確認をまとめて変更できます。
+          </p>
+        </div>
+
+        <div class="setup-steps" aria-label="Windows settings steps">
+          <article class="setup-step">
+            <span class="step-number">1</span>
+            <h3>起動する</h3>
+            <p>ZIPを展開して <code>DeguDesktop.exe</code> を起動します。タスクバー付近にデグーが表示され、タスクトレイにアイコンが入ります。</p>
+          </article>
+          <article class="setup-step">
+            <span class="step-number">2</span>
+            <h3>右クリック</h3>
+            <p>タスクトレイのデグーアイコンを右クリックして、メニューから「設定」を選びます。表示数の変更や終了もここからできます。</p>
+          </article>
+          <article class="setup-step">
+            <span class="step-number">3</span>
+            <h3>ホームで確認</h3>
+            <p>設定画面のホームで現在の状態を確認し、動物、動き、表示、更新の各設定へ移動します。</p>
+          </article>
+          <article class="setup-step">
+            <span class="step-number">4</span>
+            <h3>表示を調整</h3>
+            <p>表示タブでディスプレイ、タスクバー基準/画面下、上下オフセット、歩く範囲の左端/右端スクロールバーを調整します。</p>
+          </article>
+        </div>
+
+        <div class="settings-shots" aria-label="Settings screenshots">
+          <figure class="settings-shot">
+            <img src="assets/settings-home-tab.png" alt="Degu Desktop settings home tab" loading="lazy" />
+            <figcaption>ホームでは、よく使う設定と現在の状態をまとめて確認できます。</figcaption>
+          </figure>
+          <figure class="settings-shot">
+            <img src="assets/settings-display-range.png" alt="Display tab with walking range scrollbars" loading="lazy" />
+            <figcaption>表示タブでは、使う画面とタスクバー上の歩く範囲をスクロールバーで指定できます。</figcaption>
+          </figure>
+          <figure class="settings-shot">
+            <img src="assets/settings-updates-tab.png" alt="Updates tab showing available update controls" loading="lazy" />
+            <figcaption>更新タブでは、現在のバージョン、最新リリース、配布パッケージ、インストール操作を確認できます。</figcaption>
+          </figure>
+        </div>
+      </section>
+
       <section class="english" id="english">
         <h2>English</h2>
         <p>
@@ -356,6 +489,10 @@
           foraging, eating, digging, grooming, smooth turns, wheel running while you type or occasionally during random stroll, tray count shortcuts from 1 to 10,
           and settings for taskbar position and pet-height alignment. Download the Windows x64 or x86
           ZIP from this page, or choose the macOS Apple Silicon, Intel, or Big Sur compatibility ZIP.
+        </p>
+        <p>
+          On Windows, open settings from the system tray: right-click the Degu Desktop tray icon and choose Settings.
+          The settings window includes tabs for pets, motion, display range, and updates.
         </p>
       </section>
     </main>

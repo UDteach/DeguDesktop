@@ -957,3 +957,31 @@ The `v0.1.9` GitHub Release had the Windows x64/x86 ZIPs, while the public Mac l
 ### Remaining Risk
 
 - Big Sur support is statically checked and packaged, but not smoke-tested on a real macOS 11 machine.
+
+## Iteration 28 - Pages Settings Guide
+
+Date: 2026-06-22
+
+### Target
+
+Explain how to open and use settings from the Windows task tray on the GitHub Pages site, with settings screenshots.
+
+### Cause
+
+The download page described the app features but did not clearly show new users where the settings window is opened or what the main settings tabs look like.
+
+### Implementation
+
+- Added a Settings link to the page navigation.
+- Added a Japanese-first settings guide section with task-tray steps: launch, right-click the tray icon, open Settings, then adjust display options.
+- Added settings screenshots for the Home, Display/walking range, and Updates tabs.
+- Added a short English settings note.
+
+### Verification
+
+- Copied and visually checked the three settings screenshots.
+- Captured local desktop and mobile page screenshots:
+  - `.codex/qa/pages-settings-section-desktop.png`
+  - `.codex/qa/pages-settings-section-mobile.png`
+- Verified local HTML image references and section anchors.
+- `git diff --check`
