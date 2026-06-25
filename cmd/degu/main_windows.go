@@ -134,6 +134,7 @@ const (
 	menuCoatSelected  uint16 = 132
 	menuCoatRandom    uint16 = 133
 	menuSettings      uint16 = 140
+	menuToggleHidden  uint16 = 141
 	menuCheckUpdate   uint16 = 150
 	menuInstallUpdate uint16 = 151
 	menuVariantBase   uint16 = 200
@@ -189,6 +190,10 @@ const (
 	ctrlHomeMotion       int32 = 1131
 	ctrlHomeDisplay      int32 = 1132
 	ctrlHomeUpdates      int32 = 1133
+	ctrlDisplaySingle    int32 = 1134
+	ctrlDisplaySpan      int32 = 1135
+	ctrlDisplaySpanLess  int32 = 1136
+	ctrlDisplaySpanMore  int32 = 1137
 )
 
 var appVersion = "dev"
@@ -275,6 +280,13 @@ type overlayPositionMode int
 const (
 	positionTaskbarEdge overlayPositionMode = iota
 	positionScreenBottom
+)
+
+type displayScope int
+
+const (
+	displayScopeSingle displayScope = iota
+	displayScopeSpan
 )
 
 type petLaneMode int
@@ -371,6 +383,8 @@ type petApp struct {
 	overlayOffsetY     int
 	laneMode           petLaneMode
 	displayIndex       int
+	displayScope       displayScope
+	displaySpanEnd     int
 	walkRangeStart     int
 	walkRangeEnd       int
 	settingsHwnd       win.HWND
@@ -391,6 +405,7 @@ type petApp struct {
 	nameHwnd           win.HWND
 	nameText           string
 	hoverPet           int
+	temporarilyHidden  bool
 	renameHwnd         win.HWND
 	renameEdit         win.HWND
 	renameIndex        int
@@ -414,6 +429,8 @@ type appSettings struct {
 	VerticalOffset *int     `json:"verticalOffset,omitempty"`
 	LaneMode       *int     `json:"laneMode,omitempty"`
 	DisplayIndex   *int     `json:"displayIndex,omitempty"`
+	DisplayScope   *int     `json:"displayScope,omitempty"`
+	DisplaySpanEnd *int     `json:"displaySpanEnd,omitempty"`
 	WalkRangeStart *int     `json:"walkRangeStart,omitempty"`
 	WalkRangeEnd   *int     `json:"walkRangeEnd,omitempty"`
 	Language       int      `json:"language"`
@@ -479,6 +496,8 @@ func main() {
 		overlayOffsetY: defaultOverlayOffsetY,
 		laneMode:       laneStaggered,
 		displayIndex:   0,
+		displayScope:   displayScopeSingle,
+		displaySpanEnd: 0,
 		walkRangeStart: defaultWalkRangeStart,
 		walkRangeEnd:   defaultWalkRangeEnd,
 		settingsTab:    tabHome,
@@ -655,6 +674,13 @@ func (a *petApp) loadSettings() error {
 	if settings.DisplayIndex != nil {
 		a.displayIndex = normalizeDisplayIndex(*settings.DisplayIndex, len(monitorAreas()))
 	}
+	if settings.DisplayScope != nil {
+		a.displayScope = normalizeDisplayScope(*settings.DisplayScope)
+	}
+	if settings.DisplaySpanEnd != nil {
+		a.displaySpanEnd = *settings.DisplaySpanEnd
+	}
+	a.normalizeDisplaySelection(len(displayAreaForScope(a.displayScope)))
 	if settings.WalkRangeStart != nil || settings.WalkRangeEnd != nil {
 		start := a.walkRangeStart
 		end := a.walkRangeEnd
@@ -693,7 +719,8 @@ func (a *petApp) saveSettings() error {
 	positionMode := int(normalizeOverlayPositionMode(int(a.positionMode)))
 	verticalOffset := normalizeOverlayOffset(a.overlayOffsetY)
 	laneMode := int(normalizePetLaneMode(int(a.laneMode)))
-	displayIndex := normalizeDisplayIndex(a.displayIndex, len(monitorAreas()))
+	displayScope, displayIndex, displaySpanEnd := a.normalizedDisplaySelection(len(displayAreaForScope(a.displayScope)))
+	displayScopeValue := int(displayScope)
 	walkStart, walkEnd := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
 	settings := appSettings{
 		Version:        1,
@@ -709,6 +736,8 @@ func (a *petApp) saveSettings() error {
 		VerticalOffset: &verticalOffset,
 		LaneMode:       &laneMode,
 		DisplayIndex:   &displayIndex,
+		DisplayScope:   &displayScopeValue,
+		DisplaySpanEnd: &displaySpanEnd,
 		WalkRangeStart: &walkStart,
 		WalkRangeEnd:   &walkEnd,
 		Language:       int(normalizeLanguage(int(a.lang))),
@@ -806,6 +835,27 @@ func normalizeDisplayIndex(index int, count int) int {
 	return clamp(index, 0, count-1)
 }
 
+func normalizeDisplayScope(mode int) displayScope {
+	switch displayScope(mode) {
+	case displayScopeSingle, displayScopeSpan:
+		return displayScope(mode)
+	default:
+		return displayScopeSingle
+	}
+}
+
+func normalizeDisplaySpan(start, end, count int) (int, int) {
+	if count <= 0 {
+		return 0, 0
+	}
+	start = normalizeDisplayIndex(start, count)
+	end = normalizeDisplayIndex(end, count)
+	if end < start {
+		start, end = end, start
+	}
+	return start, end
+}
+
 func normalizeWalkRange(start, end int) (int, int) {
 	start = clamp(start, 0, 100)
 	end = clamp(end, 0, 100)
@@ -840,6 +890,10 @@ func normalizePetLaneMode(mode int) petLaneMode {
 
 func (a *petApp) tick() {
 	if a.closing.Load() {
+		return
+	}
+	if a.temporarilyHidden {
+		a.hideNameWindow()
 		return
 	}
 	a.syncScene(a.overlayRect())
@@ -993,6 +1047,13 @@ func (a *petApp) chooseRandomAction(p *deguPet) {
 }
 
 func (a *petApp) render() {
+	if a.temporarilyHidden {
+		a.hideNameWindow()
+		if a.hwnd != 0 {
+			win.ShowWindow(a.hwnd, win.SW_HIDE)
+		}
+		return
+	}
 	overlay := a.overlayRect()
 	a.syncScene(overlay)
 	canvas := image.NewRGBA(image.Rect(0, 0, a.sceneW, sceneH))
@@ -1102,6 +1163,9 @@ func frameFromSeqClamped(seq []int, frame, divisor int) int {
 }
 
 func (a *petApp) onTyping() {
+	if a.temporarilyHidden {
+		return
+	}
 	if a.mode != modeKeyboard {
 		return
 	}
@@ -1120,6 +1184,9 @@ func (a *petApp) onTyping() {
 }
 
 func (a *petApp) onMouseClick(screenX, screenY int) {
+	if a.temporarilyHidden {
+		return
+	}
 	index := a.petAtScreenPoint(screenX, screenY)
 	if index < 0 {
 		return
@@ -1171,6 +1238,11 @@ func scenePointInPet(p deguPet, sceneX, sceneY int) bool {
 }
 
 func (a *petApp) updateHoverName() {
+	if a.temporarilyHidden {
+		a.hoverPet = -1
+		a.hideNameWindow()
+		return
+	}
 	if !a.nameLabels {
 		a.hoverPet = -1
 		a.hideNameWindow()
@@ -1192,6 +1264,10 @@ func (a *petApp) updateHoverName() {
 }
 
 func (a *petApp) showNameWindow(index int) {
+	if a.temporarilyHidden {
+		a.hideNameWindow()
+		return
+	}
 	if index < 0 || index >= len(a.pets) {
 		a.hideNameWindow()
 		return
@@ -1288,6 +1364,34 @@ func (a *petApp) overlayRect() win.RECT {
 	return a.overlayRectFor(display.Work, display.Screen)
 }
 
+func (a *petApp) normalizedDisplaySelection(count int) (displayScope, int, int) {
+	if count <= 0 {
+		return displayScopeSingle, 0, 0
+	}
+	scope := normalizeDisplayScope(int(a.displayScope))
+	start := normalizeDisplayIndex(a.displayIndex, count)
+	end := normalizeDisplayIndex(a.displaySpanEnd, count)
+	if scope == displayScopeSpan && count > 1 {
+		start, end = normalizeDisplaySpan(start, end, count)
+		if start == end {
+			if end < count-1 {
+				end++
+			} else {
+				start--
+			}
+		}
+		return displayScopeSpan, start, end
+	}
+	return displayScopeSingle, start, start
+}
+
+func (a *petApp) normalizeDisplaySelection(count int) {
+	scope, start, end := a.normalizedDisplaySelection(count)
+	a.displayScope = scope
+	a.displayIndex = start
+	a.displaySpanEnd = end
+}
+
 func (a *petApp) overlayRectFor(work, screen win.RECT) win.RECT {
 	mode := normalizeOverlayPositionMode(int(a.positionMode))
 	offset := normalizeOverlayOffset(a.overlayOffsetY)
@@ -1339,6 +1443,9 @@ func (a *petApp) applyWalkRange(base win.RECT) win.RECT {
 func (a *petApp) resetOverlayPlacement() {
 	a.positionMode = positionTaskbarEdge
 	a.overlayOffsetY = defaultOverlayOffsetY
+	a.displayScope = displayScopeSingle
+	a.displayIndex = 0
+	a.displaySpanEnd = 0
 	a.walkRangeStart = defaultWalkRangeStart
 	a.walkRangeEnd = defaultWalkRangeEnd
 }
@@ -1378,14 +1485,86 @@ func (a *petApp) clampPetsToScene() {
 }
 
 func (a *petApp) adjustDisplayIndex(delta int) {
-	areas := monitorAreas()
+	areas := displayAreaForScope(a.displayScope)
 	count := len(areas)
 	if count <= 0 {
 		a.displayIndex = 0
+		a.displaySpanEnd = 0
 		return
 	}
-	current := normalizeDisplayIndex(a.displayIndex, count)
-	a.displayIndex = (current + delta + count) % count
+	scope, start, end := a.normalizedDisplaySelection(count)
+	if scope == displayScopeSpan {
+		width := end - start
+		nextStart := clamp(start+delta, 0, max(0, count-1-width))
+		a.displayIndex = nextStart
+		a.displaySpanEnd = nextStart + width
+	} else {
+		a.displayIndex = (start + delta + count) % count
+		a.displaySpanEnd = a.displayIndex
+	}
+	a.resetPosition()
+}
+
+func (a *petApp) setDisplayScope(scope displayScope) {
+	targetScope := normalizeDisplayScope(int(scope))
+	if targetScope == displayScopeSpan {
+		singleAreas := monitorAreas()
+		spanAreas := monitorAreasByPosition()
+		count := len(spanAreas)
+		if count > 1 {
+			start := normalizeDisplayIndex(a.displayIndex, count)
+			if normalizeDisplayScope(int(a.displayScope)) != displayScopeSpan && len(singleAreas) > 0 {
+				start = findDisplayAreaIndex(spanAreas, singleAreas[normalizeDisplayIndex(a.displayIndex, len(singleAreas))])
+			}
+			end := a.displaySpanEnd
+			if normalizeDisplayScope(int(a.displayScope)) != displayScopeSpan || end == start {
+				end = min(start+1, count-1)
+				if end == start {
+					start = max(0, start-1)
+				}
+			}
+			a.displayScope = displayScopeSpan
+			a.displayIndex, a.displaySpanEnd = normalizeDisplaySpan(start, end, count)
+			a.resetPosition()
+			return
+		}
+	}
+	singleAreas := monitorAreas()
+	spanAreas := monitorAreasByPosition()
+	count := len(singleAreas)
+	index := normalizeDisplayIndex(a.displayIndex, count)
+	if normalizeDisplayScope(int(a.displayScope)) == displayScopeSpan && len(spanAreas) > 0 {
+		_, start, _ := a.normalizedDisplaySelection(len(spanAreas))
+		index = findDisplayAreaIndex(singleAreas, spanAreas[start])
+	}
+	a.displayScope = displayScopeSingle
+	a.displayIndex = index
+	a.displaySpanEnd = a.displayIndex
+	a.resetPosition()
+}
+
+func (a *petApp) adjustDisplaySpan(delta int) {
+	areas := monitorAreasByPosition()
+	count := len(areas)
+	if count <= 1 {
+		a.setDisplayScope(displayScopeSingle)
+		return
+	}
+	if normalizeDisplayScope(int(a.displayScope)) != displayScopeSpan {
+		a.setDisplayScope(displayScopeSpan)
+	}
+	_, start, end := a.normalizedDisplaySelection(count)
+	if delta > 0 {
+		if end < count-1 {
+			end++
+		} else if start > 0 {
+			start--
+		}
+	} else if delta < 0 && end-start > 1 {
+		end--
+	}
+	a.displayScope = displayScopeSpan
+	a.displayIndex, a.displaySpanEnd = normalizeDisplaySpan(start, end, count)
 	a.resetPosition()
 }
 
@@ -1908,8 +2087,12 @@ func (a *petApp) createSettingsWindow() {
 		a.createButton(hwnd, ctrlTypingWheel, a.txt("typingWheel"), 250, 378, 210, 32, win.WS_GROUP)
 		a.createButton(hwnd, ctrlBidirectional, a.txt("naturalTurns"), 478, 378, 210, 32, 0)
 	} else if a.settingsTab == tabDisplay {
-		a.createButton(hwnd, ctrlDisplayPrev, a.settingsButtonLabel(ctrlDisplayPrev), 250, 154, 46, 30, win.WS_GROUP)
-		a.createButton(hwnd, ctrlDisplayNext, a.settingsButtonLabel(ctrlDisplayNext), 642, 154, 46, 30, 0)
+		a.createButton(hwnd, ctrlDisplaySingle, a.settingsButtonLabel(ctrlDisplaySingle), 250, 154, 82, 30, win.WS_GROUP)
+		a.createButton(hwnd, ctrlDisplaySpan, a.settingsButtonLabel(ctrlDisplaySpan), 340, 154, 96, 30, 0)
+		a.createButton(hwnd, ctrlDisplaySpanLess, a.settingsButtonLabel(ctrlDisplaySpanLess), 444, 154, 74, 30, 0)
+		a.createButton(hwnd, ctrlDisplaySpanMore, a.settingsButtonLabel(ctrlDisplaySpanMore), 526, 154, 74, 30, 0)
+		a.createButton(hwnd, ctrlDisplayPrev, a.settingsButtonLabel(ctrlDisplayPrev), 608, 154, 38, 30, 0)
+		a.createButton(hwnd, ctrlDisplayNext, a.settingsButtonLabel(ctrlDisplayNext), 650, 154, 38, 30, 0)
 
 		a.createScrollBar(hwnd, ctrlRangeStartScroll, 322, 258, 288, 18)
 		a.createScrollBar(hwnd, ctrlRangeEndScroll, 322, 292, 288, 18)
@@ -2005,7 +2188,7 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 256, Right: 708, Bottom: 314}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 364, Right: 708, Bottom: 424}, rgb(238, 242, 237), 14)
 	} else if a.settingsTab == tabDisplay {
-		drawRoundFill(hdc, win.RECT{Left: 238, Top: 118, Right: 708, Bottom: 198}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 118, Right: 708, Bottom: 214}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 214, Right: 708, Bottom: 372}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 390, Right: 708, Bottom: 466}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 486, Right: 708, Bottom: 566}, rgb(238, 242, 237), 14)
@@ -2065,8 +2248,8 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 		drawTextLine(hdc, a.txt("speed"), win.RECT{Left: 246, Top: 232, Right: 400, Bottom: 256}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("motion"), win.RECT{Left: 246, Top: 340, Right: 400, Bottom: 364}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 	} else if a.settingsTab == tabDisplay {
-		drawTextLine(hdc, a.localText("表示する画面", "Display"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
-		drawTextLine(hdc, a.displaySummary(), win.RECT{Left: 304, Top: 154, Right: 634, Bottom: 184}, a.settingsFont, rgb(27, 36, 32), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
+		drawTextLine(hdc, a.localText("表示する範囲", "Display scope"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.displaySummary(), win.RECT{Left: 250, Top: 186, Right: 688, Bottom: 208}, a.settingsFont, rgb(27, 36, 32), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
 
 		drawTextLine(hdc, a.localText("歩く範囲", "Walking range"), win.RECT{Left: 246, Top: 222, Right: 390, Bottom: 244}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.walkRangeSummary(), win.RECT{Left: 394, Top: 222, Right: 688, Bottom: 244}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
@@ -2099,6 +2282,7 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 func (a *petApp) drawWalkRangePreview(hdc win.HDC) {
 	track := win.RECT{Left: 250, Top: 246, Right: 688, Bottom: 252}
 	drawRoundFill(hdc, track, rgb(215, 221, 213), 6)
+	a.drawDisplaySpanMarkers(hdc, track)
 	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
 	width := int(track.Right - track.Left)
 	selected := win.RECT{
@@ -2109,6 +2293,25 @@ func (a *petApp) drawWalkRangePreview(hdc win.HDC) {
 	}
 	drawRoundFill(hdc, selected, rgb(70, 104, 87), 8)
 	drawRoundOutline(hdc, win.RECT{Left: 246, Top: 242, Right: 692, Bottom: 256}, rgb(230, 233, 224), 10)
+}
+
+func (a *petApp) drawDisplaySpanMarkers(hdc win.HDC, track win.RECT) {
+	areas := displayAreaForScope(a.displayScope)
+	if len(areas) <= 1 {
+		return
+	}
+	scope, start, end := a.normalizedDisplaySelection(len(areas))
+	if scope != displayScopeSpan || start == end {
+		return
+	}
+	selected := areas[start : end+1]
+	combined := combineDisplayAreas(selected)
+	totalW := max(1, int(combined.Screen.Right-combined.Screen.Left))
+	trackW := max(1, int(track.Right-track.Left))
+	for _, area := range selected[1:] {
+		x := track.Left + int32(trackW*int(area.Screen.Left-combined.Screen.Left)/totalW)
+		drawRectFill(hdc, win.RECT{Left: x - 1, Top: track.Top - 5, Right: x + 1, Bottom: track.Bottom + 5}, rgb(171, 181, 169))
+	}
 }
 
 func (a *petApp) createStatic(parent win.HWND, text string, x, y, w, h int32) win.HWND {
@@ -2378,6 +2581,14 @@ func (a *petApp) settingsButtonLabel(id int32) string {
 		return "<"
 	case ctrlDisplayNext:
 		return ">"
+	case ctrlDisplaySingle:
+		return a.localText("1画面", "One")
+	case ctrlDisplaySpan:
+		return a.localText("複数画面", "Multi")
+	case ctrlDisplaySpanLess:
+		return a.localText("短く", "Less")
+	case ctrlDisplaySpanMore:
+		return a.localText("広く", "More")
 	case ctrlRangeFull:
 		return a.localText("全幅", "Full")
 	case ctrlRangeNarrow:
@@ -2430,7 +2641,7 @@ func (a *petApp) settingsTooltipText(id int32) string {
 	case ctrlTabMotion:
 		return a.localText("歩き方、回し車、左右ターンを設定します。", "Set motion, typing wheel, and turn behavior.")
 	case ctrlTabDisplay:
-		return a.localText("表示する画面、タスクバー上で歩く範囲、高さを設定します。", "Set the display, taskbar walking range, and height.")
+		return a.localText("1画面または複数画面の表示範囲、タスクバー上で歩く範囲、高さを設定します。", "Set one-display or multi-display scope, taskbar walking range, and height.")
 	case ctrlTabUpdates:
 		return a.localText("現在のバージョン、最新リリース、更新の確認とインストールを表示します。", "Show the current version, latest release, update checks, and installation.")
 	case ctrlPetMinus:
@@ -2474,11 +2685,19 @@ func (a *petApp) settingsTooltipText(id int32) string {
 	case ctrlLaneAligned:
 		return a.localText("全員を同じ接地ラインに揃えます。少し上に見える個体をなくします。", "Place every pet on the same baseline so none appears slightly higher.")
 	case ctrlDisplayPrev:
-		return a.localText("前のディスプレイへ切り替えます。", "Switch to the previous display.")
+		return a.localText("1画面モードでは前のディスプレイへ、複数画面モードでは対象範囲を左へ動かします。", "In one-display mode this switches to the previous display; in multi-display mode it moves the selected span left.")
 	case ctrlDisplayNext:
-		return a.localText("次のディスプレイへ切り替えます。", "Switch to the next display.")
+		return a.localText("1画面モードでは次のディスプレイへ、複数画面モードでは対象範囲を右へ動かします。", "In one-display mode this switches to the next display; in multi-display mode it moves the selected span right.")
+	case ctrlDisplaySingle:
+		return a.localText("選択中の1画面だけにデグーを表示します。", "Show pets on one selected display only.")
+	case ctrlDisplaySpan:
+		return a.localText("複数のモニタを横断する1つの範囲として使います。歩く範囲の％指定もこの範囲全体に効きます。", "Use multiple monitors as one wide span. Walking-range percentages apply across the whole span.")
+	case ctrlDisplaySpanLess:
+		return a.localText("複数画面の対象範囲を1枚ぶん狭くします。", "Shrink the multi-display span by one monitor.")
+	case ctrlDisplaySpanMore:
+		return a.localText("複数画面の対象範囲を1枚ぶん広げます。全モニタ表示にもできます。", "Expand the multi-display span by one monitor, up to all monitors.")
 	case ctrlRangeFull:
-		return a.localText("タスクバー上の歩く範囲を端から端までに戻します。", "Use the full taskbar width.")
+		return a.localText("選択中の表示範囲で、歩く範囲を端から端までに戻します。", "Use the full selected display span.")
 	case ctrlRangeNarrow:
 		return a.localText("歩く範囲を中央寄せで少し狭くします。", "Make the walking range narrower around the center.")
 	case ctrlRangeWide:
@@ -2555,6 +2774,10 @@ func (a *petApp) settingsButtonSelected(id int32) bool {
 		return normalizeOverlayPositionMode(int(a.positionMode)) == positionTaskbarEdge
 	case ctrlPositionBottom:
 		return normalizeOverlayPositionMode(int(a.positionMode)) == positionScreenBottom
+	case ctrlDisplaySingle:
+		return normalizeDisplayScope(int(a.displayScope)) == displayScopeSingle
+	case ctrlDisplaySpan:
+		return normalizeDisplayScope(int(a.displayScope)) == displayScopeSpan
 	case ctrlLaneStaggered:
 		return normalizePetLaneMode(int(a.laneMode)) == laneStaggered
 	case ctrlLaneAligned:
@@ -2584,6 +2807,7 @@ func (a *petApp) settingsButtonBackplate(id int32) settingsRGB {
 		ctrlSpeedSlow, ctrlSpeedNormal, ctrlSpeedFast,
 		ctrlTypingWheel, ctrlBidirectional,
 		ctrlPositionTaskbar, ctrlPositionBottom, ctrlOffsetUp, ctrlOffsetDown,
+		ctrlDisplaySingle, ctrlDisplaySpan, ctrlDisplaySpanLess, ctrlDisplaySpanMore,
 		ctrlLaneStaggered, ctrlLaneAligned,
 		ctrlDisplayPrev, ctrlDisplayNext,
 		ctrlRangeFull, ctrlRangeNarrow, ctrlRangeWide, ctrlRangeLeft, ctrlRangeRight,
@@ -2773,19 +2997,29 @@ func (a *petApp) speedLabel() string {
 }
 
 func (a *petApp) displaySummary() string {
-	areas := monitorAreas()
+	areas := displayAreaForScope(a.displayScope)
 	if len(areas) == 0 {
 		return a.localText("現在の画面", "Current display")
 	}
-	index := normalizeDisplayIndex(a.displayIndex, len(areas))
-	area := areas[index]
+	scope, start, end := a.normalizedDisplaySelection(len(areas))
+	if scope == displayScopeSpan {
+		selected := areas[start : end+1]
+		area := combineDisplayAreas(selected)
+		width := max(0, int(area.Screen.Right-area.Screen.Left))
+		height := max(0, int(area.Screen.Bottom-area.Screen.Top))
+		if len(selected) == len(areas) {
+			return fmt.Sprintf("%s / %d%s  %dx%d", a.localText("全モニタ", "All monitors"), len(selected), a.localText("画面", " displays"), width, height)
+		}
+		return fmt.Sprintf("%s %d-%d/%d  %dx%d", a.localText("複数画面", "Displays"), start+1, end+1, len(areas), width, height)
+	}
+	area := areas[start]
 	width := max(0, int(area.Screen.Right-area.Screen.Left))
 	height := max(0, int(area.Screen.Bottom-area.Screen.Top))
 	primary := ""
 	if area.Primary {
 		primary = a.localText(" / メイン", " / primary")
 	}
-	return fmt.Sprintf("%s %d/%d%s  %dx%d", a.localText("ディスプレイ", "Display"), index+1, len(areas), primary, width, height)
+	return fmt.Sprintf("%s %d/%d%s  %dx%d", a.localText("ディスプレイ", "Display"), start+1, len(areas), primary, width, height)
 }
 
 func (a *petApp) walkRangeSummary() string {
@@ -3169,6 +3403,8 @@ func (a *petApp) syncSettingsWindow() {
 	a.setButtonChecked(ctrlBidirectional, a.bidirectional)
 	a.setButtonChecked(ctrlPositionTaskbar, a.positionMode == positionTaskbarEdge)
 	a.setButtonChecked(ctrlPositionBottom, a.positionMode == positionScreenBottom)
+	a.setButtonChecked(ctrlDisplaySingle, a.displayScope == displayScopeSingle)
+	a.setButtonChecked(ctrlDisplaySpan, a.displayScope == displayScopeSpan)
 	a.setButtonChecked(ctrlLaneStaggered, a.laneMode == laneStaggered)
 	a.setButtonChecked(ctrlLaneAligned, a.laneMode == laneAligned)
 	a.setButtonChecked(ctrlNameLabels, a.nameLabels)
@@ -3188,8 +3424,19 @@ func (a *petApp) syncSettingsWindow() {
 	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlOffsetDown), a.overlayOffsetY < maxOverlayOffsetY)
 	a.syncRangeScrollBars()
 	monitorCount := len(monitorAreas())
-	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplayPrev), monitorCount > 1)
-	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplayNext), monitorCount > 1)
+	scope, spanStart, spanEnd := a.normalizedDisplaySelection(monitorCount)
+	canMovePrev := monitorCount > 1
+	canMoveNext := monitorCount > 1
+	if scope == displayScopeSpan {
+		canMovePrev = spanStart > 0
+		canMoveNext = spanEnd < monitorCount-1
+	}
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplaySingle), monitorCount > 0)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplaySpan), monitorCount > 1)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplaySpanLess), scope == displayScopeSpan && spanEnd-spanStart > 1)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplaySpanMore), scope == displayScopeSpan && monitorCount > 1 && spanEnd-spanStart+1 < monitorCount)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplayPrev), canMovePrev)
+	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlDisplayNext), canMoveNext)
 	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
 	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlRangeNarrow), end-start > minWalkRangeSpan)
 	win.EnableWindow(win.GetDlgItem(a.settingsHwnd, ctrlRangeWide), start > 0 || end < 100)
@@ -3385,6 +3632,14 @@ func (a *petApp) handleSettingsCommand(id int32, notify uint16) bool {
 		a.adjustOverlayOffset(-overlayOffsetStep)
 	case ctrlOffsetDown:
 		a.adjustOverlayOffset(overlayOffsetStep)
+	case ctrlDisplaySingle:
+		a.setDisplayScope(displayScopeSingle)
+	case ctrlDisplaySpan:
+		a.setDisplayScope(displayScopeSpan)
+	case ctrlDisplaySpanLess:
+		a.adjustDisplaySpan(-1)
+	case ctrlDisplaySpanMore:
+		a.adjustDisplaySpan(1)
 	case ctrlLaneStaggered:
 		a.laneMode = laneStaggered
 		a.applyLaneOffsets()
@@ -3650,7 +3905,7 @@ func (a *petApp) txt(key string) string {
 		case "displayPageTitle":
 			return "Display and walking range"
 		case "displayPageLead":
-			return "Choose the monitor and the exact taskbar segment where degus can roam."
+			return "Choose one display or a multi-monitor span, then set the exact segment where degus can roam."
 		case "updatesPageTitle":
 			return "Updates"
 		case "updatesPageLead":
@@ -3735,7 +3990,7 @@ func (a *petApp) txt(key string) string {
 	case "displayPageTitle":
 		return "表示と歩く範囲"
 	case "displayPageLead":
-		return "表示する画面と、デグーがタスクバー上で歩く区間を指定します。"
+		return "1つの画面だけ、または複数モニタを横断する範囲を選び、その中で歩く区間を指定します。"
 	case "updatesPageTitle":
 		return "更新"
 	case "updatesPageLead":
@@ -4440,6 +4695,31 @@ func (a *petApp) installTray() {
 	win.Shell_NotifyIcon(win.NIM_ADD, &nid)
 }
 
+func (a *petApp) temporaryVisibilityMenuLabel() string {
+	if a.temporarilyHidden {
+		return a.localText("再表示", "Show pets")
+	}
+	return a.localText("一時的に非表示", "Temporarily hide")
+}
+
+func (a *petApp) setTemporarilyHidden(hidden bool) {
+	if a.temporarilyHidden == hidden {
+		return
+	}
+	a.temporarilyHidden = hidden
+	a.hoverPet = -1
+	a.hideNameWindow()
+	if a.hwnd == 0 {
+		return
+	}
+	if hidden {
+		win.ShowWindow(a.hwnd, win.SW_HIDE)
+		return
+	}
+	win.ShowWindow(a.hwnd, win.SW_SHOWNOACTIVATE)
+	a.render()
+}
+
 func (a *petApp) showTrayMenu() {
 	menu := win.CreatePopupMenu()
 	coatMenu := win.CreatePopupMenu()
@@ -4486,6 +4766,7 @@ func (a *petApp) showTrayMenu() {
 		appendMenu(menu, win.MF_STRING, uintptr(menuInstallUpdate), syscall.StringToUTF16Ptr(a.updateInstallMenuLabel()))
 	}
 	appendMenu(menu, win.MF_SEPARATOR, 0, nil)
+	appendMenu(menu, win.MF_STRING, uintptr(menuToggleHidden), syscall.StringToUTF16Ptr(a.temporaryVisibilityMenuLabel()))
 	appendMenu(menu, win.MF_STRING, uintptr(menuSettings), syscall.StringToUTF16Ptr(a.txt("settingsTitle")))
 	appendMenu(menu, win.MF_STRING, uintptr(menuExit), syscall.StringToUTF16Ptr(a.txt("exit")))
 
@@ -4528,6 +4809,9 @@ func (a *petApp) handleMenu(id uint16) {
 		return
 	}
 	a.syncSettingsWindow()
+	if id == menuToggleHidden {
+		return
+	}
 	a.persistSettings()
 }
 
@@ -4542,6 +4826,8 @@ func (a *petApp) handleMenuCommand(id uint16) bool {
 		win.DestroyWindow(a.hwnd)
 	case id == menuSettings:
 		a.showSettings()
+	case id == menuToggleHidden:
+		a.setTemporarilyHidden(!a.temporarilyHidden)
 	case id == menuCheckUpdate:
 		a.startUpdateCheck(true)
 	case id == menuInstallUpdate:
@@ -4817,12 +5103,18 @@ func monitorEnumProc(hMonitor win.HMONITOR, _ win.HDC, _ *win.RECT, lParam uintp
 }
 
 func (a *petApp) selectedDisplayArea() displayArea {
-	areas := monitorAreas()
+	areas := displayAreaForScope(a.displayScope)
 	if len(areas) == 0 {
 		return displayArea{Work: workArea(), Screen: screenArea(), Primary: true}
 	}
-	a.displayIndex = normalizeDisplayIndex(a.displayIndex, len(areas))
-	return areas[a.displayIndex]
+	scope, start, end := a.normalizedDisplaySelection(len(areas))
+	a.displayScope = scope
+	a.displayIndex = start
+	a.displaySpanEnd = end
+	if scope == displayScopeSpan {
+		return combineDisplayAreas(areas[start : end+1])
+	}
+	return areas[start]
 }
 
 func monitorAreas() []displayArea {
@@ -4845,6 +5137,74 @@ func monitorAreas() []displayArea {
 		return areas[i].Screen.Top < areas[j].Screen.Top
 	})
 	return areas
+}
+
+func monitorAreasByPosition() []displayArea {
+	areas := append([]displayArea(nil), monitorAreas()...)
+	sort.SliceStable(areas, func(i, j int) bool {
+		if areas[i].Screen.Left != areas[j].Screen.Left {
+			return areas[i].Screen.Left < areas[j].Screen.Left
+		}
+		if areas[i].Screen.Top != areas[j].Screen.Top {
+			return areas[i].Screen.Top < areas[j].Screen.Top
+		}
+		if areas[i].Primary != areas[j].Primary {
+			return areas[i].Primary
+		}
+		return false
+	})
+	return areas
+}
+
+func displayAreaForScope(scope displayScope) []displayArea {
+	if normalizeDisplayScope(int(scope)) == displayScopeSpan {
+		return monitorAreasByPosition()
+	}
+	return monitorAreas()
+}
+
+func sameDisplayArea(a, b displayArea) bool {
+	return a.Screen.Left == b.Screen.Left &&
+		a.Screen.Top == b.Screen.Top &&
+		a.Screen.Right == b.Screen.Right &&
+		a.Screen.Bottom == b.Screen.Bottom
+}
+
+func findDisplayAreaIndex(areas []displayArea, target displayArea) int {
+	for i, area := range areas {
+		if sameDisplayArea(area, target) {
+			return i
+		}
+	}
+	return 0
+}
+
+func combineDisplayAreas(areas []displayArea) displayArea {
+	if len(areas) == 0 {
+		return displayArea{}
+	}
+	screen := areas[0].Screen
+	workLeft := areas[0].Work.Left
+	workRight := areas[0].Work.Right
+	workTop := areas[0].Work.Top
+	workBottom := areas[0].Work.Bottom
+	primary := areas[0].Primary
+	for _, area := range areas[1:] {
+		screen.Left = min32(screen.Left, area.Screen.Left)
+		screen.Top = min32(screen.Top, area.Screen.Top)
+		screen.Right = max32(screen.Right, area.Screen.Right)
+		screen.Bottom = max32(screen.Bottom, area.Screen.Bottom)
+		workLeft = min32(workLeft, area.Work.Left)
+		workRight = max32(workRight, area.Work.Right)
+		workTop = max32(workTop, area.Work.Top)
+		workBottom = min32(workBottom, area.Work.Bottom)
+		primary = primary || area.Primary
+	}
+	work := win.RECT{Left: workLeft, Top: workTop, Right: workRight, Bottom: workBottom}
+	if work.Right <= work.Left || work.Bottom <= work.Top {
+		work = screen
+	}
+	return displayArea{Work: work, Screen: screen, Primary: primary}
 }
 
 func workArea() win.RECT {
@@ -5282,7 +5642,21 @@ func max(a, b int) int {
 	return b
 }
 
+func max32(a, b int32) int32 {
+	if a > b {
+		return a
+	}
+	return b
+}
+
 func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
+func min32(a, b int32) int32 {
 	if a < b {
 		return a
 	}

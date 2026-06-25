@@ -287,6 +287,58 @@
         line-height: 1.6;
       }
 
+      .release-history {
+        margin-top: 34px;
+        border-top: 1px solid var(--line);
+        padding-top: 28px;
+      }
+
+      .history-list {
+        display: grid;
+        gap: 0;
+        margin-top: 20px;
+        border-top: 1px solid var(--line);
+      }
+
+      .history-item {
+        display: grid;
+        grid-template-columns: minmax(120px, 160px) minmax(0, 1fr);
+        gap: 18px;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .history-version {
+        display: block;
+        font-size: 20px;
+        font-weight: 750;
+      }
+
+      .history-date {
+        display: block;
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .history-item h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+
+      .history-item ul {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .history-link {
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
       h2 {
         margin: 0 0 8px;
         font-size: 18px;
@@ -313,7 +365,8 @@
         header,
         .features,
         .setup-steps,
-        .settings-shots {
+        .settings-shots,
+        .history-item {
           grid-template-columns: 1fr;
         }
 
@@ -336,6 +389,7 @@
         <div class="brand">Degu Desktop</div>
         <div class="navlinks">
           <a href="#download">ダウンロード</a>
+          <a href="#history">バージョン履歴</a>
           <a href="#settings">設定方法</a>
           <a href="#english">English</a>
           <a href="https://github.com/UDteach/DeguDesktop">GitHub</a>
@@ -391,6 +445,98 @@
         </div>
       </header>
 
+      <section class="release-history" id="history">
+        <div class="section-heading">
+          <h2>バージョン履歴</h2>
+          <p>
+            ダウンロードできる公開版の主な変更点です。細かいビルドログや配布ファイルはGitHub Releasesで確認できます。
+          </p>
+        </div>
+
+        <div class="history-list" aria-label="Degu Desktop version history">
+          <article class="history-item">
+            <div>
+              <strong class="history-version">v0.1.9</strong>
+              <span class="history-date">2026-06-22</span>
+            </div>
+            <div>
+              <h3>設定画面と表示位置を改善</h3>
+              <ul>
+                <li>ホーム、表示、更新タブを追加し、設定画面から状態を確認しやすくしました。</li>
+                <li>表示するディスプレイ、タスクバー上の歩く範囲、上下位置、個体の高さ揃えを調整できるようにしました。</li>
+                <li>Windows x64 / x86 と Mac Apple Silicon / Intel / Big Sur 版の配布リンクを揃えました。</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="history-item">
+            <div>
+              <strong class="history-version">v0.1.8</strong>
+              <span class="history-date">2026-06-21</span>
+            </div>
+            <div>
+              <h3>ランダム散歩中の回し車</h3>
+              <ul>
+                <li>キーボード入力中だけでなく、ランダム散歩中にも自然な行動として回し車に入るようにしました。</li>
+                <li>回し車に入るデグーは1匹に制限し、動きが重なりすぎないようにしました。</li>
+                <li>Mac版のダウンロードリンクも同じバージョンに同期しました。</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="history-item">
+            <div>
+              <strong class="history-version">v0.1.7</strong>
+              <span class="history-date">2026-06-21</span>
+            </div>
+            <div>
+              <h3>表示数と整列設定を強化</h3>
+              <ul>
+                <li>Windowsの右クリックメニューから1〜10匹すべてを選べるようにしました。</li>
+                <li>少し高さをずらす自然な並びと、全員を同じ高さに揃える表示を選べるようにしました。</li>
+                <li>更新確認まわりのエラー処理と説明を見直しました。</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="history-item">
+            <div>
+              <strong class="history-version">v0.1.6</strong>
+              <span class="history-date">2026-06-21</span>
+            </div>
+            <div>
+              <h3>回し車の見た目を修正</h3>
+              <ul>
+                <li>回し車の中で走る専用フレームを追加し、地面歩きのフレーム流用をやめました。</li>
+                <li>回し車の奥側と手前側の描画を分け、デグーがリムからはみ出しにくいようにしました。</li>
+                <li>Mac版とBig Sur互換版の配布ファイルを更新しました。</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="history-item">
+            <div>
+              <strong class="history-version">v0.1.5</strong>
+              <span class="history-date">2026-06-21</span>
+            </div>
+            <div>
+              <h3>Mac版とBig Sur互換ビルドを追加</h3>
+              <ul>
+                <li>MacのDock上に表示するメニューバー版を追加しました。</li>
+                <li>Mac版で名前、クリック反応、1〜10匹の表示数を扱えるようにしました。</li>
+                <li>macOS 11 Big Sur向けの互換ZIPを用意しました。</li>
+              </ul>
+            </div>
+          </article>
+        </div>
+
+        <p class="history-link">
+          古い更新や配布ファイルは
+          <a href="https://github.com/UDteach/DeguDesktop/releases">GitHub Releases</a>
+          を確認してください。
+        </p>
+      </section>
+
       <section class="features">
         <article>
           <h2>タスクバー上のペット</h2>
@@ -402,7 +548,7 @@
         </article>
         <article>
           <h2>設定画面</h2>
-          <p>毛色、1匹ごとの色、名前、速度、入力モード、回し車、表示位置、個体の高さを調整できます。Windows版では言語やアップデート確認も扱えます。</p>
+          <p>毛色、1匹ごとの色、名前、速度、入力モード、回し車、1画面/複数モニタの表示範囲、表示位置、個体の高さを調整できます。Windows版では言語やアップデート確認も扱えます。</p>
         </article>
         <article>
           <h2>自然な動き</h2>
@@ -438,7 +584,7 @@
         <div class="section-heading">
           <h2>設定方法</h2>
           <p>
-            Windows版はタスクトレイのデグーアイコンから設定を開きます。表示数、色、名前、動き、回し車、表示する画面、タスクバー上の歩く範囲、更新確認をまとめて変更できます。
+            Windows版はタスクトレイのデグーアイコンから設定を開きます。表示数、色、名前、動き、回し車、1画面/複数モニタの表示範囲、タスクバー上の歩く範囲、更新確認をまとめて変更できます。
           </p>
         </div>
 
@@ -461,7 +607,7 @@
           <article class="setup-step">
             <span class="step-number">4</span>
             <h3>表示を調整</h3>
-            <p>表示タブでディスプレイ、タスクバー基準/画面下、上下オフセット、歩く範囲の左端/右端スクロールバーを調整します。</p>
+            <p>表示タブで1画面/複数モニタの表示範囲、範囲の移動、タスクバー基準/画面下、上下オフセット、歩く範囲の左端/右端スクロールバーを調整します。</p>
           </article>
         </div>
 
@@ -472,7 +618,7 @@
           </figure>
           <figure class="settings-shot">
             <img src="assets/settings-display-range.png" alt="Display tab with walking range scrollbars" loading="lazy" />
-            <figcaption>表示タブでは、使う画面とタスクバー上の歩く範囲をスクロールバーで指定できます。</figcaption>
+            <figcaption>表示タブでは、使う画面や複数モニタ範囲と、タスクバー上の歩く範囲を指定できます。</figcaption>
           </figure>
           <figure class="settings-shot">
             <img src="assets/settings-updates-tab.png" alt="Updates tab showing available update controls" loading="lazy" />

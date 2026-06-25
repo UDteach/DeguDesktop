@@ -9,9 +9,10 @@ Repository: <https://github.com/UDteach/DeguDesktop>
 Windows:
 
 - Transparent always-on-top pet layer above the Windows taskbar
-- Tray menu and Japanese/English settings window with a home overview, names, speed, count, coat color, wheel motion, display selection, walking range, display position, mode, updates, and exit
+- Tray menu and Japanese/English settings window with a home overview, temporary hide/show, names, speed, count, coat color, wheel motion, single/multi-monitor display span selection, walking range, display position, mode, updates, and exit
 - Modes: keyboard reaction / random stroll
 - Degu count: settings and tray quick actions support 1-10
+- Multi-monitor layout: show pets on one display or across a selected span of multiple displays, with walking range percentages applied to that span
 - Pet height alignment: choose a natural small stagger or a single shared baseline
 - Optional per-pet names can be enabled in settings; when enabled, names appear above a degu while the cursor hovers over it
 - Startup tray notification and GitHub Release based update checking/installing from the tray menu or Updates settings tab

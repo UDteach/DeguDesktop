@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-21
+Last updated: 2026-06-25
 
 ## Repository
 
@@ -27,14 +27,14 @@ Last updated: 2026-06-21
 ## Current Windows Features
 
 - Transparent always-on-top taskbar overlay.
-- Tray menu and Japanese/English settings window with a home overview for optional per-pet names, coat, speed, count, mode, typing wheel, display selection, walking range, display position, update checks/installing, settings, and exit.
+- Tray menu and Japanese/English settings window with a home overview for temporary hide/show, optional per-pet names, coat, speed, count, mode, typing wheel, single/multi-monitor display span selection, walking range, display position, update checks/installing, settings, and exit.
 - Keyboard reaction and random stroll modes.
 - Typing wheel behavior; in random stroll mode, a degu can also occasionally choose the wheel as a random action.
 - Foraging props, eating, digging, and carrying behavior.
 - Grooming/social pause behavior.
 - Optional cursor-hover name labels above visible degus.
 - Windows overlay position can be switched between the selected display's taskbar work area and the physical screen bottom, with a saved vertical offset for fine tuning.
-- Windows display settings include a monitor selector and a saved taskbar walking range, so users can constrain movement to a specific horizontal segment.
+- Windows display settings include a monitor/span selector and a saved taskbar walking range, so users can constrain movement to a specific horizontal segment on one monitor or across selected multiple monitors.
 - Tray count quick actions cover every visible count from 1 to 10.
 - Pet height alignment can be switched between natural staggered lanes and a same-baseline row.
 - Startup tray notification and GitHub Release based update check/install flow from the tray menu or Updates settings tab.
@@ -113,14 +113,14 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 
 ## Current In-Progress Diff
 
-The current local iteration is improving Windows display and update controls:
+The current local diff contains three user-facing updates:
 
-- A dedicated Display tab in the Win32 settings window.
-- A Home tab with summary cards and shortcuts into animal, motion, display, and update settings.
-- Multi-monitor selection for the taskbar overlay.
-- A saved left/right walking range over the selected taskbar area, with visible horizontal scrollbars.
-- A dedicated Updates tab that surfaces the installed version, latest release, matching Windows zip, check action, and install action.
-- Tests for saved display/range settings and overlay bounds, including negative monitor coordinates.
+- A Windows tray menu action for temporarily hiding and restoring the pet overlay during the current session.
+- A non-persisted runtime flag and guards so keyboard, click reaction, and hover name behavior do not run while the overlay is hidden.
+- Tests for the tray label state and hidden-state typing behavior.
+- A GitHub Pages version-history section near the download area, covering the public `v0.1.9` through `v0.1.5` release line.
+- Desktop and mobile Chrome screenshots for the new Pages version-history section.
+- Windows display settings now support a selected multi-monitor span, including moving the span and expanding/shrinking it for 3+ monitor layouts.
 
 ## Codex Config Application
 

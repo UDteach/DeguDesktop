@@ -426,6 +426,55 @@ func TestOverlayRectAppliesWalkRange(t *testing.T) {
 	}
 }
 
+func TestDisplaySelectionSupportsMultiMonitorSpans(t *testing.T) {
+	a := &petApp{displayScope: displayScopeSpan, displayIndex: 1, displaySpanEnd: 2}
+	scope, start, end := a.normalizedDisplaySelection(3)
+	if scope != displayScopeSpan || start != 1 || end != 2 {
+		t.Fatalf("span selection = scope:%d start:%d end:%d, want span 1-2", scope, start, end)
+	}
+
+	a = &petApp{displayScope: displayScopeSpan, displayIndex: 2, displaySpanEnd: 2}
+	scope, start, end = a.normalizedDisplaySelection(3)
+	if scope != displayScopeSpan || start != 1 || end != 2 {
+		t.Fatalf("single-point span = scope:%d start:%d end:%d, want adjacent span 1-2", scope, start, end)
+	}
+
+	a = &petApp{displayScope: displayScopeSingle, displayIndex: 2, displaySpanEnd: 0}
+	scope, start, end = a.normalizedDisplaySelection(3)
+	if scope != displayScopeSingle || start != 2 || end != 2 {
+		t.Fatalf("single selection = scope:%d start:%d end:%d, want single 2", scope, start, end)
+	}
+}
+
+func TestCombinedDisplayAreaAppliesWalkRangeAcrossSelectedMonitors(t *testing.T) {
+	areas := []displayArea{
+		{Work: winRect(0, 0, 1920, 1040), Screen: winRect(0, 0, 1920, 1080), Primary: true},
+		{Work: winRect(1920, 0, 3840, 1080), Screen: winRect(1920, 0, 3840, 1080)},
+		{Work: winRect(3840, 0, 5760, 1040), Screen: winRect(3840, 0, 5760, 1080)},
+	}
+	combined := combineDisplayAreas(areas[1:3])
+	if combined.Screen.Left != 1920 || combined.Screen.Right != 5760 {
+		t.Fatalf("combined screen = %+v, want 1920-5760", combined.Screen)
+	}
+	if combined.Work.Left != 1920 || combined.Work.Right != 5760 || combined.Work.Bottom != 1040 {
+		t.Fatalf("combined work = %+v, want horizontal span with shared work bottom 1040", combined.Work)
+	}
+
+	a := &petApp{
+		positionMode:   positionTaskbarEdge,
+		overlayOffsetY: 0,
+		walkRangeStart: 25,
+		walkRangeEnd:   75,
+	}
+	got := a.overlayRectFor(combined.Work, combined.Screen)
+	if got.Left != 2880 || got.Right != 4800 {
+		t.Fatalf("multi-monitor walk range = left:%d right:%d, want 2880-4800", got.Left, got.Right)
+	}
+	if got.Top != 1040-sceneH {
+		t.Fatalf("multi-monitor overlay top = %d, want %d", got.Top, 1040-sceneH)
+	}
+}
+
 func TestOverlayRectHandlesNegativeMonitorCoordinates(t *testing.T) {
 	work := winRect(-1920, 0, 0, 1040)
 	screen := winRect(-1920, 0, 0, 1080)
@@ -511,6 +560,65 @@ func TestTrayCountCommandsSupportEveryVisibleCount(t *testing.T) {
 	}
 }
 
+func TestTemporaryVisibilityMenuLabelUsesCurrentStateAndLanguage(t *testing.T) {
+	a := &petApp{lang: langJapanese}
+	if got := a.temporaryVisibilityMenuLabel(); got != "一時的に非表示" {
+		t.Fatalf("visible Japanese label = %q, want 一時的に非表示", got)
+	}
+	a.temporarilyHidden = true
+	if got := a.temporaryVisibilityMenuLabel(); got != "再表示" {
+		t.Fatalf("hidden Japanese label = %q, want 再表示", got)
+	}
+
+	a.lang = langEnglish
+	if got := a.temporaryVisibilityMenuLabel(); got != "Show pets" {
+		t.Fatalf("hidden English label = %q, want Show pets", got)
+	}
+	a.temporarilyHidden = false
+	if got := a.temporaryVisibilityMenuLabel(); got != "Temporarily hide" {
+		t.Fatalf("visible English label = %q, want Temporarily hide", got)
+	}
+}
+
+func TestTemporaryHideMenuTogglesAndBlocksTyping(t *testing.T) {
+	a := &petApp{
+		sceneW:       1200,
+		speed:        3,
+		mode:         modeKeyboard,
+		wheelEnabled: true,
+		wheelX:       420,
+		pets: []deguPet{{
+			state:      stateIdle,
+			stateTicks: 1,
+			item:       noItem,
+			carryKind:  noItem,
+			dir:        1,
+		}},
+	}
+
+	if !a.handleMenuCommand(menuToggleHidden) {
+		t.Fatal("hide command returned false")
+	}
+	if !a.temporarilyHidden {
+		t.Fatal("hide command did not set temporarilyHidden")
+	}
+	a.onTyping()
+	if got := a.pets[0].state; got != stateIdle {
+		t.Fatalf("hidden typing changed state to %v, want idle", got)
+	}
+
+	if !a.handleMenuCommand(menuToggleHidden) {
+		t.Fatal("show command returned false")
+	}
+	if a.temporarilyHidden {
+		t.Fatal("show command left temporarilyHidden set")
+	}
+	a.onTyping()
+	if got := a.pets[0].state; got != stateWheel {
+		t.Fatalf("visible typing changed state to %v, want wheel", got)
+	}
+}
+
 func TestPetLaneModeControlsVerticalOffsets(t *testing.T) {
 	a := &petApp{
 		sceneW:   900,
@@ -542,6 +650,9 @@ func TestSettingsTooltipsExplainLayoutControls(t *testing.T) {
 	}
 	if got := a.settingsTooltipText(ctrlTabDisplay); got == "" || !strings.Contains(got, "タスクバー") {
 		t.Fatalf("display tab tooltip = %q, want taskbar explanation", got)
+	}
+	if got := a.settingsTooltipText(ctrlDisplaySpan); got == "" || !strings.Contains(got, "複数") {
+		t.Fatalf("display span tooltip = %q, want multi-display explanation", got)
 	}
 	if got := a.settingsTooltipText(ctrlRangeStartScroll); got == "" || !strings.Contains(got, "ここから") {
 		t.Fatalf("range start tooltip = %q, want here-from explanation", got)

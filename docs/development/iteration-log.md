@@ -985,3 +985,98 @@ The download page described the app features but did not clearly show new users 
   - `.codex/qa/pages-settings-section-mobile.png`
 - Verified local HTML image references and section anchors.
 - `git diff --check`
+
+## Iteration 29 - Tray Temporary Hide
+
+Date: 2026-06-25
+
+### Target
+
+Add a task-tray right-click action that can temporarily hide the visible degus without quitting the app.
+
+### Cause
+
+Users need a quick way to clear the desktop pet overlay for the current session while keeping the tray icon, settings, and later restore path available.
+
+### Implementation
+
+- Added a non-persisted runtime visibility flag to the Windows app.
+- Added a tray menu item that switches between Japanese/English "temporarily hide" and "show pets" labels.
+- Hid the overlay and name label window while hidden, and restored the overlay when the same menu item is selected again.
+- Blocked keyboard and click pet reactions while the overlay is temporarily hidden.
+- Added tests for menu labels and the hidden-state typing guard.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go cmd\importsheet\main.go cmd\importsheet\main_test.go`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- `git diff --check`
+
+## Iteration 30 - Pages Version History
+
+Date: 2026-06-25
+
+### Target
+
+Add a concise version history to the GitHub Pages download page so users can see what changed in recent releases.
+
+### Cause
+
+The download page showed the current version and links, but it did not explain what each recent version fixed or added. Users had to open GitHub Releases or development logs to understand release differences.
+
+### Implementation
+
+- Added a `バージョン履歴` navigation link and section near the download area.
+- Listed public releases `v0.1.9` through `v0.1.5` with short Japanese summaries.
+- Added a GitHub Releases link for older or detailed release information.
+- Kept unreleased local changes out of the public history to avoid implying they are already in the downloadable release.
+- Added responsive CSS for desktop two-column history rows and single-column mobile rows.
+
+### Verification
+
+- Rendered `docs/index.html` with Playwright using local Chrome at desktop and mobile widths.
+- Confirmed the history section exists, the navigation contains `バージョン履歴`, the version list is `v0.1.9` through `v0.1.5`, and there is no horizontal overflow.
+- Captured screenshots:
+  - `.codex/qa/pages-version-history-desktop.png`
+  - `.codex/qa/pages-version-history-mobile.png`
+- `git diff --check`
+
+## Iteration 31 - Multi-Monitor Display Spans
+
+Date: 2026-06-25
+
+### Target
+
+Let Windows users place Degu Desktop across a selected span of multiple monitors, not only one monitor at a time.
+
+### Cause
+
+The Display tab previously selected a single monitor. Users with two or three monitors need the pet overlay to move across more than one screen, and the existing walking-range percentage controls should apply to that selected multi-monitor span.
+
+### Implementation
+
+- Added display scope state for single-display mode and multi-display span mode.
+- Added persisted `displayScope` and `displaySpanEnd` settings while keeping legacy single-monitor settings compatible.
+- Added Display-tab controls for `1画面`, `複数画面`, span shrinking/expanding, and moving the selected span left/right.
+- Combined selected monitor rectangles into one overlay range, with taskbar-edge placement using the shared work-area bottom where possible.
+- Applied the existing walking-range percentage controls to the selected single or multi-monitor span.
+- Added monitor-boundary markers to the walking-range preview when a multi-monitor span is active.
+- Updated README, GitHub Pages copy, and current-state docs.
+
+### Verification
+
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- `git diff --check`
+- Added tests for 3-monitor span selection and walking-range application across selected monitor spans.
+- Rendered `docs/index.html` with Playwright using local Chrome at desktop and mobile widths, confirming no horizontal overflow after the copy update.
+- Launched `dist\DeguDesktop.exe`, opened Settings through the normal command handler, switched to Display, verified the app exited cleanly, and captured:
+  - `.codex/qa/settings-display-multimonitor-span.png`
+  - `.codex/qa/pages-multimonitor-copy-desktop.png`
+  - `.codex/qa/pages-multimonitor-copy-mobile.png`
