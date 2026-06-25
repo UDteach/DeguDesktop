@@ -1113,4 +1113,15 @@ The latest public Windows release is `v0.1.9`, while `main` now contains user-fa
   - `.codex/qa/pages-v0.1.10-history-desktop.png`
   - `.codex/qa/pages-v0.1.10-history-mobile.png`
 - `git diff --check`
-- Pending GitHub Actions and live download verification after pushing tag `v0.1.10`.
+- Pushed `main` and tag `v0.1.10`.
+- Verified GitHub Actions Release run `28161539683` completed successfully.
+- Verified GitHub Actions Pages run `28161538316` completed successfully.
+- Verified GitHub Release `v0.1.10` is marked Latest and contains:
+  - `DeguDesktop-windows-amd64.zip`
+  - `DeguDesktop-windows-386.zip`
+- Downloaded both published ZIPs from GitHub Releases and verified their contents:
+  - amd64 EXE uses PE machine `0x8664` and contains `v0.1.10`.
+  - 386 EXE uses PE machine `0x014c` and contains `v0.1.10`.
+  - both ZIPs include `DeguDesktop.exe` and `README.md`.
+- Verified the live GitHub Pages site shows Windows latest `v0.1.10`, includes the version history section, and is stamped with release-prep commit `c6d2346`.
+- Verified `releases/latest/download` redirects to `v0.1.10` for both Windows x64 and x86 ZIPs.
