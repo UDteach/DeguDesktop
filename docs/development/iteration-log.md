@@ -1080,3 +1080,37 @@ The Display tab previously selected a single monitor. Users with two or three mo
   - `.codex/qa/settings-display-multimonitor-span.png`
   - `.codex/qa/pages-multimonitor-copy-desktop.png`
   - `.codex/qa/pages-multimonitor-copy-mobile.png`
+
+## Iteration 32 - v0.1.10 Release Prep
+
+Date: 2026-06-25
+
+### Target
+
+Prepare and publish the Windows `v0.1.10` release after the tray temporary-hide action, Pages version history, and multi-monitor span support.
+
+### Cause
+
+The latest public Windows release is `v0.1.9`, while `main` now contains user-facing fixes for temporary hiding and multi-monitor placement that should be available through GitHub Releases and the Pages download page.
+
+### Implementation
+
+- Updated the GitHub Pages Windows latest label to `v0.1.10`.
+- Added a `v0.1.10` entry to the public version history.
+- Documented that Mac download links remain on the existing `v0.1.9` artifacts until a separate macOS sync is built.
+- Prepared to tag `v0.1.10` so the existing Release workflow can publish Windows x64 and x86 ZIPs.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go cmd\importsheet\main.go cmd\importsheet\main_test.go`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- Built local Windows amd64 and 386 executables with `main.appVersion=v0.1.10`.
+- Verified local PE machine values: amd64 `0x8664`, 386 `0x014c`.
+- Verified local executables contain the embedded `v0.1.10` string.
+- Rendered the local GitHub Pages history section with Playwright at desktop and mobile widths, and captured:
+  - `.codex/qa/pages-v0.1.10-history-desktop.png`
+  - `.codex/qa/pages-v0.1.10-history-mobile.png`
+- `git diff --check`
+- Pending GitHub Actions and live download verification after pushing tag `v0.1.10`.

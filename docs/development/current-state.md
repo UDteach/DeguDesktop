@@ -111,16 +111,17 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 - The current website describes Degu Desktop but does not yet present a multi-species roadmap.
 - Future art-style selection is not implemented yet. The user likes the more natural illustrated degu-sheet style from the latest attached reference, so style profiles should be modeled separately from coat variants when this is added.
 
-## Current In-Progress Diff
+## Current Release State
 
-The current local diff contains three user-facing updates:
+`v0.1.10` is the next Windows release line after `v0.1.9`. It includes:
 
 - A Windows tray menu action for temporarily hiding and restoring the pet overlay during the current session.
 - A non-persisted runtime flag and guards so keyboard, click reaction, and hover name behavior do not run while the overlay is hidden.
-- Tests for the tray label state and hidden-state typing behavior.
-- A GitHub Pages version-history section near the download area, covering the public `v0.1.9` through `v0.1.5` release line.
-- Desktop and mobile Chrome screenshots for the new Pages version-history section.
-- Windows display settings now support a selected multi-monitor span, including moving the span and expanding/shrinking it for 3+ monitor layouts.
+- A GitHub Pages version-history section near the download area.
+- Windows display settings for a selected multi-monitor span, including moving the span and expanding/shrinking it for 3+ monitor layouts.
+- Walking-range percentages that apply to the selected single monitor or multi-monitor span.
+
+The Mac download links currently remain on the existing `v0.1.9` artifacts until a separate macOS release sync is built and uploaded.
 
 ## Codex Config Application
 
