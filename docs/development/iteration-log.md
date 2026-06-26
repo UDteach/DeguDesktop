@@ -1241,3 +1241,27 @@ The previous UI exposed the walking range mostly as percentages across the selec
   - `.codex/qa/pages-v0.1.12-history-mobile.png`
 - Verified the local GitHub Pages HTML shows Windows latest `v0.1.12`, first version-history entry `v0.1.12`, and no horizontal overflow at 1440px or 390px widths.
 - `git diff --check`
+
+## Iteration 36 - v0.1.12 Release Verification
+
+Date: 2026-06-26
+
+### Target
+
+Verify the published Windows `v0.1.12` release, latest download links, and GitHub Pages deployment after pushing the release tag.
+
+### Result
+
+- Pushed `main` commit `c0417c4` and tag `v0.1.12`.
+- Verified GitHub Actions Release run `28223478538` completed successfully.
+- Verified GitHub Actions Pages run `28223478157` completed successfully.
+- Updated the GitHub Release notes for `v0.1.12`.
+- Verified GitHub Release `v0.1.12` is marked Latest and contains:
+  - `DeguDesktop-windows-amd64.zip`
+  - `DeguDesktop-windows-386.zip`
+- Downloaded both published ZIPs from GitHub Releases and verified their contents:
+  - amd64 EXE uses PE machine `0x8664` and contains `v0.1.12`.
+  - 386 EXE uses PE machine `0x014c` and contains `v0.1.12`.
+  - both ZIPs include `DeguDesktop.exe` and `README.md`.
+- Verified the live GitHub Pages site shows Windows latest `v0.1.12`, first version-history entry `v0.1.12`, release headline `歩く範囲を画面単位で分かりやすく`, and build commit `c0417c4`.
+- Verified `releases/latest/download` redirects to `v0.1.12` for both Windows x64 and x86 ZIPs.
