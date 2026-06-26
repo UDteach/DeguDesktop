@@ -113,14 +113,15 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 
 ## Current Release State
 
-`v0.1.11` is the latest published Windows release line. It includes:
+`v0.1.12` is the latest published Windows release line. It includes:
 
 - A Windows tray menu action for temporarily hiding and restoring the pet overlay during the current session.
 - A non-persisted runtime flag and guards so keyboard, click reaction, and hover name behavior do not run while the overlay is hidden.
 - A GitHub Pages version-history section near the download area.
 - Windows display settings for a selected multi-monitor span, including moving the span and expanding/shrinking it for 3+ monitor layouts.
-- Walking-range percentages that apply to the selected single monitor or multi-monitor span.
 - Segment-based pet placement so visible-count changes immediately distribute pets across selected multi-monitor spans.
+- Walking-range settings that default to all selected displays when entering multi-monitor span mode.
+- Walking-range summaries that describe the selected area in screen terms such as all selected displays, display 1 only, or part of displays 1-2 while keeping left/right fine adjustment available.
 
 The Mac download links currently remain on the existing `v0.1.9` artifacts until a separate macOS release sync is built and uploaded.
 

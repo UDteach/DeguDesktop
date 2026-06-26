@@ -616,6 +616,74 @@ func TestNormalizeWalkRangeKeepsMinimumSpan(t *testing.T) {
 	}
 }
 
+func TestWalkRangeSummaryDescribesMultiDisplaySegments(t *testing.T) {
+	a := &petApp{lang: langJapanese}
+	segments := []sceneSegment{
+		{Left: 0, Right: 1920},
+		{Left: 1920, Right: 3840},
+	}
+
+	cases := []struct {
+		name       string
+		start, end int
+		want       string
+	}{
+		{name: "all selected displays", start: 0, end: 100, want: "選択した画面ぜんぶ"},
+		{name: "first display only", start: 0, end: 50, want: "画面1だけ"},
+		{name: "second display only", start: 50, end: 100, want: "画面2だけ"},
+		{name: "partial displays", start: 25, end: 75, want: "画面1-2の一部"},
+	}
+
+	for _, tt := range cases {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := a.walkRangeSummaryForSegments(tt.start, tt.end, segments); got != tt.want {
+				t.Fatalf("summary = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWalkRangeSummaryKeepsFineRangeControl(t *testing.T) {
+	a := &petApp{lang: langJapanese}
+	if got := a.walkRangeSummaryForSegments(30, 70, []sceneSegment{{Left: 0, Right: 1920}}); got != "画面の一部" {
+		t.Fatalf("single-display summary = %q, want partial-display wording", got)
+	}
+	start, end := normalizeWalkRange(30, 70)
+	if start != 30 || end != 70 {
+		t.Fatalf("fine range changed = %d-%d, want 30-70", start, end)
+	}
+}
+
+func TestDisplaySpanDefaultsWalkingRangeToAllDisplays(t *testing.T) {
+	if len(monitorAreas()) < 2 {
+		t.Skip("multi-monitor scope reset requires at least two detected displays")
+	}
+	a := &petApp{
+		displayScope:   displayScopeSingle,
+		displayIndex:   0,
+		displaySpanEnd: 0,
+		positionMode:   positionTaskbarEdge,
+		walkRangeStart: 25,
+		walkRangeEnd:   75,
+		petCount:       2,
+		speed:          3,
+		coatMode:       coatFixed,
+	}
+	a.resetPosition()
+	a.walkRangeStart = 25
+	a.walkRangeEnd = 75
+	a.setDisplayScope(displayScopeSpan)
+	if a.walkRangeStart != 0 || a.walkRangeEnd != 100 {
+		t.Fatalf("span walk range = %d-%d, want reset to 0-100", a.walkRangeStart, a.walkRangeEnd)
+	}
+
+	a.setWalkRange(50, 100)
+	a.adjustDisplaySpan(1)
+	if a.walkRangeStart != 50 || a.walkRangeEnd != 100 {
+		t.Fatalf("adjusting span changed fine range = %d-%d, want 50-100", a.walkRangeStart, a.walkRangeEnd)
+	}
+}
+
 func TestMonitorAreasCanBeCalledRepeatedly(t *testing.T) {
 	for i := 0; i < 2500; i++ {
 		_ = monitorAreas()
@@ -756,11 +824,14 @@ func TestSettingsTooltipsExplainLayoutControls(t *testing.T) {
 	if got := a.settingsTooltipText(ctrlTabHome); got == "" || !strings.Contains(got, "まとめ") {
 		t.Fatalf("home tab tooltip = %q, want overview explanation", got)
 	}
-	if got := a.settingsTooltipText(ctrlTabDisplay); got == "" || !strings.Contains(got, "タスクバー") {
-		t.Fatalf("display tab tooltip = %q, want taskbar explanation", got)
+	if got := a.settingsTooltipText(ctrlTabDisplay); got == "" || !strings.Contains(got, "歩く画面") {
+		t.Fatalf("display tab tooltip = %q, want walking-display explanation", got)
 	}
 	if got := a.settingsTooltipText(ctrlDisplaySpan); got == "" || !strings.Contains(got, "複数") {
 		t.Fatalf("display span tooltip = %q, want multi-display explanation", got)
+	}
+	if got := (&petApp{displayScope: displayScopeSpan}).settingsButtonLabel(ctrlRangeFull); got != "全画面" {
+		t.Fatalf("span range full label = %q, want all-displays wording", got)
 	}
 	if got := a.settingsTooltipText(ctrlRangeStartScroll); got == "" || !strings.Contains(got, "ここから") {
 		t.Fatalf("range start tooltip = %q, want here-from explanation", got)
@@ -808,8 +879,8 @@ func TestHomeSettingsSummariesShowUsefulState(t *testing.T) {
 	if got := a.homeMotionDetail(); !strings.Contains(got, "回し車") || !strings.Contains(got, "左右") {
 		t.Fatalf("homeMotionDetail() = %q, want wheel and turn state", got)
 	}
-	if got := a.homeDisplayDetail(); !strings.Contains(got, "10%") || !strings.Contains(got, "-4 px") {
-		t.Fatalf("homeDisplayDetail() = %q, want range and offset", got)
+	if got := a.homeDisplayDetail(); !strings.Contains(got, "画面") || !strings.Contains(got, "-4 px") {
+		t.Fatalf("homeDisplayDetail() = %q, want display-range wording and offset", got)
 	}
 }
 

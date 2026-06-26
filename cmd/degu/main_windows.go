@@ -1509,6 +1509,7 @@ func (a *petApp) adjustDisplayIndex(delta int) {
 
 func (a *petApp) setDisplayScope(scope displayScope) {
 	targetScope := normalizeDisplayScope(int(scope))
+	wasSpan := normalizeDisplayScope(int(a.displayScope)) == displayScopeSpan
 	if targetScope == displayScopeSpan {
 		singleAreas := monitorAreas()
 		spanAreas := monitorAreasByPosition()
@@ -1527,6 +1528,10 @@ func (a *petApp) setDisplayScope(scope displayScope) {
 			}
 			a.displayScope = displayScopeSpan
 			a.displayIndex, a.displaySpanEnd = normalizeDisplaySpan(start, end, count)
+			if !wasSpan {
+				a.walkRangeStart = defaultWalkRangeStart
+				a.walkRangeEnd = defaultWalkRangeEnd
+			}
 			a.resetPosition()
 			return
 		}
@@ -2438,7 +2443,7 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 		drawTextLine(hdc, a.localText("表示する範囲", "Display scope"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.displaySummary(), win.RECT{Left: 250, Top: 186, Right: 688, Bottom: 208}, a.settingsFont, rgb(27, 36, 32), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
 
-		drawTextLine(hdc, a.localText("歩く範囲", "Walking range"), win.RECT{Left: 246, Top: 222, Right: 390, Bottom: 244}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.walkRangeSectionLabel(), win.RECT{Left: 246, Top: 222, Right: 390, Bottom: 244}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.walkRangeSummary(), win.RECT{Left: 394, Top: 222, Right: 688, Bottom: 244}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
 		a.drawWalkRangePreview(hdc)
 		drawTextLine(hdc, a.localText("左端", "Left edge"), win.RECT{Left: 250, Top: 254, Right: 316, Bottom: 280}, a.settingsSmallFont, labelColor, win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
@@ -2777,6 +2782,9 @@ func (a *petApp) settingsButtonLabel(id int32) string {
 	case ctrlDisplaySpanMore:
 		return a.localText("広く", "More")
 	case ctrlRangeFull:
+		if normalizeDisplayScope(int(a.displayScope)) == displayScopeSpan {
+			return a.localText("全画面", "All")
+		}
 		return a.localText("全幅", "Full")
 	case ctrlRangeNarrow:
 		return a.localText("狭く", "Narrow")
@@ -2828,7 +2836,7 @@ func (a *petApp) settingsTooltipText(id int32) string {
 	case ctrlTabMotion:
 		return a.localText("歩き方、回し車、左右ターンを設定します。", "Set motion, typing wheel, and turn behavior.")
 	case ctrlTabDisplay:
-		return a.localText("1画面または複数画面の表示範囲、タスクバー上で歩く範囲、高さを設定します。", "Set one-display or multi-display scope, taskbar walking range, and height.")
+		return a.localText("1画面または複数画面、歩く画面、高さを設定します。", "Set one-display or multi-display scope, walking displays, and height.")
 	case ctrlTabUpdates:
 		return a.localText("現在のバージョン、最新リリース、更新の確認とインストールを表示します。", "Show the current version, latest release, update checks, and installation.")
 	case ctrlPetMinus:
@@ -2878,13 +2886,13 @@ func (a *petApp) settingsTooltipText(id int32) string {
 	case ctrlDisplaySingle:
 		return a.localText("選択中の1画面だけにデグーを表示します。", "Show pets on one selected display only.")
 	case ctrlDisplaySpan:
-		return a.localText("複数のモニタを横断する1つの範囲として使います。歩く範囲の％指定もこの範囲全体に効きます。", "Use multiple monitors as one wide span. Walking-range percentages apply across the whole span.")
+		return a.localText("複数のモニタを横断する1つの範囲として使います。切り替え時は歩く範囲を全画面に戻します。", "Use multiple monitors as one wide span. Switching to this resets walking range to all selected displays.")
 	case ctrlDisplaySpanLess:
 		return a.localText("複数画面の対象範囲を1枚ぶん狭くします。", "Shrink the multi-display span by one monitor.")
 	case ctrlDisplaySpanMore:
 		return a.localText("複数画面の対象範囲を1枚ぶん広げます。全モニタ表示にもできます。", "Expand the multi-display span by one monitor, up to all monitors.")
 	case ctrlRangeFull:
-		return a.localText("選択中の表示範囲で、歩く範囲を端から端までに戻します。", "Use the full selected display span.")
+		return a.localText("選択中の画面ぜんぶを歩く範囲に戻します。", "Use all selected displays for walking.")
 	case ctrlRangeNarrow:
 		return a.localText("歩く範囲を中央寄せで少し狭くします。", "Make the walking range narrower around the center.")
 	case ctrlRangeWide:
@@ -3211,10 +3219,130 @@ func (a *petApp) displaySummary() string {
 
 func (a *petApp) walkRangeSummary() string {
 	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	if summary := a.walkRangeSummaryForSegments(start, end, a.displaySegmentsForSummary()); summary != "" {
+		return summary
+	}
 	if start == 0 && end == 100 {
-		return a.localText("全幅（0%〜100%）", "Full width (0%-100%)")
+		return a.localText("全幅", "Full width")
 	}
 	return fmt.Sprintf("%d%% - %d%%", start, end)
+}
+
+func (a *petApp) walkRangeSectionLabel() string {
+	if normalizeDisplayScope(int(a.displayScope)) == displayScopeSpan {
+		return a.localText("歩く画面", "Walking displays")
+	}
+	return a.localText("歩く範囲", "Walking range")
+}
+
+func (a *petApp) displaySegmentsForSummary() []sceneSegment {
+	areas := displayAreaForScope(a.displayScope)
+	if len(areas) == 0 {
+		return nil
+	}
+	scope, start, end := a.normalizedDisplaySelection(len(areas))
+	if scope != displayScopeSpan {
+		end = start
+	}
+	selected := areas[start : end+1]
+	combined := combineDisplayAreas(selected)
+	base := combined.Work
+	if normalizeOverlayPositionMode(int(a.positionMode)) == positionScreenBottom {
+		base = combined.Screen
+	}
+	if base.Right <= base.Left {
+		return nil
+	}
+	segments := make([]sceneSegment, 0, len(selected))
+	for _, area := range selected {
+		segmentBase := area.Work
+		if normalizeOverlayPositionMode(int(a.positionMode)) == positionScreenBottom {
+			segmentBase = area.Screen
+		}
+		left := max(int(segmentBase.Left), int(base.Left))
+		right := min(int(segmentBase.Right), int(base.Right))
+		if right-left >= spriteW {
+			segments = append(segments, sceneSegment{
+				Left:  left - int(base.Left),
+				Right: right - int(base.Left),
+			})
+		}
+	}
+	return mergeSceneSegments(segments)
+}
+
+func (a *petApp) walkRangeSummaryForSegments(start, end int, segments []sceneSegment) string {
+	start, end = normalizeWalkRange(start, end)
+	segments = normalizeSceneSegments(segmentSpanWidth(segments), segments)
+	if len(segments) == 0 {
+		return ""
+	}
+	if start == 0 && end == 100 {
+		if len(segments) == 1 {
+			return a.localText("全幅", "Full width")
+		}
+		return a.localText("選択した画面ぜんぶ", "All selected displays")
+	}
+	totalLeft := segments[0].Left
+	totalRight := segments[0].Right
+	for _, segment := range segments[1:] {
+		totalLeft = min(totalLeft, segment.Left)
+		totalRight = max(totalRight, segment.Right)
+	}
+	totalW := max(1, totalRight-totalLeft)
+	walkLeft := totalLeft + totalW*start/100
+	walkRight := totalLeft + totalW*end/100
+	covered := make([]int, 0, len(segments))
+	fullCovered := true
+	for i, segment := range segments {
+		left := max(walkLeft, segment.Left)
+		right := min(walkRight, segment.Right)
+		if right-left <= 0 {
+			continue
+		}
+		covered = append(covered, i+1)
+		if left > segment.Left+2 || right < segment.Right-2 {
+			fullCovered = false
+		}
+	}
+	if len(covered) == 0 {
+		return fmt.Sprintf("%d%% - %d%%", start, end)
+	}
+	if len(segments) == 1 {
+		return a.localText("画面の一部", "Part of display")
+	}
+	if len(covered) == len(segments) && fullCovered {
+		return a.localText("選択した画面ぜんぶ", "All selected displays")
+	}
+	first := covered[0]
+	last := covered[len(covered)-1]
+	if fullCovered {
+		if first == last {
+			return fmt.Sprintf("%s%d%s", a.localText("画面", "Display "), first, a.localText("だけ", " only"))
+		}
+		return fmt.Sprintf("%s%d-%d", a.localText("画面", "Displays "), first, last)
+	}
+	if first == last {
+		if a.lang == langEnglish {
+			return fmt.Sprintf("Part of display %d", first)
+		}
+		return fmt.Sprintf("画面%dの一部", first)
+	}
+	if a.lang == langEnglish {
+		return fmt.Sprintf("Part of displays %d-%d", first, last)
+	}
+	return fmt.Sprintf("画面%d-%dの一部", first, last)
+}
+
+func segmentSpanWidth(segments []sceneSegment) int {
+	if len(segments) == 0 {
+		return 0
+	}
+	right := segments[0].Right
+	for _, segment := range segments[1:] {
+		right = max(right, segment.Right)
+	}
+	return right
 }
 
 func (a *petApp) updateSnapshot() (*githubRelease, string, bool, bool) {
@@ -4092,9 +4220,9 @@ func (a *petApp) txt(key string) string {
 		case "motionPageLead":
 			return "Tune keyboard reactions, random strolls, wheel behavior, and turn behavior."
 		case "displayPageTitle":
-			return "Display and walking range"
+			return "Display and walking displays"
 		case "displayPageLead":
-			return "Choose one display or a multi-monitor span, then set the exact segment where degus can roam."
+			return "Choose one display or a multi-monitor span, then fine-tune the area where degus can roam."
 		case "updatesPageTitle":
 			return "Updates"
 		case "updatesPageLead":
@@ -4177,9 +4305,9 @@ func (a *petApp) txt(key string) string {
 	case "motionPageLead":
 		return "キーボードへの反応、ランダム散歩、回し車、左右ターンを調整します。"
 	case "displayPageTitle":
-		return "表示と歩く範囲"
+		return "表示と歩く画面"
 	case "displayPageLead":
-		return "1つの画面だけ、または複数モニタを横断する範囲を選び、その中で歩く区間を指定します。"
+		return "1つの画面だけ、または複数モニタを横断する範囲を選び、必要な時だけ歩く区間を細かく調整します。"
 	case "updatesPageTitle":
 		return "更新"
 	case "updatesPageLead":

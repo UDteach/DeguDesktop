@@ -1204,3 +1204,40 @@ The `v0.1.10` release introduced multi-monitor span selection, but users could s
   - both ZIPs include `DeguDesktop.exe` and `README.md`.
 - Verified the live GitHub Pages site shows Windows latest `v0.1.11`, includes the version history section, and is stamped with release commit `287d1da`.
 - Verified `releases/latest/download` redirects to `v0.1.11` for both Windows x64 and x86 ZIPs.
+
+## Iteration 35 - v0.1.12 Walking Range Clarity Release Prep
+
+Date: 2026-06-26
+
+### Target
+
+Make the walking-range setting understandable for multi-monitor users without removing the existing fine range control, then prepare the Windows `v0.1.12` release.
+
+### Cause
+
+The previous UI exposed the walking range mostly as percentages across the selected monitor span. For two or three monitors, that made users wonder whether the range setting disappeared, whether 300% was involved, or which screen the pets would actually walk on.
+
+### Implementation
+
+- Changed the Display tab section label to `歩く画面` in multi-monitor span mode while keeping `歩く範囲` for single-display mode.
+- Summarized ranges in screen terms such as `選択した画面ぜんぶ`, `画面1だけ`, and `画面1-2の一部`.
+- Kept the left/right fine adjustment controls, but made `全画面` reset the range to all selected displays in multi-monitor span mode.
+- Reset the walking range to all selected displays when switching from single-display mode into multi-monitor span mode.
+- Preserved the fine range when expanding, shrinking, or moving a span after already being in multi-monitor mode.
+- Updated the settings copy, GitHub Pages latest label, setup guide, and version history for `v0.1.12`.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go`
+- `go test -buildvcs=false ./cmd/degu -run "TestWalkRangeSummary|TestDisplaySpanDefaultsWalkingRange|TestSettingsTooltipsExplainLayoutControls|TestHomeSettingsSummariesShowUsefulState" -count=1 -v`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- Built local Windows amd64 and 386 executables with `main.appVersion=v0.1.12`.
+- Verified local PE machine values: amd64 `0x8664`, 386 `0x014c`.
+- Verified local executables contain the embedded `v0.1.12` string.
+- Rendered the local GitHub Pages history section at desktop and mobile widths, and captured:
+  - `.codex/qa/pages-v0.1.12-history-desktop.png`
+  - `.codex/qa/pages-v0.1.12-history-mobile.png`
+- Verified the local GitHub Pages HTML shows Windows latest `v0.1.12`, first version-history entry `v0.1.12`, and no horizontal overflow at 1440px or 390px widths.
+- `git diff --check`

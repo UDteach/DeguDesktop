@@ -428,7 +428,7 @@
             macOS 11 Big Surの場合はBig Sur版を選んでください。2015年頃のMacBookは多くの場合Intel版です。
           </p>
           <div class="release-meta" aria-label="Build information">
-            <span>Windows最新版 <strong data-release-version>v0.1.11</strong></span>
+            <span>Windows最新版 <strong data-release-version>v0.1.12</strong></span>
             <span>Mac版 <strong>v0.1.9</strong></span>
             <span>バージョン <strong data-build-version>dev-local</strong></span>
             <span>更新日 <strong data-build-date>2026-06-20</strong></span>
@@ -454,6 +454,21 @@
         </div>
 
         <div class="history-list" aria-label="Degu Desktop version history">
+          <article class="history-item">
+            <div>
+              <strong class="history-version">v0.1.12</strong>
+              <span class="history-date">2026-06-26</span>
+            </div>
+            <div>
+              <h3>歩く範囲を画面単位で分かりやすく</h3>
+              <ul>
+                <li>複数モニタ時の歩く範囲を「選択した画面ぜんぶ」「画面1だけ」「画面1-2の一部」のように表示し、%だけでは分かりにくい状態を減らしました。</li>
+                <li>複数モニタへ切り替えた時は、まず選択中の画面ぜんぶを歩く範囲に戻すようにしました。</li>
+                <li>左端/右端のスクロールバーは残し、細かく狭めたい時だけ詳細調整として使えるようにしました。</li>
+              </ul>
+            </div>
+          </article>
+
           <article class="history-item">
             <div>
               <strong class="history-version">v0.1.11</strong>
@@ -614,7 +629,7 @@
         <div class="section-heading">
           <h2>設定方法</h2>
           <p>
-            Windows版はタスクトレイのデグーアイコンから設定を開きます。表示数、色、名前、動き、回し車、1画面/複数モニタの表示範囲、タスクバー上の歩く範囲、更新確認をまとめて変更できます。
+            Windows版はタスクトレイのデグーアイコンから設定を開きます。表示数、色、名前、動き、回し車、1画面/複数モニタの表示範囲、画面単位の歩く範囲、更新確認をまとめて変更できます。
           </p>
         </div>
 
@@ -637,7 +652,7 @@
           <article class="setup-step">
             <span class="step-number">4</span>
             <h3>表示を調整</h3>
-            <p>表示タブで1画面/複数モニタの表示範囲、範囲の移動、タスクバー基準/画面下、上下オフセット、歩く範囲の左端/右端スクロールバーを調整します。</p>
+            <p>表示タブで1画面/複数モニタの表示範囲、範囲の移動、タスクバー基準/画面下、上下オフセット、歩く画面、左端/右端の詳細調整を変更します。</p>
           </article>
         </div>
 
@@ -648,7 +663,7 @@
           </figure>
           <figure class="settings-shot">
             <img src="assets/settings-display-range.png" alt="Display tab with walking range scrollbars" loading="lazy" />
-            <figcaption>表示タブでは、使う画面や複数モニタ範囲と、タスクバー上の歩く範囲を指定できます。</figcaption>
+            <figcaption>表示タブでは、使う画面や複数モニタ範囲を選び、必要な時だけ左端/右端を細かく調整できます。</figcaption>
           </figure>
           <figure class="settings-shot">
             <img src="assets/settings-updates-tab.png" alt="Updates tab showing available update controls" loading="lazy" />
