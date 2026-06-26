@@ -1191,4 +1191,16 @@ The `v0.1.10` release introduced multi-monitor span selection, but users could s
   - `.codex/qa/pages-v0.1.11-history-desktop.png`
   - `.codex/qa/pages-v0.1.11-history-mobile.png`
 - `git diff --check`
-- Pending GitHub Actions and live download verification after pushing tag `v0.1.11`.
+- Pushed `main` and tag `v0.1.11`.
+- Verified GitHub Actions Release run `28222033931` completed successfully.
+- Verified GitHub Actions Pages run `28222033069` completed successfully.
+- Updated the GitHub Release notes for `v0.1.11`.
+- Verified GitHub Release `v0.1.11` contains:
+  - `DeguDesktop-windows-amd64.zip`
+  - `DeguDesktop-windows-386.zip`
+- Downloaded both published ZIPs from GitHub Releases and verified their contents:
+  - amd64 EXE uses PE machine `0x8664` and contains `v0.1.11`.
+  - 386 EXE uses PE machine `0x014c` and contains `v0.1.11`.
+  - both ZIPs include `DeguDesktop.exe` and `README.md`.
+- Verified the live GitHub Pages site shows Windows latest `v0.1.11`, includes the version history section, and is stamped with release commit `287d1da`.
+- Verified `releases/latest/download` redirects to `v0.1.11` for both Windows x64 and x86 ZIPs.
