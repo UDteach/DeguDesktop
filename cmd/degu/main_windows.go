@@ -617,6 +617,7 @@ func (a *petApp) resetPosition() {
 	overlay := a.overlayRect()
 	a.syncScene(overlay)
 	a.setPetCount(a.petCount)
+	a.arrangePetsForOverlay(overlay)
 }
 
 func settingsPath() (string, error) {
@@ -1456,8 +1457,9 @@ func (a *petApp) adjustOverlayOffset(delta int) {
 
 func (a *petApp) setWalkRange(start, end int) {
 	a.walkRangeStart, a.walkRangeEnd = normalizeWalkRange(start, end)
-	a.syncScene(a.overlayRect())
-	a.clampPetsToScene()
+	overlay := a.overlayRect()
+	a.syncScene(overlay)
+	a.arrangePetsForOverlay(overlay)
 }
 
 func (a *petApp) adjustWalkRangeWidth(delta int) {
@@ -1608,6 +1610,191 @@ func (a *petApp) setPetCount(count int) {
 			a.pets[i].nextDir = 1
 		}
 	}
+	a.arrangePetsAcrossScene()
+}
+
+type sceneSegment struct {
+	Left  int
+	Right int
+}
+
+func (a *petApp) arrangePetsAcrossScene() {
+	a.arrangePetsInSegments(nil)
+}
+
+func (a *petApp) arrangePetsForOverlay(overlay win.RECT) {
+	a.arrangePetsInSegments(a.sceneSegmentsForOverlay(overlay))
+}
+
+func (a *petApp) arrangePetsInSegments(segments []sceneSegment) {
+	positions := petScenePositions(a.sceneW, len(a.pets), segments)
+	for i, x := range positions {
+		p := &a.pets[i]
+		p.x = x
+		dir := 1
+		if a.bidirectional && i%2 == 1 {
+			dir = -1
+		}
+		p.dir = dir
+		p.nextDir = dir
+		if p.state == stateTurn {
+			p.state = stateWalk
+			p.moveSpeed = max(1, a.speed-1)
+			p.stateTicks = 24
+		}
+	}
+}
+
+func (a *petApp) sceneSegmentsForOverlay(overlay win.RECT) []sceneSegment {
+	areas := displayAreaForScope(a.displayScope)
+	if len(areas) == 0 || overlay.Right <= overlay.Left {
+		return nil
+	}
+	scope, start, end := a.normalizedDisplaySelection(len(areas))
+	if scope != displayScopeSpan {
+		end = start
+	}
+	mode := normalizeOverlayPositionMode(int(a.positionMode))
+	segments := make([]sceneSegment, 0, end-start+1)
+	for _, area := range areas[start : end+1] {
+		base := area.Work
+		if mode == positionScreenBottom {
+			base = area.Screen
+		}
+		left := max(int(base.Left), int(overlay.Left))
+		right := min(int(base.Right), int(overlay.Right))
+		if right-left >= spriteW {
+			segments = append(segments, sceneSegment{
+				Left:  left - int(overlay.Left),
+				Right: right - int(overlay.Left),
+			})
+		}
+	}
+	return mergeSceneSegments(segments)
+}
+
+func mergeSceneSegments(segments []sceneSegment) []sceneSegment {
+	if len(segments) <= 1 {
+		return segments
+	}
+	sort.SliceStable(segments, func(i, j int) bool {
+		if segments[i].Left != segments[j].Left {
+			return segments[i].Left < segments[j].Left
+		}
+		return segments[i].Right < segments[j].Right
+	})
+	merged := segments[:0]
+	for _, segment := range segments {
+		if segment.Right <= segment.Left {
+			continue
+		}
+		if len(merged) == 0 || segment.Left >= merged[len(merged)-1].Right {
+			merged = append(merged, segment)
+			continue
+		}
+		if segment.Right > merged[len(merged)-1].Right {
+			merged[len(merged)-1].Right = segment.Right
+		}
+	}
+	return merged
+}
+
+func petScenePositions(sceneW, count int, segments []sceneSegment) []int {
+	if count <= 0 || sceneW <= 0 {
+		return nil
+	}
+	segments = normalizeSceneSegments(sceneW, segments)
+	if len(segments) == 0 {
+		segments = []sceneSegment{{Left: 0, Right: sceneW}}
+	}
+	allocations := allocatePetsToSegments(count, segments)
+	positions := make([]int, 0, count)
+	for i, segment := range segments {
+		n := allocations[i]
+		if n <= 0 {
+			continue
+		}
+		leftLimit := segment.Left
+		rightLimit := segment.Right - spriteW
+		if rightLimit < leftLimit {
+			rightLimit = leftLimit
+		}
+		margin := min(24, max(0, (rightLimit-leftLimit)/4))
+		left := leftLimit + margin
+		right := rightLimit - margin
+		if right < left {
+			left = leftLimit
+			right = rightLimit
+		}
+		for j := 0; j < n; j++ {
+			x := (left + right) / 2
+			if n > 1 {
+				x = left + (right-left)*j/(n-1)
+			}
+			positions = append(positions, clamp(x, 0, max(0, sceneW-spriteW)))
+		}
+	}
+	for len(positions) < count {
+		positions = append(positions, clamp(sceneW/2-spriteW/2, 0, max(0, sceneW-spriteW)))
+	}
+	return positions[:count]
+}
+
+func normalizeSceneSegments(sceneW int, segments []sceneSegment) []sceneSegment {
+	out := make([]sceneSegment, 0, len(segments))
+	for _, segment := range segments {
+		left := clamp(segment.Left, 0, sceneW)
+		right := clamp(segment.Right, 0, sceneW)
+		if right-left >= spriteW || (sceneW < spriteW && right > left) {
+			out = append(out, sceneSegment{Left: left, Right: right})
+		}
+	}
+	return mergeSceneSegments(out)
+}
+
+func allocatePetsToSegments(count int, segments []sceneSegment) []int {
+	allocations := make([]int, len(segments))
+	if count <= 0 || len(segments) == 0 {
+		return allocations
+	}
+	type remainder struct {
+		index int
+		value float64
+	}
+	totalWidth := 0
+	for _, segment := range segments {
+		totalWidth += max(0, segment.Right-segment.Left)
+	}
+	if totalWidth <= 0 {
+		allocations[0] = count
+		return allocations
+	}
+	remaining := count
+	if count >= len(segments) {
+		for i := range allocations {
+			allocations[i] = 1
+		}
+		remaining -= len(segments)
+	}
+	remainders := make([]remainder, 0, len(segments))
+	assigned := 0
+	for i, segment := range segments {
+		share := float64(max(0, segment.Right-segment.Left)) * float64(remaining) / float64(totalWidth)
+		whole := int(math.Floor(share))
+		allocations[i] += whole
+		assigned += whole
+		remainders = append(remainders, remainder{index: i, value: share - float64(whole)})
+	}
+	sort.SliceStable(remainders, func(i, j int) bool {
+		if remainders[i].value != remainders[j].value {
+			return remainders[i].value > remainders[j].value
+		}
+		return remainders[i].index < remainders[j].index
+	})
+	for i := 0; i < remaining-assigned; i++ {
+		allocations[remainders[i%len(remainders)].index]++
+	}
+	return allocations
 }
 
 func (a *petApp) setCoatMode(mode coatMode) {
@@ -3606,9 +3793,11 @@ func (a *petApp) handleSettingsCommand(id int32, notify uint16) bool {
 		}
 	case ctrlPetMinus:
 		a.setPetCount(a.petCount - 1)
+		a.resetPosition()
 		a.recreateSettingsWindow()
 	case ctrlPetPlus:
 		a.setPetCount(a.petCount + 1)
+		a.resetPosition()
 		a.recreateSettingsWindow()
 	case ctrlModeKeyboard:
 		a.handleMenu(menuModeKeyboard)
@@ -4818,6 +5007,7 @@ func (a *petApp) handleMenu(id uint16) {
 func (a *petApp) handleMenuCommand(id uint16) bool {
 	if count, ok := petCountFromMenuID(id); ok {
 		a.setPetCount(count)
+		a.resetPosition()
 		return true
 	}
 	switch {

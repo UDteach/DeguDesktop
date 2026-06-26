@@ -1125,3 +1125,70 @@ The latest public Windows release is `v0.1.9`, while `main` now contains user-fa
   - both ZIPs include `DeguDesktop.exe` and `README.md`.
 - Verified the live GitHub Pages site shows Windows latest `v0.1.10`, includes the version history section, and is stamped with release-prep commit `c6d2346`.
 - Verified `releases/latest/download` redirects to `v0.1.10` for both Windows x64 and x86 ZIPs.
+
+## Iteration 33 - Multi-Monitor Pet Placement Fix
+
+Date: 2026-06-26
+
+### Target
+
+Investigate and fix a report that the secondary display did not receive any degus after enabling multi-monitor placement; with 5 pets, 3 appeared on the main display and 2 appeared to be missing.
+
+### Cause
+
+The multi-monitor overlay width was expanded, but visible-count changes still initialized new pets using the older "walk in from offscreen" behavior. On a wide multi-monitor span, newly added pets could remain outside the visible overlay for a long time, making them look missing. The placement code also did not split initialization across real monitor segments, so adjacent displays and virtual-screen gaps were not represented in the initial distribution.
+
+### Implementation
+
+- Added segment-based initial pet placement for the selected overlay range.
+- Distributed pets across selected monitor segments instead of treating the whole virtual rectangle as one undifferentiated line.
+- Kept pets out of horizontal gaps between monitors.
+- Repositioned pets after visible-count changes, display resets, display span changes, and walking-range changes.
+- Added regression tests for the reported 5-pet / 2-display case, monitor-gap avoidance, and visible-count placement inside the current scene.
+- Added a skip-safe detected-monitor test; on the current 3-display Windows environment it verified that pets are distributed across every selected monitor segment.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go`
+- `go test -buildvcs=false ./cmd/degu -run "TestPetScenePositions|TestSetPetCountPlacesAllPetsInsideCurrentScene|TestCombinedDisplayArea" -count=1`
+- `go test -buildvcs=false ./cmd/degu -run "TestTrayCountCommandsSupportEveryVisibleCount|TestPetScenePositions|TestSetPetCountPlacesAllPetsInsideCurrentScene|TestCombinedDisplayArea" -count=1`
+- `go test -buildvcs=false ./cmd/degu -run "TestResetPositionDistributesPetsAcrossDetectedMultiMonitorSpan|TestPetScenePositions|TestSetPetCountPlacesAllPetsInsideCurrentScene" -count=1`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- `git diff --check`
+
+## Iteration 34 - v0.1.11 Multi-Monitor Hotfix Release
+
+Date: 2026-06-26
+
+### Target
+
+Release the multi-monitor pet placement fix as Windows `v0.1.11` before continuing deeper inspection of walking width and range behavior.
+
+### Cause
+
+The `v0.1.10` release introduced multi-monitor span selection, but users could still see missing pets when increasing the visible pet count because the new pets could remain outside the selected overlay for too long.
+
+### Implementation
+
+- Updated the GitHub Pages Windows latest label to `v0.1.11`.
+- Added a `v0.1.11` version-history entry describing the multi-monitor placement hotfix.
+- Prepared the existing Release workflow to publish Windows x64 and x86 ZIPs from tag `v0.1.11`.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go cmd\importsheet\main.go cmd\importsheet\main_test.go`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- Built local Windows amd64 and 386 executables with `main.appVersion=v0.1.11`.
+- Verified local PE machine values: amd64 `0x8664`, 386 `0x014c`.
+- Verified local executables contain the embedded `v0.1.11` string.
+- Verified the local GitHub Pages HTML shows Windows latest `v0.1.11` and first version-history entry `v0.1.11`.
+- Rendered the local GitHub Pages history section with Playwright at desktop and mobile widths, and captured:
+  - `.codex/qa/pages-v0.1.11-history-desktop.png`
+  - `.codex/qa/pages-v0.1.11-history-mobile.png`
+- `git diff --check`
+- Pending GitHub Actions and live download verification after pushing tag `v0.1.11`.

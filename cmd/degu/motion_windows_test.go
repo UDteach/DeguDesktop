@@ -475,6 +475,114 @@ func TestCombinedDisplayAreaAppliesWalkRangeAcrossSelectedMonitors(t *testing.T)
 	}
 }
 
+func TestPetScenePositionsDistributeFivePetsAcrossTwoDisplays(t *testing.T) {
+	positions := petScenePositions(3840, 5, []sceneSegment{
+		{Left: 0, Right: 1920},
+		{Left: 1920, Right: 3840},
+	})
+	if len(positions) != 5 {
+		t.Fatalf("positions = %d, want 5", len(positions))
+	}
+	mainCount := 0
+	subCount := 0
+	for i, x := range positions {
+		switch {
+		case x >= 0 && x+spriteW <= 1920:
+			mainCount++
+		case x >= 1920 && x+spriteW <= 3840:
+			subCount++
+		default:
+			t.Fatalf("position[%d] = %d escapes monitor segments", i, x)
+		}
+	}
+	if mainCount != 3 || subCount != 2 {
+		t.Fatalf("pet distribution = main:%d sub:%d, want 3 and 2", mainCount, subCount)
+	}
+}
+
+func TestPetScenePositionsAvoidMonitorGaps(t *testing.T) {
+	positions := petScenePositions(3800, 4, []sceneSegment{
+		{Left: 0, Right: 1600},
+		{Left: 2200, Right: 3800},
+	})
+	for i, x := range positions {
+		onLeft := x >= 0 && x+spriteW <= 1600
+		onRight := x >= 2200 && x+spriteW <= 3800
+		if !onLeft && !onRight {
+			t.Fatalf("position[%d] = %d falls in the monitor gap or offscreen", i, x)
+		}
+	}
+}
+
+func TestSetPetCountPlacesAllPetsInsideCurrentScene(t *testing.T) {
+	a := &petApp{
+		sceneW:        3840,
+		speed:         3,
+		coatMode:      coatFixed,
+		laneMode:      laneAligned,
+		bidirectional: true,
+		petCount:      2,
+	}
+
+	a.setPetCount(5)
+	if len(a.pets) != 5 {
+		t.Fatalf("pets = %d, want 5", len(a.pets))
+	}
+	subCount := 0
+	for i, pet := range a.pets {
+		if pet.x < 0 || pet.x+spriteW > a.sceneW {
+			t.Fatalf("pet %d x = %d escapes scene width %d", i, pet.x, a.sceneW)
+		}
+		if pet.x >= 1920 {
+			subCount++
+		}
+	}
+	if subCount < 2 {
+		t.Fatalf("sub-display pets = %d, want at least 2 after choosing 5 pets", subCount)
+	}
+}
+
+func TestResetPositionDistributesPetsAcrossDetectedMultiMonitorSpan(t *testing.T) {
+	areas := monitorAreasByPosition()
+	if len(areas) < 2 {
+		t.Skip("multi-monitor placement check requires at least two detected displays")
+	}
+	a := &petApp{
+		speed:          3,
+		coatMode:       coatFixed,
+		laneMode:       laneAligned,
+		bidirectional:  true,
+		petCount:       5,
+		displayScope:   displayScopeSpan,
+		displayIndex:   0,
+		displaySpanEnd: len(areas) - 1,
+		positionMode:   positionTaskbarEdge,
+		walkRangeEnd:   100,
+	}
+	a.resetPosition()
+	overlay := a.overlayRect()
+	segments := a.sceneSegmentsForOverlay(overlay)
+	if len(segments) < 2 {
+		t.Fatalf("detected display span produced %d visible segments, want at least 2", len(segments))
+	}
+	seen := make([]int, len(segments))
+	for _, pet := range a.pets {
+		for i, segment := range segments {
+			if pet.x >= segment.Left && pet.x+spriteW <= segment.Right {
+				seen[i]++
+				break
+			}
+		}
+	}
+	if len(a.pets) >= len(segments) {
+		for i, count := range seen {
+			if count == 0 {
+				t.Fatalf("segment %d received no pets; distribution=%v segments=%+v", i, seen, segments)
+			}
+		}
+	}
+}
+
 func TestOverlayRectHandlesNegativeMonitorCoordinates(t *testing.T) {
 	work := winRect(-1920, 0, 0, 1040)
 	screen := winRect(-1920, 0, 0, 1080)

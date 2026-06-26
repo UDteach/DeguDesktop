@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-25
+Last updated: 2026-06-26
 
 ## Repository
 
@@ -113,7 +113,7 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 
 ## Current Release State
 
-`v0.1.10` is the next Windows release line after `v0.1.9`. It includes:
+`v0.1.10` is the latest published Windows release line. It includes:
 
 - A Windows tray menu action for temporarily hiding and restoring the pet overlay during the current session.
 - A non-persisted runtime flag and guards so keyboard, click reaction, and hover name behavior do not run while the overlay is hidden.
@@ -122,6 +122,15 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 - Walking-range percentages that apply to the selected single monitor or multi-monitor span.
 
 The Mac download links currently remain on the existing `v0.1.9` artifacts until a separate macOS release sync is built and uploaded.
+
+## Current In-Progress Diff
+
+The current local diff is being prepared as `v0.1.11` and fixes a post-`v0.1.10` Windows multi-monitor placement issue:
+
+- Changing the visible pet count now immediately places every pet inside the current scene instead of leaving new pets outside the overlay to walk in later.
+- Display reset, display span changes, and walking-range changes now redistribute pets across the selected monitor segments.
+- Multi-monitor placement avoids horizontal gaps between monitors, so pets are not initialized in invisible virtual-screen space.
+- Tests cover the reported 5-pet / 2-monitor distribution, monitor-gap avoidance, and visible-count placement inside the current scene.
 
 ## Codex Config Application
 
