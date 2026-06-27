@@ -27,7 +27,7 @@ Last updated: 2026-06-28
 ## Current Windows Features
 
 - Transparent always-on-top taskbar overlay.
-- Tray menu and Japanese/English settings window with a home overview for temporary hide/show, optional per-pet names, coat, speed, count, mode, typing wheel, single/multi-monitor display span selection, walking range, display position, update checks/installing, settings, and exit.
+- Tray menu and Japanese/English settings window with a home overview for Language switching, display scale, temporary hide/show, optional per-pet names, coat, speed, count, mode, typing wheel, single/multi-monitor display span selection, walking range, display position, update checks/installing, settings, and exit.
 - Keyboard reaction and random stroll modes.
 - Typing wheel behavior; in random stroll mode, a degu can also occasionally choose the wheel as a random action.
 - Foraging props, eating, digging, and carrying behavior.
@@ -126,6 +126,8 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 - Segment-based pet placement so visible-count changes immediately distribute pets across selected multi-monitor spans.
 - Walking-range settings that default to all selected displays when entering multi-monitor span mode.
 - Walking-range summaries that describe the selected area in screen terms such as all selected displays, display 1 only, or part of displays 1-2 while keeping left/right fine adjustment available.
+- A tray-menu Language submenu for switching between Japanese and English without opening settings.
+- A tray-menu and Motion-tab display scale setting for 75%, 100%, 125%, and 150%, with placement and click targets using the scaled pet width.
 - Updater hardening that verifies GitHub-provided asset size and optional `sha256:` digest before extraction.
 - A constrained app-helper update apply path instead of temporary PowerShell scripts or `ExecutionPolicy Bypass`.
 - Win32 resource metadata, product metadata, a Windows 10+ manifest, and app icon embedding in the Windows EXE.

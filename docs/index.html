@@ -35,7 +35,7 @@
       }
 
       main {
-        width: min(1040px, calc(100% - 32px));
+        width: min(1040px, calc(100vw - 32px));
         margin: 0 auto;
         padding: 28px 0 36px;
       }
@@ -76,6 +76,14 @@
         align-items: center;
         min-height: calc(100vh - 92px);
         padding: 34px 0;
+      }
+
+      header > *,
+      .features > *,
+      .setup-steps > *,
+      .settings-shots > *,
+      .history-item > * {
+        min-width: 0;
       }
 
       h1 {
@@ -362,6 +370,12 @@
       }
 
       @media (max-width: 760px) {
+        main {
+          width: auto;
+          margin-left: 16px;
+          margin-right: 40px;
+        }
+
         header,
         .features,
         .setup-steps,
@@ -379,6 +393,30 @@
           align-items: flex-start;
           flex-direction: column;
           padding-bottom: 12px;
+        }
+
+        .actions {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .actions .button {
+          width: 100%;
+          min-width: 0;
+          white-space: normal;
+        }
+
+        .release-meta {
+          display: grid;
+          grid-template-columns: 1fr;
+        }
+
+        .release-meta span,
+        .lead,
+        article p,
+        .english p {
+          max-width: 100%;
+          overflow-wrap: anywhere;
         }
       }
     </style>
@@ -468,6 +506,8 @@
                 <li>GitHub Releasesから取得した更新ファイルについて、サイズとSHA-256 digestが提供されている場合は展開前に検証するようにしました。</li>
                 <li>一時PowerShellスクリプトによる更新適用をやめ、DeguDesktop本体の制限付きヘルパーモードで置き換える方式にしました。</li>
                 <li>Windows ZIPにSECURITY.txtを同梱し、ReleaseにはSHA256SUMS.txtを公開できるようにしました。</li>
+                <li>タスクトレイの右クリックメニューに Language を追加し、日本語/Englishをすぐ切り替えられるようにしました。</li>
+                <li>デグーの拡大率を75%/100%/125%/150%から選べるようにし、歩行範囲とクリック判定も同じ倍率に合わせました。</li>
               </ul>
             </div>
           </article>
@@ -611,7 +651,7 @@
         </article>
         <article>
           <h2>設定画面</h2>
-          <p>毛色、1匹ごとの色、名前、速度、入力モード、回し車、1画面/複数モニタの表示範囲、表示位置、個体の高さを調整できます。Windows版では言語やアップデート確認も扱えます。</p>
+          <p>毛色、1匹ごとの色、名前、速度、入力モード、回し車、拡大率、1画面/複数モニタの表示範囲、表示位置、個体の高さを調整できます。Windows版では言語やアップデート確認も扱えます。</p>
         </article>
         <article>
           <h2>自然な動き</h2>
@@ -647,7 +687,7 @@
         <div class="section-heading">
           <h2>設定方法</h2>
           <p>
-            Windows版はタスクトレイのデグーアイコンから設定を開きます。表示数、色、名前、動き、回し車、1画面/複数モニタの表示範囲、画面単位の歩く範囲、更新確認をまとめて変更できます。
+            Windows版はタスクトレイのデグーアイコンから設定を開きます。表示数、色、名前、動き、回し車、拡大率、1画面/複数モニタの表示範囲、画面単位の歩く範囲、更新確認をまとめて変更できます。
           </p>
         </div>
 
@@ -670,7 +710,7 @@
           <article class="setup-step">
             <span class="step-number">4</span>
             <h3>表示を調整</h3>
-            <p>表示タブで1画面/複数モニタの表示範囲、範囲の移動、タスクバー基準/画面下、上下オフセット、歩く画面、左端/右端の詳細調整を変更します。</p>
+            <p>Motionタブで拡大率を選び、表示タブで1画面/複数モニタの表示範囲、範囲の移動、タスクバー基準/画面下、上下オフセット、歩く画面、左端/右端の詳細調整を変更します。</p>
           </article>
         </div>
 
@@ -696,7 +736,7 @@
           Degu Desktop is a small desktop pet app for Windows and macOS. Pixel-art degus walk above the Windows taskbar
           or along the bottom edge above the Mac Dock and react to typing and clicks. The Windows build also supports
           foraging, eating, digging, grooming, smooth turns, wheel running while you type or occasionally during random stroll, tray count shortcuts from 1 to 10,
-          and settings for taskbar position and pet-height alignment. Download the Windows x64 or x86
+          and settings for taskbar position, display scale, and pet-height alignment. Download the Windows x64 or x86
           ZIP from this page, or choose the macOS Apple Silicon, Intel, or Big Sur compatibility ZIP.
         </p>
         <p>

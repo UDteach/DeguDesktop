@@ -35,52 +35,56 @@ import (
 )
 
 const (
-	appName                     = "Degu Desktop"
-	windowClass                 = "DeguDesktopPetWindow"
-	wmTray                      = win.WM_APP + 1
-	wmTyping                    = win.WM_APP + 2
-	wmMouseClick                = win.WM_APP + 3
-	wmUpdateReady               = win.WM_APP + 4
-	wmUpdateFailed              = win.WM_APP + 5
-	wmUpdateInstallReady        = win.WM_APP + 6
-	timerID                     = 42
-	timerInterval               = 55
-	frameW                      = 96
-	frameH                      = 64
-	frameCount                  = 62
-	motionSets                  = 10
-	scale                       = 1
-	spriteW                     = frameW * scale
-	spriteH                     = frameH * scale
-	forageW                     = 32
-	forageH                     = 24
-	sceneH                      = 92
-	wheelSize                   = 72
-	maxPetCount                 = 10
-	maxForage                   = 5
-	defaultOverlayOffsetY       = 10
-	minOverlayOffsetY           = -48
-	maxOverlayOffsetY           = 96
-	overlayOffsetStep           = 4
-	defaultWalkRangeStart       = 0
-	defaultWalkRangeEnd         = 100
-	minWalkRangeSpan            = 25
-	walkRangeStep               = 5
-	randomWheelChance           = 14
-	randomWheelMinTicks         = 120
-	randomWheelExtraTicks       = 120
-	wheelKeyHold                = 18
-	turnTicks                   = 16
-	reactionTicks               = 54
-	settingsClientW       int32 = 760
-	settingsClientH       int32 = 620
-	settingsDirName             = "DeguDesktop"
-	settingsFileName            = "settings.json"
-	defaultUpdateAPIURL         = "https://api.github.com/repos/UDteach/DeguDesktop/releases/latest"
-	updaterApplyArg             = "--degudesktop-apply-update"
-	updaterCleanupArg           = "--degudesktop-cleanup"
-	updateTempPrefix            = "degu-desktop-update-"
-	monitorPrimaryFlag          = 1
+	appName                      = "Degu Desktop"
+	windowClass                  = "DeguDesktopPetWindow"
+	wmTray                       = win.WM_APP + 1
+	wmTyping                     = win.WM_APP + 2
+	wmMouseClick                 = win.WM_APP + 3
+	wmUpdateReady                = win.WM_APP + 4
+	wmUpdateFailed               = win.WM_APP + 5
+	wmUpdateInstallReady         = win.WM_APP + 6
+	timerID                      = 42
+	timerInterval                = 55
+	frameW                       = 96
+	frameH                       = 64
+	frameCount                   = 62
+	motionSets                   = 10
+	scale                        = 1
+	spriteW                      = frameW * scale
+	spriteH                      = frameH * scale
+	forageW                      = 32
+	forageH                      = 24
+	sceneH                       = 128
+	wheelSize                    = 72
+	maxPetCount                  = 10
+	maxForage                    = 5
+	defaultPetScalePercent       = 100
+	minPetScalePercent           = 75
+	maxPetScalePercent           = 150
+	petScaleStepPercent          = 25
+	defaultOverlayOffsetY        = 10
+	minOverlayOffsetY            = -48
+	maxOverlayOffsetY            = 96
+	overlayOffsetStep            = 4
+	defaultWalkRangeStart        = 0
+	defaultWalkRangeEnd          = 100
+	minWalkRangeSpan             = 25
+	walkRangeStep                = 5
+	randomWheelChance            = 14
+	randomWheelMinTicks          = 120
+	randomWheelExtraTicks        = 120
+	wheelKeyHold                 = 18
+	turnTicks                    = 16
+	reactionTicks                = 54
+	settingsClientW        int32 = 760
+	settingsClientH        int32 = 620
+	settingsDirName              = "DeguDesktop"
+	settingsFileName             = "settings.json"
+	defaultUpdateAPIURL          = "https://api.github.com/repos/UDteach/DeguDesktop/releases/latest"
+	updaterApplyArg              = "--degudesktop-apply-update"
+	updaterCleanupArg            = "--degudesktop-cleanup"
+	updateTempPrefix             = "degu-desktop-update-"
+	monitorPrimaryFlag           = 1
 )
 
 const (
@@ -142,6 +146,9 @@ const (
 	menuToggleHidden  uint16 = 141
 	menuCheckUpdate   uint16 = 150
 	menuInstallUpdate uint16 = 151
+	menuLangJapanese  uint16 = 160
+	menuLangEnglish   uint16 = 161
+	menuScaleBase     uint16 = 170
 	menuVariantBase   uint16 = 200
 )
 
@@ -199,6 +206,10 @@ const (
 	ctrlDisplaySpan      int32 = 1135
 	ctrlDisplaySpanLess  int32 = 1136
 	ctrlDisplaySpanMore  int32 = 1137
+	ctrlScale75          int32 = 1138
+	ctrlScale100         int32 = 1139
+	ctrlScale125         int32 = 1140
+	ctrlScale150         int32 = 1141
 )
 
 var appVersion = "dev"
@@ -393,6 +404,7 @@ type petApp struct {
 	displaySpanEnd     int
 	walkRangeStart     int
 	walkRangeEnd       int
+	petScale           int
 	settingsHwnd       win.HWND
 	settingsTab        settingsTab
 	lang               language
@@ -439,6 +451,7 @@ type appSettings struct {
 	DisplaySpanEnd *int     `json:"displaySpanEnd,omitempty"`
 	WalkRangeStart *int     `json:"walkRangeStart,omitempty"`
 	WalkRangeEnd   *int     `json:"walkRangeEnd,omitempty"`
+	PetScale       *int     `json:"petScale,omitempty"`
 	Language       int      `json:"language"`
 	SettingsX      int32    `json:"settingsX"`
 	SettingsY      int32    `json:"settingsY"`
@@ -511,6 +524,7 @@ func main() {
 		displaySpanEnd: 0,
 		walkRangeStart: defaultWalkRangeStart,
 		walkRangeEnd:   defaultWalkRangeEnd,
+		petScale:       defaultPetScalePercent,
 		settingsTab:    tabHome,
 		lang:           langJapanese,
 		settingsX:      120,
@@ -707,6 +721,11 @@ func (a *petApp) loadSettings() error {
 		}
 		a.walkRangeStart, a.walkRangeEnd = normalizeWalkRange(start, end)
 	}
+	if settings.PetScale != nil {
+		a.petScale = normalizePetScalePercent(*settings.PetScale)
+	} else {
+		a.petScale = normalizePetScalePercent(a.petScale)
+	}
 	a.nameLabels = settings.NameLabels
 	a.lang = normalizeLanguage(settings.Language)
 	if settings.SettingsX != 0 || settings.SettingsY != 0 {
@@ -737,6 +756,7 @@ func (a *petApp) saveSettings() error {
 	displayScope, displayIndex, displaySpanEnd := a.normalizedDisplaySelection(len(displayAreaForScope(a.displayScope)))
 	displayScopeValue := int(displayScope)
 	walkStart, walkEnd := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
+	petScale := a.petScalePercent()
 	settings := appSettings{
 		Version:        1,
 		Variant:        clamp(a.variant, 0, len(variants)-1),
@@ -755,6 +775,7 @@ func (a *petApp) saveSettings() error {
 		DisplaySpanEnd: &displaySpanEnd,
 		WalkRangeStart: &walkStart,
 		WalkRangeEnd:   &walkEnd,
+		PetScale:       &petScale,
 		Language:       int(normalizeLanguage(int(a.lang))),
 		SettingsX:      a.settingsX,
 		SettingsY:      a.settingsY,
@@ -827,6 +848,59 @@ func normalizeSpeed(speed int) int {
 		return speed
 	default:
 		return 3
+	}
+}
+
+func normalizePetScalePercent(percent int) int {
+	if percent <= 0 {
+		return defaultPetScalePercent
+	}
+	percent = clamp(percent, minPetScalePercent, maxPetScalePercent)
+	return clamp(((percent+petScaleStepPercent/2)/petScaleStepPercent)*petScaleStepPercent, minPetScalePercent, maxPetScalePercent)
+}
+
+func petSpriteSizeForScale(percent int) (int, int) {
+	percent = normalizePetScalePercent(percent)
+	return max(1, frameW*percent/100), max(1, frameH*percent/100)
+}
+
+func (a *petApp) petScalePercent() int {
+	return normalizePetScalePercent(a.petScale)
+}
+
+func (a *petApp) petSpriteSize() (int, int) {
+	return petSpriteSizeForScale(a.petScalePercent())
+}
+
+func (a *petApp) petSpriteW() int {
+	w, _ := a.petSpriteSize()
+	return w
+}
+
+func (a *petApp) petSpriteH() int {
+	_, h := a.petSpriteSize()
+	return h
+}
+
+func (a *petApp) scaleOffset(px int) int {
+	return max(1, px*a.petScalePercent()/100)
+}
+
+func (a *petApp) setPetScale(percent int) {
+	oldW := a.petSpriteW()
+	a.petScale = normalizePetScalePercent(percent)
+	newW := a.petSpriteW()
+	if oldW != newW {
+		for i := range a.pets {
+			a.pets[i].x += (oldW - newW) / 2
+		}
+	}
+	if a.hwnd != 0 {
+		a.syncScene(a.overlayRect())
+	}
+	a.clampPetsToScene()
+	if a.hwnd != 0 && len(a.frames) > 0 {
+		a.render()
 	}
 }
 
@@ -990,7 +1064,7 @@ func (a *petApp) tickPet(index int, p *deguPet) {
 	case stateWalk, stateScurry, stateHop, stateForage, stateCarry:
 		speed = p.moveSpeed
 	case stateWheel:
-		p.x = clamp(a.wheelX-wheelSize/2, 0, max(0, a.sceneW-spriteW))
+		p.x = clamp(a.wheelX-wheelSize/2, 0, max(0, a.sceneW-a.petSpriteW()))
 	}
 
 	if speed > 0 {
@@ -1003,7 +1077,7 @@ func (a *petApp) tickPet(index int, p *deguPet) {
 	p.stateTicks--
 	if p.x > a.sceneW+8 {
 		a.resetPetAtEdge(index, p, 1)
-	} else if p.x < -spriteW-8 {
+	} else if p.x < -a.petSpriteW()-8 {
 		a.resetPetAtEdge(index, p, -1)
 	}
 	p.frame++
@@ -1083,6 +1157,7 @@ func (a *petApp) render() {
 
 	a.drawForageItems(canvas)
 
+	petW, petH := a.petSpriteSize()
 	for i := range a.pets {
 		p := &a.pets[i]
 		if p.state == stateWheel {
@@ -1090,20 +1165,20 @@ func (a *petApp) render() {
 		}
 		frame := currentFrame(p.state, p.frame)
 		src := a.frames[variants[a.petVariant(p)].ID][p.motionSet][frame]
-		y := sceneH - spriteH - p.laneOffset
-		drawPetSprite(canvas, src, p, p.x, y)
+		y := sceneH - petH - p.laneOffset
+		drawPetSprite(canvas, src, p, p.x, y, petW, petH)
 		if p.state == stateCarry && p.carryKind != noItem {
-			propX := p.x + spriteW - 18
+			propX := p.x + petW - a.scaleOffset(18)
 			if p.dir < 0 {
-				propX = p.x + 18
+				propX = p.x + a.scaleOffset(18)
 			}
-			a.drawForageProp(canvas, propX, y+35, p.carryKind)
+			a.drawForageProp(canvas, propX, y+a.scaleOffset(35), p.carryKind)
 		} else if (p.state == stateEat || p.state == stateDig) && p.carryKind != noItem {
-			propX := p.x + spriteW - 20
+			propX := p.x + petW - a.scaleOffset(20)
 			if p.dir < 0 {
-				propX = p.x + 20
+				propX = p.x + a.scaleOffset(20)
 			}
-			a.drawForageProp(canvas, propX, y+44, p.carryKind)
+			a.drawForageProp(canvas, propX, y+a.scaleOffset(44), p.carryKind)
 		}
 	}
 
@@ -1237,19 +1312,23 @@ func (a *petApp) petAtScenePoint(sceneX, sceneY int) int {
 		return -1
 	}
 	for i := len(a.pets) - 1; i >= 0; i-- {
-		if scenePointInPet(a.pets[i], sceneX, sceneY) {
+		if a.scenePointInPet(a.pets[i], sceneX, sceneY) {
 			return i
 		}
 	}
 	return -1
 }
 
-func scenePointInPet(p deguPet, sceneX, sceneY int) bool {
+func (a *petApp) scenePointInPet(p deguPet, sceneX, sceneY int) bool {
 	if p.state == stateWheel {
 		return false
 	}
-	y := sceneH - spriteH - p.laneOffset
-	return sceneX >= p.x+6 && sceneX <= p.x+spriteW-6 && sceneY >= y+8 && sceneY <= y+spriteH-4
+	petW, petH := a.petSpriteSize()
+	insetX := a.scaleOffset(6)
+	topInset := a.scaleOffset(8)
+	bottomInset := a.scaleOffset(4)
+	y := sceneH - petH - p.laneOffset
+	return sceneX >= p.x+insetX && sceneX <= p.x+petW-insetX && sceneY >= y+topInset && sceneY <= y+petH-bottomInset
 }
 
 func (a *petApp) updateHoverName() {
@@ -1299,8 +1378,9 @@ func (a *petApp) showNameWindow(index int) {
 	runes := []rune(name)
 	w := clamp(34+len(runes)*12, 72, 220)
 	h := 30
-	baseY := sceneH - spriteH - p.laneOffset
-	x := int(overlay.Left) + p.x + spriteW/2 - w/2
+	petW, petH := a.petSpriteSize()
+	baseY := sceneH - petH - p.laneOffset
+	x := int(overlay.Left) + p.x + petW/2 - w/2
 	y := int(overlay.Top) + baseY - h - 8
 	x = clamp(x, int(overlay.Left), int(overlay.Right)-w)
 	y = clamp(y, int(screen.Top), int(screen.Bottom)-h)
@@ -1443,13 +1523,14 @@ func (a *petApp) applyWalkRange(base win.RECT) win.RECT {
 	start, end := normalizeWalkRange(a.walkRangeStart, a.walkRangeEnd)
 	left := int(base.Left) + width*start/100
 	right := int(base.Left) + width*end/100
-	if right-left < spriteW {
+	petW := a.petSpriteW()
+	if right-left < petW {
 		mid := (left + right) / 2
-		left = mid - spriteW/2
-		right = left + spriteW
+		left = mid - petW/2
+		right = left + petW
 	}
-	left = clamp(left, int(base.Left), max(int(base.Left), int(base.Right)-spriteW))
-	right = clamp(right, left+spriteW, int(base.Right))
+	left = clamp(left, int(base.Left), max(int(base.Left), int(base.Right)-petW))
+	right = clamp(right, left+petW, int(base.Right))
 	base.Left = int32(left)
 	base.Right = int32(right)
 	return base
@@ -1489,7 +1570,7 @@ func (a *petApp) shiftWalkRange(delta int) {
 }
 
 func (a *petApp) clampPetsToScene() {
-	limit := max(0, a.sceneW-spriteW)
+	limit := max(0, a.sceneW-a.petSpriteW())
 	for i := range a.pets {
 		a.pets[i].x = clamp(a.pets[i].x, 0, limit)
 	}
@@ -1646,7 +1727,7 @@ func (a *petApp) arrangePetsForOverlay(overlay win.RECT) {
 }
 
 func (a *petApp) arrangePetsInSegments(segments []sceneSegment) {
-	positions := petScenePositions(a.sceneW, len(a.pets), segments)
+	positions := petScenePositions(a.sceneW, len(a.pets), a.petSpriteW(), segments)
 	for i, x := range positions {
 		p := &a.pets[i]
 		p.x = x
@@ -1682,7 +1763,7 @@ func (a *petApp) sceneSegmentsForOverlay(overlay win.RECT) []sceneSegment {
 		}
 		left := max(int(base.Left), int(overlay.Left))
 		right := min(int(base.Right), int(overlay.Right))
-		if right-left >= spriteW {
+		if right-left >= a.petSpriteW() {
 			segments = append(segments, sceneSegment{
 				Left:  left - int(overlay.Left),
 				Right: right - int(overlay.Left),
@@ -1718,11 +1799,12 @@ func mergeSceneSegments(segments []sceneSegment) []sceneSegment {
 	return merged
 }
 
-func petScenePositions(sceneW, count int, segments []sceneSegment) []int {
+func petScenePositions(sceneW, count, petW int, segments []sceneSegment) []int {
 	if count <= 0 || sceneW <= 0 {
 		return nil
 	}
-	segments = normalizeSceneSegments(sceneW, segments)
+	petW = max(1, petW)
+	segments = normalizeSceneSegments(sceneW, petW, segments)
 	if len(segments) == 0 {
 		segments = []sceneSegment{{Left: 0, Right: sceneW}}
 	}
@@ -1734,7 +1816,7 @@ func petScenePositions(sceneW, count int, segments []sceneSegment) []int {
 			continue
 		}
 		leftLimit := segment.Left
-		rightLimit := segment.Right - spriteW
+		rightLimit := segment.Right - petW
 		if rightLimit < leftLimit {
 			rightLimit = leftLimit
 		}
@@ -1750,21 +1832,22 @@ func petScenePositions(sceneW, count int, segments []sceneSegment) []int {
 			if n > 1 {
 				x = left + (right-left)*j/(n-1)
 			}
-			positions = append(positions, clamp(x, 0, max(0, sceneW-spriteW)))
+			positions = append(positions, clamp(x, 0, max(0, sceneW-petW)))
 		}
 	}
 	for len(positions) < count {
-		positions = append(positions, clamp(sceneW/2-spriteW/2, 0, max(0, sceneW-spriteW)))
+		positions = append(positions, clamp(sceneW/2-petW/2, 0, max(0, sceneW-petW)))
 	}
 	return positions[:count]
 }
 
-func normalizeSceneSegments(sceneW int, segments []sceneSegment) []sceneSegment {
+func normalizeSceneSegments(sceneW, petW int, segments []sceneSegment) []sceneSegment {
+	petW = max(1, petW)
 	out := make([]sceneSegment, 0, len(segments))
 	for _, segment := range segments {
 		left := clamp(segment.Left, 0, sceneW)
 		right := clamp(segment.Right, 0, sceneW)
-		if right-left >= spriteW || (sceneW < spriteW && right > left) {
+		if right-left >= petW || (sceneW < petW && right > left) {
 			out = append(out, sceneSegment{Left: left, Right: right})
 		}
 	}
@@ -1867,12 +1950,13 @@ func (a *petApp) petVariant(p *deguPet) int {
 }
 
 func (a *petApp) newPet(index int) deguPet {
-	spread := max(spriteW+24, a.sceneW/max(1, a.petCount+1))
+	petW := a.petSpriteW()
+	spread := max(petW+24, a.sceneW/max(1, a.petCount+1))
 	dir := 1
 	if a.bidirectional && index%2 == 1 {
 		dir = -1
 	}
-	x := -spriteW - index*spread - rand.Intn(80)
+	x := -petW - index*spread - rand.Intn(80)
 	if dir < 0 {
 		x = a.sceneW + index*spread + rand.Intn(80)
 	}
@@ -1890,7 +1974,7 @@ func (a *petApp) newPet(index int) deguPet {
 		nextDir:    dir,
 	}
 	if index == 0 {
-		p.x = rand.Intn(max(1, a.sceneW-spriteW))
+		p.x = rand.Intn(max(1, a.sceneW-petW))
 	}
 	a.chooseRandomAction(&p)
 	return p
@@ -1905,7 +1989,7 @@ func (a *petApp) resetPetAtEdge(index int, p *deguPet, dir int) {
 	if dir < 0 {
 		p.x = a.sceneW + rand.Intn(120)
 	} else {
-		p.x = -spriteW - rand.Intn(120)
+		p.x = -a.petSpriteW() - rand.Intn(120)
 	}
 	p.frame = 0
 	p.motionSet = rand.Intn(motionSets)
@@ -2000,16 +2084,17 @@ func (a *petApp) maybeAssignForageTarget(p *deguPet) bool {
 		return false
 	}
 	best := noItem
-	bestDistance := a.sceneW + spriteW
+	petW := a.petSpriteW()
+	bestDistance := a.sceneW + petW
 	dir := normalizeDir(p.dir)
 	for i, item := range a.forage {
 		if !item.active || item.owner != noItem {
 			continue
 		}
-		mouthX := p.x + spriteW - 22
+		mouthX := p.x + petW - a.scaleOffset(22)
 		distance := item.x - mouthX
 		if dir < 0 {
-			mouthX = p.x + 22
+			mouthX = p.x + a.scaleOffset(22)
 			distance = mouthX - item.x
 		}
 		if distance < 12 || distance > bestDistance {
@@ -2045,18 +2130,19 @@ func (a *petApp) maybeStartGnawing(index int, p *deguPet) {
 		a.chooseRandomAction(p)
 		return
 	}
-	mouthX := p.x + spriteW - 22
+	petW := a.petSpriteW()
+	mouthX := p.x + petW - a.scaleOffset(22)
 	if p.dir < 0 {
-		mouthX = p.x + 22
+		mouthX = p.x + a.scaleOffset(22)
 		if mouthX > item.x {
 			return
 		}
-		p.x = clamp(item.x-22, 0, max(0, a.sceneW-spriteW))
+		p.x = clamp(item.x-a.scaleOffset(22), 0, max(0, a.sceneW-petW))
 	} else {
 		if mouthX < item.x {
 			return
 		}
-		p.x = clamp(item.x-spriteW+22, 0, max(0, a.sceneW-spriteW))
+		p.x = clamp(item.x-petW+a.scaleOffset(22), 0, max(0, a.sceneW-petW))
 	}
 	p.state = stateNibble
 	p.frame = 0
@@ -2162,9 +2248,10 @@ func (a *petApp) maybeStartSocial() {
 				}
 				return
 			}
+			petW := a.petSpriteW()
 			anchor := min(pi.x, pj.x)
-			pi.x = clamp(anchor, 0, max(0, a.sceneW-spriteW-36))
-			pj.x = clamp(pi.x+34+rand.Intn(14), 0, max(0, a.sceneW-spriteW))
+			pi.x = clamp(anchor, 0, max(0, a.sceneW-petW-a.scaleOffset(36)))
+			pj.x = clamp(pi.x+a.scaleOffset(34)+rand.Intn(max(1, a.scaleOffset(14))), 0, max(0, a.sceneW-petW))
 			pj.laneOffset = pi.laneOffset
 			ticks := 44 + rand.Intn(70)
 			pi.state = stateGroom
@@ -2212,8 +2299,9 @@ func (a *petApp) drawReactions(dst *image.RGBA) {
 		if p.state == stateWheel {
 			continue
 		}
-		baseY := sceneH - spriteH - p.laneOffset
-		x := clamp(p.x+spriteW/2-18, 2, max(2, a.sceneW-42))
+		petW, petH := a.petSpriteSize()
+		baseY := sceneH - petH - p.laneOffset
+		x := clamp(p.x+petW/2-18, 2, max(2, a.sceneW-42))
 		y := clamp(baseY-26-(reactionTicks-reaction.ticks)/8, 0, sceneH-32)
 		drawReactionBubble(dst, x, y, reaction.kind, reaction.ticks)
 	}
@@ -2292,6 +2380,11 @@ func (a *petApp) createSettingsWindow() {
 
 		a.createButton(hwnd, ctrlTypingWheel, a.txt("typingWheel"), 250, 378, 210, 32, win.WS_GROUP)
 		a.createButton(hwnd, ctrlBidirectional, a.txt("naturalTurns"), 478, 378, 210, 32, 0)
+
+		a.createButton(hwnd, ctrlScale75, "75%", 250, 486, 96, 30, win.WS_GROUP)
+		a.createButton(hwnd, ctrlScale100, "100%", 358, 486, 96, 30, 0)
+		a.createButton(hwnd, ctrlScale125, "125%", 466, 486, 96, 30, 0)
+		a.createButton(hwnd, ctrlScale150, "150%", 574, 486, 96, 30, 0)
 	} else if a.settingsTab == tabDisplay {
 		a.createButton(hwnd, ctrlDisplaySingle, a.settingsButtonLabel(ctrlDisplaySingle), 250, 154, 82, 30, win.WS_GROUP)
 		a.createButton(hwnd, ctrlDisplaySpan, a.settingsButtonLabel(ctrlDisplaySpan), 340, 154, 96, 30, 0)
@@ -2393,6 +2486,7 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 150, Right: 708, Bottom: 208}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 256, Right: 708, Bottom: 314}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 364, Right: 708, Bottom: 424}, rgb(238, 242, 237), 14)
+		drawRoundFill(hdc, win.RECT{Left: 238, Top: 470, Right: 708, Bottom: 532}, rgb(238, 242, 237), 14)
 	} else if a.settingsTab == tabDisplay {
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 118, Right: 708, Bottom: 214}, rgb(238, 242, 237), 14)
 		drawRoundFill(hdc, win.RECT{Left: 238, Top: 214, Right: 708, Bottom: 372}, rgb(238, 242, 237), 14)
@@ -2453,6 +2547,8 @@ func (a *petApp) paintSettingsWindow(hwnd win.HWND) {
 		drawTextLine(hdc, a.txt("mode"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("speed"), win.RECT{Left: 246, Top: 232, Right: 400, Bottom: 256}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.txt("motion"), win.RECT{Left: 246, Top: 340, Right: 400, Bottom: 364}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.txt("scale"), win.RECT{Left: 246, Top: 446, Right: 400, Bottom: 470}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
+		drawTextLine(hdc, a.scaleSummary(), win.RECT{Left: 540, Top: 446, Right: 688, Bottom: 470}, a.settingsSmallFont, rgb(91, 104, 96), win.DT_RIGHT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 	} else if a.settingsTab == tabDisplay {
 		drawTextLine(hdc, a.localText("表示する範囲", "Display scope"), win.RECT{Left: 246, Top: 126, Right: 400, Bottom: 150}, a.settingsSmallFont, labelColor, win.DT_LEFT|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX)
 		drawTextLine(hdc, a.displaySummary(), win.RECT{Left: 250, Top: 186, Right: 688, Bottom: 208}, a.settingsFont, rgb(27, 36, 32), win.DT_CENTER|win.DT_VCENTER|win.DT_SINGLELINE|win.DT_NOPREFIX|win.DT_END_ELLIPSIS)
@@ -2795,6 +2891,14 @@ func (a *petApp) settingsButtonLabel(id int32) string {
 		return a.localText("短く", "Less")
 	case ctrlDisplaySpanMore:
 		return a.localText("広く", "More")
+	case ctrlScale75:
+		return "75%"
+	case ctrlScale100:
+		return "100%"
+	case ctrlScale125:
+		return "125%"
+	case ctrlScale150:
+		return "150%"
 	case ctrlRangeFull:
 		if normalizeDisplayScope(int(a.displayScope)) == displayScopeSpan {
 			return a.localText("全画面", "All")
@@ -2881,6 +2985,8 @@ func (a *petApp) settingsTooltipText(id int32) string {
 		return a.localText("キーボード入力中だけ、デグーが回し車で走ります。", "While you type, a degu runs in the wheel.")
 	case ctrlBidirectional:
 		return a.localText("左右どちらにも歩きます。オフにすると右向き中心になります。", "Allow walking both left and right. Turn off for mostly right-facing movement.")
+	case ctrlScale75, ctrlScale100, ctrlScale125, ctrlScale150:
+		return a.localText("デグーの表示倍率を変えます。歩行範囲とクリック判定も同じ倍率に合わせます。", "Change the degu display size. Walking bounds and click targets use the same scale.")
 	case ctrlPositionTaskbar:
 		return a.localText("Windowsの作業領域を基準にします。通常はタスクバーのすぐ上です。", "Use the Windows work area, normally just above the taskbar.")
 	case ctrlPositionBottom:
@@ -2979,6 +3085,14 @@ func (a *petApp) settingsButtonSelected(id int32) bool {
 		return a.wheelEnabled
 	case ctrlBidirectional:
 		return a.bidirectional
+	case ctrlScale75:
+		return a.petScalePercent() == 75
+	case ctrlScale100:
+		return a.petScalePercent() == 100
+	case ctrlScale125:
+		return a.petScalePercent() == 125
+	case ctrlScale150:
+		return a.petScalePercent() == 150
 	case ctrlPositionTaskbar:
 		return normalizeOverlayPositionMode(int(a.positionMode)) == positionTaskbarEdge
 	case ctrlPositionBottom:
@@ -3015,6 +3129,7 @@ func (a *petApp) settingsButtonBackplate(id int32) settingsRGB {
 		ctrlModeKeyboard, ctrlModeRandom,
 		ctrlSpeedSlow, ctrlSpeedNormal, ctrlSpeedFast,
 		ctrlTypingWheel, ctrlBidirectional,
+		ctrlScale75, ctrlScale100, ctrlScale125, ctrlScale150,
 		ctrlPositionTaskbar, ctrlPositionBottom, ctrlOffsetUp, ctrlOffsetDown,
 		ctrlDisplaySingle, ctrlDisplaySpan, ctrlDisplaySpanLess, ctrlDisplaySpanMore,
 		ctrlLaneStaggered, ctrlLaneAligned,
@@ -3187,7 +3302,7 @@ func (a *petApp) homeMotionDetail() string {
 	if a.bidirectional {
 		turns = a.localText("左右ターン自然", "Natural left/right turns")
 	}
-	return fmt.Sprintf("%s / %s", wheel, turns)
+	return fmt.Sprintf("%s / %s / %s", wheel, turns, a.scaleSummary())
 }
 
 func (a *petApp) homeDisplayDetail() string {
@@ -3242,6 +3357,10 @@ func (a *petApp) walkRangeSummary() string {
 	return fmt.Sprintf("%d%% - %d%%", start, end)
 }
 
+func (a *petApp) scaleSummary() string {
+	return fmt.Sprintf("%d%%", a.petScalePercent())
+}
+
 func (a *petApp) walkRangeSectionLabel() string {
 	if normalizeDisplayScope(int(a.displayScope)) == displayScopeSpan {
 		return a.localText("歩く画面", "Walking displays")
@@ -3268,6 +3387,7 @@ func (a *petApp) displaySegmentsForSummary() []sceneSegment {
 		return nil
 	}
 	segments := make([]sceneSegment, 0, len(selected))
+	petW := a.petSpriteW()
 	for _, area := range selected {
 		segmentBase := area.Work
 		if normalizeOverlayPositionMode(int(a.positionMode)) == positionScreenBottom {
@@ -3275,7 +3395,7 @@ func (a *petApp) displaySegmentsForSummary() []sceneSegment {
 		}
 		left := max(int(segmentBase.Left), int(base.Left))
 		right := min(int(segmentBase.Right), int(base.Right))
-		if right-left >= spriteW {
+		if right-left >= petW {
 			segments = append(segments, sceneSegment{
 				Left:  left - int(base.Left),
 				Right: right - int(base.Left),
@@ -3287,7 +3407,7 @@ func (a *petApp) displaySegmentsForSummary() []sceneSegment {
 
 func (a *petApp) walkRangeSummaryForSegments(start, end int, segments []sceneSegment) string {
 	start, end = normalizeWalkRange(start, end)
-	segments = normalizeSceneSegments(segmentSpanWidth(segments), segments)
+	segments = normalizeSceneSegments(segmentSpanWidth(segments), a.petSpriteW(), segments)
 	if len(segments) == 0 {
 		return ""
 	}
@@ -3730,6 +3850,10 @@ func (a *petApp) syncSettingsWindow() {
 	a.setButtonChecked(ctrlSpeedFast, a.speed == 5)
 	a.setButtonChecked(ctrlTypingWheel, a.wheelEnabled)
 	a.setButtonChecked(ctrlBidirectional, a.bidirectional)
+	a.setButtonChecked(ctrlScale75, a.petScalePercent() == 75)
+	a.setButtonChecked(ctrlScale100, a.petScalePercent() == 100)
+	a.setButtonChecked(ctrlScale125, a.petScalePercent() == 125)
+	a.setButtonChecked(ctrlScale150, a.petScalePercent() == 150)
 	a.setButtonChecked(ctrlPositionTaskbar, a.positionMode == positionTaskbarEdge)
 	a.setButtonChecked(ctrlPositionBottom, a.positionMode == positionScreenBottom)
 	a.setButtonChecked(ctrlDisplaySingle, a.displayScope == displayScopeSingle)
@@ -3955,6 +4079,14 @@ func (a *petApp) handleSettingsCommand(id int32, notify uint16) bool {
 		a.handleMenu(menuWheelToggle)
 	case ctrlBidirectional:
 		a.setBidirectional(!a.bidirectional)
+	case ctrlScale75:
+		a.setPetScale(75)
+	case ctrlScale100:
+		a.setPetScale(100)
+	case ctrlScale125:
+		a.setPetScale(125)
+	case ctrlScale150:
+		a.setPetScale(150)
 	case ctrlPositionTaskbar:
 		a.positionMode = positionTaskbarEdge
 	case ctrlPositionBottom:
@@ -4271,6 +4403,8 @@ func (a *petApp) txt(key string) string {
 			return "Random gives each degu its own coat. Pied coats have natural irregular patches."
 		case "language":
 			return "Language"
+		case "scale":
+			return "Scale"
 		case "mode":
 			return "Mode"
 		case "modeKeyboard":
@@ -4355,7 +4489,9 @@ func (a *petApp) txt(key string) string {
 	case "coatNote":
 		return "「ランダム」では、1匹ごとに異なる毛色で現れます。パイドは自然なぶち模様です。"
 	case "language":
-		return "表示言語"
+		return "Language"
+	case "scale":
+		return "拡大率"
 	case "mode":
 		return "モード"
 	case "modeKeyboard":
@@ -4405,12 +4541,12 @@ func (a *petApp) drawForageProp(dst *image.RGBA, x, y, kind int) {
 	fillCircle(dst, x, y-2, 3, rgba(170, 150, 94, 220))
 }
 
-func drawPetSprite(dst *image.RGBA, src *image.RGBA, p *deguPet, x, y int) {
+func drawPetSprite(dst *image.RGBA, src *image.RGBA, p *deguPet, x, y, w, h int) {
 	dir := normalizeDir(p.dir)
 	if p.state == stateTurn {
 		dir = turnDrawDirection(p.dir, p.nextDir)
 	}
-	drawFacingImage(dst, src, image.Rect(x, y, x+spriteW, y+spriteH), dir)
+	drawFacingImage(dst, src, image.Rect(x, y, x+w, y+h), dir)
 }
 
 func turnDrawDirection(dir, nextDir int) int {
@@ -4475,7 +4611,7 @@ func (a *petApp) enterWheel(p *deguPet, ticks int) {
 	p.carryKind = noItem
 	p.moveSpeed = 0
 	p.stateTicks = max(1, ticks)
-	p.x = clamp(a.wheelX-wheelSize/2, 0, max(0, a.sceneW-spriteW))
+	p.x = clamp(a.wheelX-wheelSize/2, 0, max(0, a.sceneW-a.petSpriteW()))
 }
 
 func (a *petApp) leaveWheel(p *deguPet) {
@@ -4486,7 +4622,7 @@ func (a *petApp) leaveWheel(p *deguPet) {
 	p.nextDir = 1
 	p.moveSpeed = a.speed + 1 + rand.Intn(2)
 	p.stateTicks = 16 + rand.Intn(20)
-	p.x = clamp(a.wheelX+wheelSize/2-20, 0, max(0, a.sceneW-spriteW))
+	p.x = clamp(a.wheelX+wheelSize/2-a.scaleOffset(20), 0, max(0, a.sceneW-a.petSpriteW()))
 }
 
 func loadSprites() map[string][][]*image.RGBA {
@@ -5304,6 +5440,17 @@ func (a *petApp) showTrayMenu() {
 
 	appendChecked(menu, menuWheelToggle, a.txt("typingWheel"), a.wheelEnabled)
 	appendMenu(menu, win.MF_SEPARATOR, 0, nil)
+	languageMenu := win.CreatePopupMenu()
+	appendChecked(languageMenu, menuLangJapanese, "日本語", a.lang == langJapanese)
+	appendChecked(languageMenu, menuLangEnglish, "English", a.lang == langEnglish)
+	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(languageMenu), syscall.StringToUTF16Ptr(a.txt("language")))
+
+	scaleMenu := win.CreatePopupMenu()
+	for _, percent := range []int{75, 100, 125, 150} {
+		appendChecked(scaleMenu, menuIDForPetScale(percent), fmt.Sprintf("%d%%", percent), a.petScalePercent() == percent)
+	}
+	appendMenu(menu, win.MF_POPUP|win.MF_STRING, uintptr(scaleMenu), syscall.StringToUTF16Ptr(a.txt("scale")))
+	appendMenu(menu, win.MF_SEPARATOR, 0, nil)
 	updateFlags := uint32(win.MF_STRING)
 	if a.updateChecking() {
 		updateFlags |= win.MF_GRAYED
@@ -5351,6 +5498,23 @@ func petCountFromMenuID(id uint16) (int, bool) {
 	return count, true
 }
 
+func menuIDForPetScale(percent int) uint16 {
+	percent = normalizePetScalePercent(percent)
+	return menuScaleBase + uint16((percent-minPetScalePercent)/petScaleStepPercent)
+}
+
+func petScaleFromMenuID(id uint16) (int, bool) {
+	if id < menuScaleBase {
+		return 0, false
+	}
+	index := int(id - menuScaleBase)
+	percent := minPetScalePercent + index*petScaleStepPercent
+	if percent < minPetScalePercent || percent > maxPetScalePercent {
+		return 0, false
+	}
+	return normalizePetScalePercent(percent), true
+}
+
 func (a *petApp) handleMenu(id uint16) {
 	if !a.handleMenuCommand(id) {
 		return
@@ -5366,6 +5530,10 @@ func (a *petApp) handleMenuCommand(id uint16) bool {
 	if count, ok := petCountFromMenuID(id); ok {
 		a.setPetCount(count)
 		a.resetPosition()
+		return true
+	}
+	if percent, ok := petScaleFromMenuID(id); ok {
+		a.setPetScale(percent)
 		return true
 	}
 	switch {
@@ -5411,6 +5579,10 @@ func (a *petApp) handleMenuCommand(id uint16) bool {
 		a.setCoatMode(coatSelected)
 	case id == menuCoatRandom:
 		a.setCoatMode(coatRandom)
+	case id == menuLangJapanese:
+		a.lang = langJapanese
+	case id == menuLangEnglish:
+		a.lang = langEnglish
 	case id >= menuVariantBase && int(id-menuVariantBase) < len(variants):
 		a.setFixedVariant(int(id - menuVariantBase))
 		a.setCoatMode(coatFixed)

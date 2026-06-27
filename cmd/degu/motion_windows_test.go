@@ -22,6 +22,10 @@ import (
 	"github.com/lxn/win"
 )
 
+func defaultSelectedCoats() [maxPetCount]int {
+	return [maxPetCount]int{0, 1, 2, 4, 8, 6, 3, 7, 5, 9}
+}
+
 func TestHorizontalMotionFramesUseStableRightFacingSequence(t *testing.T) {
 	allowed := map[int]bool{
 		walkStart:     true,
@@ -478,7 +482,7 @@ func TestCombinedDisplayAreaAppliesWalkRangeAcrossSelectedMonitors(t *testing.T)
 }
 
 func TestPetScenePositionsDistributeFivePetsAcrossTwoDisplays(t *testing.T) {
-	positions := petScenePositions(3840, 5, []sceneSegment{
+	positions := petScenePositions(3840, 5, spriteW, []sceneSegment{
 		{Left: 0, Right: 1920},
 		{Left: 1920, Right: 3840},
 	})
@@ -503,7 +507,7 @@ func TestPetScenePositionsDistributeFivePetsAcrossTwoDisplays(t *testing.T) {
 }
 
 func TestPetScenePositionsAvoidMonitorGaps(t *testing.T) {
-	positions := petScenePositions(3800, 4, []sceneSegment{
+	positions := petScenePositions(3800, 4, spriteW, []sceneSegment{
 		{Left: 0, Right: 1600},
 		{Left: 2200, Right: 3800},
 	})
@@ -513,6 +517,84 @@ func TestPetScenePositionsAvoidMonitorGaps(t *testing.T) {
 		if !onLeft && !onRight {
 			t.Fatalf("position[%d] = %d falls in the monitor gap or offscreen", i, x)
 		}
+	}
+}
+
+func TestPetScenePositionsUseScaledWidth(t *testing.T) {
+	petW, _ := petSpriteSizeForScale(150)
+	positions := petScenePositions(300, 2, petW, []sceneSegment{
+		{Left: 0, Right: 300},
+	})
+	if len(positions) != 2 {
+		t.Fatalf("scaled positions = %d, want 2", len(positions))
+	}
+	for i, x := range positions {
+		if x < 0 || x+petW > 300 {
+			t.Fatalf("scaled position[%d] = %d with width %d escapes scene", i, x, petW)
+		}
+	}
+}
+
+func TestPetScaleMenuCommandPersistsSelection(t *testing.T) {
+	configRoot := t.TempDir()
+	t.Setenv("APPDATA", configRoot)
+
+	a := &petApp{
+		coatMode:       coatSelected,
+		selectedCoats:  defaultSelectedCoats(),
+		speed:          3,
+		mode:           modeRandom,
+		petCount:       1,
+		bidirectional:  true,
+		positionMode:   positionTaskbarEdge,
+		displayScope:   displayScopeSingle,
+		walkRangeStart: defaultWalkRangeStart,
+		walkRangeEnd:   defaultWalkRangeEnd,
+		laneMode:       laneStaggered,
+		lang:           langJapanese,
+		petScale:       defaultPetScalePercent,
+		sceneW:         300,
+		pets:           []deguPet{{x: 250, state: stateWalk}},
+	}
+
+	a.handleMenu(menuIDForPetScale(150))
+	if got := a.petScalePercent(); got != 150 {
+		t.Fatalf("scale after menu command = %d, want 150", got)
+	}
+	if petW := a.petSpriteW(); a.pets[0].x+petW > a.sceneW {
+		t.Fatalf("pet x after scale = %d width %d scene %d, want clamped inside", a.pets[0].x, petW, a.sceneW)
+	}
+	path := filepath.Join(configRoot, settingsDirName, settingsFileName)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("settings file after scale menu command was not written: %v", err)
+	}
+	var saved appSettings
+	if err := json.Unmarshal(data, &saved); err != nil {
+		t.Fatalf("settings json after scale menu command is invalid: %v", err)
+	}
+	if saved.PetScale == nil || *saved.PetScale != 150 {
+		t.Fatalf("saved PetScale = %v, want 150", saved.PetScale)
+	}
+}
+
+func TestPetScaleLoadDefaultsForLegacySettings(t *testing.T) {
+	configRoot := t.TempDir()
+	t.Setenv("APPDATA", configRoot)
+	path := filepath.Join(configRoot, settingsDirName, settingsFileName)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatalf("create settings dir: %v", err)
+	}
+	legacy := []byte(`{"version":1,"variant":0,"coatMode":0,"speed":3,"mode":1,"petCount":1,"wheelEnabled":true,"bidirectional":true,"language":0}`)
+	if err := os.WriteFile(path, legacy, 0o644); err != nil {
+		t.Fatalf("write legacy settings: %v", err)
+	}
+	a := &petApp{petScale: defaultPetScalePercent}
+	if err := a.loadSettings(); err != nil {
+		t.Fatalf("load legacy settings: %v", err)
+	}
+	if got := a.petScalePercent(); got != defaultPetScalePercent {
+		t.Fatalf("legacy pet scale = %d, want %d", got, defaultPetScalePercent)
 	}
 }
 
@@ -738,6 +820,79 @@ func TestTrayCountCommandsSupportEveryVisibleCount(t *testing.T) {
 	}
 }
 
+func TestSettingsLanguageLabelsSwitchToEnglish(t *testing.T) {
+	a := &petApp{lang: langEnglish}
+	if got := a.txt("settingsTitle"); got != "Degu Desktop Settings" {
+		t.Fatalf("English settings title = %q", got)
+	}
+	if got := a.txt("language"); got != "Language" {
+		t.Fatalf("English language label = %q", got)
+	}
+	if got := a.settingsButtonLabel(ctrlLanguageCombo); got != "English" {
+		t.Fatalf("English language button = %q", got)
+	}
+
+	a.lang = langJapanese
+	if got := a.txt("language"); got != "Language" {
+		t.Fatalf("Japanese language label = %q, want Language", got)
+	}
+	if got := a.settingsButtonLabel(ctrlLanguageCombo); got == "English" || got == "" {
+		t.Fatalf("Japanese language button should be a non-English label, got %q", got)
+	}
+}
+
+func TestTrayMenuLanguageCommandPersistsSelection(t *testing.T) {
+	configRoot := t.TempDir()
+	t.Setenv("APPDATA", configRoot)
+
+	a := &petApp{
+		coatMode:       coatSelected,
+		selectedCoats:  defaultSelectedCoats(),
+		speed:          3,
+		mode:           modeRandom,
+		petCount:       1,
+		bidirectional:  true,
+		positionMode:   positionTaskbarEdge,
+		displayScope:   displayScopeSingle,
+		walkRangeStart: defaultWalkRangeStart,
+		walkRangeEnd:   defaultWalkRangeEnd,
+		laneMode:       laneStaggered,
+		lang:           langJapanese,
+	}
+
+	a.handleMenu(menuLangEnglish)
+	if a.lang != langEnglish {
+		t.Fatalf("language after English menu command = %d, want English", a.lang)
+	}
+	path := filepath.Join(configRoot, settingsDirName, settingsFileName)
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("settings file after English menu command was not written: %v", err)
+	}
+	var saved appSettings
+	if err := json.Unmarshal(data, &saved); err != nil {
+		t.Fatalf("settings json after English menu command is invalid: %v", err)
+	}
+	if saved.Language != int(langEnglish) {
+		t.Fatalf("saved Language after English menu command = %d, want English", saved.Language)
+	}
+
+	a.handleMenu(menuLangJapanese)
+	if a.lang != langJapanese {
+		t.Fatalf("language after Japanese menu command = %d, want Japanese", a.lang)
+	}
+	data, err = os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("settings file after Japanese menu command was not written: %v", err)
+	}
+	if err := json.Unmarshal(data, &saved); err != nil {
+		t.Fatalf("settings json after Japanese menu command is invalid: %v", err)
+	}
+	if saved.Language != int(langJapanese) {
+		t.Fatalf("saved Language after Japanese menu command = %d, want Japanese", saved.Language)
+	}
+}
+
 func TestTemporaryVisibilityMenuLabelUsesCurrentStateAndLanguage(t *testing.T) {
 	a := &petApp{lang: langJapanese}
 	if got := a.temporaryVisibilityMenuLabel(); got != "一時的に非表示" {
@@ -852,6 +1007,9 @@ func TestSettingsTooltipsExplainLayoutControls(t *testing.T) {
 	}
 	if got := a.settingsTooltipText(ctrlLaneAligned); got == "" || !strings.Contains(got, "同じ") {
 		t.Fatalf("aligned tooltip = %q, want same-baseline explanation", got)
+	}
+	if got := (&petApp{lang: langEnglish}).settingsTooltipText(ctrlScale150); got == "" || !strings.Contains(got, "display size") {
+		t.Fatalf("scale tooltip = %q, want display-size explanation", got)
 	}
 	if got := a.settingsTooltipText(ctrlReset); got == "" || !strings.Contains(got, "初期値") {
 		t.Fatalf("reset tooltip = %q, want initial-position explanation", got)

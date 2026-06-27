@@ -1352,6 +1352,7 @@ The updater and package checksum hardening had already been ported, but AnimalsD
 - Added `overwrite_files: true` so rerunning the same tag workflow can replace failed or partial release assets intentionally.
 - Added a visible `SHA256SUMS` download button to the GitHub Pages download area.
 - Removed the old GitHub Pages workflow step that built separate stripped `docs/download` Windows ZIPs; public downloads now point to the release workflow artifacts only.
+- Added a tray-menu `Language` submenu for quick Japanese/English switching, matching AnimalsDesktop's Windows tray behavior.
 - Added workflow regression coverage for Win32 resource generation, release notes, checksum publication, and Azure/PFX signing wiring.
 
 ### Verification
@@ -1362,8 +1363,50 @@ The updater and package checksum hardening had already been ported, but AnimalsD
 - `go vet -buildvcs=false ./...`
 - `go run ./cmd/importsheet`
 - `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- Verified the tray Language command switches Japanese/English and persists the saved `Language` value.
 - Built local Windows amd64 and 386 release packages with generated Win32 resources and `main.appVersion=v0.1.13`.
 - Verified local PE machine values: amd64 `0x8664`, 386 `0x014c`.
 - Verified local Win32 `FileVersion` and `ProductVersion` resources both report `v0.1.13`.
 - Verified both local ZIPs contain `DeguDesktop.exe`, `README.md`, and `SECURITY.txt`.
 - Generated local `dist\SHA256SUMS.txt` for both ZIPs and inner EXEs.
+
+## Iteration 40 - Language And Scale Release Polish
+
+Date: 2026-06-28
+
+### Target
+
+Finish the pre-release polish requested after the security parity commit: add tray Language switching, add pet display scale choices, and keep the GitHub Pages download page readable on mobile.
+
+### Cause
+
+The Windows app had Japanese/English settings text but no tray shortcut for switching language. It also rendered pets at one fixed 96x64 size, so users could not tune the desktop pet size, and any future scale setting needed to affect placement, hit testing, and walking-range calculations together.
+
+### Implementation
+
+- Added tray-menu and settings support for Language switching between Japanese and English.
+- Added a persisted `petScale` setting with 75%, 100%, 125%, and 150% choices from the tray menu and Motion settings.
+- Reworked pet rendering, click hit testing, name bubbles, reaction bubbles, walking range, segment placement, edge reset, wheel entry/exit placement, foraging mouth positions, and social pairing clamps to use the scaled pet width/height.
+- Increased the transparent overlay height so 150% pets are not clipped while keeping the visible pet baseline at the taskbar edge.
+- Updated README, GitHub Pages, current-state notes, and `v0.1.13` release notes.
+- Tightened the Pages mobile layout so long download buttons and build metadata do not overflow.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go cmd\importsheet\main.go cmd\importsheet\main_test.go`
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- Built local `v0.1.13` amd64 and 386 Windows release packages with generated Win32 resources.
+- Verified local PE machine values: amd64 `0x8664`, 386 `0x014c`.
+- Verified local Win32 `FileVersion` and `ProductVersion` resources both report `v0.1.13`.
+- Verified both local ZIPs contain `DeguDesktop.exe`, `README.md`, and `SECURITY.txt`.
+- Generated local `dist\SHA256SUMS.txt` for both ZIPs and inner EXEs.
+- Launched `dist\DeguDesktop.exe` and confirmed it stayed running during a 3-second smoke check.
+- Rendered local GitHub Pages screenshots:
+  - `.codex/qa/pages-v0.1.13-language-scale-desktop.png`
+  - `.codex/qa/pages-v0.1.13-language-scale-mobile.png`
+- Verified the local Pages HTML includes `v0.1.13`, `SHA256SUMS`, `Language`, and the 75%/100%/125%/150% scale note.
+- `git diff --check`
