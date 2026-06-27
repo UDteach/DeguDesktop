@@ -1265,3 +1265,105 @@ Verify the published Windows `v0.1.12` release, latest download links, and GitHu
   - both ZIPs include `DeguDesktop.exe` and `README.md`.
 - Verified the live GitHub Pages site shows Windows latest `v0.1.12`, first version-history entry `v0.1.12`, release headline `歩く範囲を画面単位で分かりやすく`, and build commit `c0417c4`.
 - Verified `releases/latest/download` redirects to `v0.1.12` for both Windows x64 and x86 ZIPs.
+
+## Iteration 37 - Windows Updater Security Hardening
+
+Date: 2026-06-27
+
+### Target
+
+Port the Windows release/updater security hardening from AnimalsDesktop into DeguDesktop and verify the same safety properties locally.
+
+### Cause
+
+AnimalsDesktop removed avoidable AV/SmartScreen false-positive signals and narrowed the updater trust boundary. DeguDesktop still used a temporary PowerShell updater script with `ExecutionPolicy Bypass`, did not verify release asset digests, and published Windows ZIPs without per-package security notes or a release checksum manifest.
+
+### Implementation
+
+- Added GitHub release asset `digest` handling and verification for GitHub-provided size and `sha256:` digest before update extraction.
+- Changed update extraction to a fixed `payload/DeguDesktop.exe` path rather than copying from arbitrary ZIP paths.
+- Removed the generated PowerShell updater and replaced it with a constrained app-helper mode using `--degudesktop-apply-update`.
+- Added updater argument validation so the helper accepts only a source `DeguDesktop.exe` inside the app-owned update temp directory and a target `DeguDesktop.exe` outside it.
+- Added post-update cleanup through `--degudesktop-cleanup`, accepted only for app-owned update temp directories.
+- Updated the Release workflow to build unstripped Windows EXEs, optionally sign through Azure Artifact Signing or fallback `.pfx` secrets, package `SECURITY.txt` inside each Windows ZIP, and publish `SHA256SUMS.txt`.
+- Updated README, current-state docs, and added `docs/development/windows-release-trust.md`.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go`
+- `go test -buildvcs=false ./cmd/degu -run "TestVerifyDownloadedAsset|TestParseUpdateApplyArgs|TestExtractUpdateExe|TestUpdaterCommands|TestReleaseWorkflow|TestUpdateCleanupDir|TestDownloadFileAndExtractUpdateExe|TestFetchLatestRelease|TestSelectUpdateAsset" -count=1 -v`
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go cmd\importsheet\main.go cmd\importsheet\main_test.go`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- Built local `security-local` Windows amd64 and 386 EXEs, packaged both ZIPs with `SECURITY.txt`, generated `SHA256SUMS.txt`, and expanded the ZIPs to confirm each contains `DeguDesktop.exe`, `README.md`, and `SECURITY.txt`.
+- `git diff --check`
+
+## Iteration 38 - v0.1.13 Security Release Prep
+
+Date: 2026-06-27
+
+### Target
+
+Prepare the Windows `v0.1.13` release metadata and rerun release-readiness QA for the updater security hardening.
+
+### Implementation
+
+- Updated the GitHub Pages latest Windows version label to `v0.1.13`.
+- Added a `v0.1.13` version-history entry for updater digest verification, the constrained app-helper updater path, and the new release checksum/security manifests.
+- Updated current-state release notes to describe `v0.1.13` as the next prepared Windows release line.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go cmd\importsheet\main.go cmd\importsheet\main_test.go`
+- `go test -buildvcs=false ./cmd/degu -run "TestVerifyDownloadedAsset|TestParseUpdateApplyArgs|TestExtractUpdateExe|TestUpdaterCommands|TestReleaseWorkflow|TestUpdateCleanupDir|TestDownloadFileAndExtractUpdateExe|TestFetchLatestRelease|TestSelectUpdateAsset" -count=1 -v`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- Built local Windows amd64 and 386 release packages with `main.appVersion=v0.1.13`.
+- Verified local PE machine values: amd64 `0x8664`, 386 `0x014c`.
+- Verified both local executables contain the embedded `v0.1.13` string.
+- Verified both local ZIPs contain `DeguDesktop.exe`, `README.md`, and `SECURITY.txt`.
+- Generated local `dist\SHA256SUMS.txt` for both ZIPs and inner EXEs.
+- Rendered the local GitHub Pages history section at desktop and mobile widths, and captured:
+  - `.codex/qa/pages-v0.1.13-history-desktop.png`
+  - `.codex/qa/pages-v0.1.13-history-mobile.png`
+- Verified the local GitHub Pages HTML shows Windows latest `v0.1.13`, first version-history entry `v0.1.13`, and headline `アップデート機能の安全性を強化`.
+
+## Iteration 39 - v0.1.13 AnimalsDesktop Trust Parity
+
+Date: 2026-06-28
+
+### Target
+
+Bring the remaining AnimalsDesktop Windows release-trust measures into DeguDesktop before publishing `v0.1.13`.
+
+### Cause
+
+The updater and package checksum hardening had already been ported, but AnimalsDesktop also embeds Win32 file/product metadata, a Windows 10+ manifest, and an app icon into the released EXE. DeguDesktop also lacked a visible `SHA256SUMS.txt` download link and release-note body support in the tag workflow.
+
+### Implementation
+
+- Added `cmd/winresicon` and `winres/winres.json` so the release workflow can embed file metadata, product metadata, a Windows 10+ manifest, and an app icon into `DeguDesktop.exe`.
+- Updated the Release workflow to generate `cmd/degu/rsrc_windows_*.syso` during tag builds, write `winres.json` as BOM-free UTF-8, and fail immediately if resource generation fails.
+- Added release-note body support through `docs/releases/v0.1.13.md` and `body_path: dist/RELEASE_NOTES.md`.
+- Added `overwrite_files: true` so rerunning the same tag workflow can replace failed or partial release assets intentionally.
+- Added a visible `SHA256SUMS` download button to the GitHub Pages download area.
+- Removed the old GitHub Pages workflow step that built separate stripped `docs/download` Windows ZIPs; public downloads now point to the release workflow artifacts only.
+- Added workflow regression coverage for Win32 resource generation, release notes, checksum publication, and Azure/PFX signing wiring.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go cmd\importsheet\main.go cmd\importsheet\main_test.go cmd\winresicon\main.go`
+- `go test -buildvcs=false ./cmd/degu -run "TestVerifyDownloadedAsset|TestParseUpdateApplyArgs|TestExtractUpdateExe|TestUpdaterCommands|TestReleaseWorkflow|TestUpdateCleanupDir|TestDownloadFileAndExtractUpdateExe|TestFetchLatestRelease|TestSelectUpdateAsset" -count=1 -v`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- Built local Windows amd64 and 386 release packages with generated Win32 resources and `main.appVersion=v0.1.13`.
+- Verified local PE machine values: amd64 `0x8664`, 386 `0x014c`.
+- Verified local Win32 `FileVersion` and `ProductVersion` resources both report `v0.1.13`.
+- Verified both local ZIPs contain `DeguDesktop.exe`, `README.md`, and `SECURITY.txt`.
+- Generated local `dist\SHA256SUMS.txt` for both ZIPs and inner EXEs.

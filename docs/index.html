@@ -410,6 +410,9 @@
             <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/latest/download/DeguDesktop-windows-386.zip">
               Windows版 x86
             </a>
+            <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/latest/download/SHA256SUMS.txt">
+              SHA256SUMS
+            </a>
             <a class="button" href="https://github.com/UDteach/DeguDesktop/releases/download/v0.1.9/DeguDesktop-macos-arm64.zip">
               Mac版 Apple Silicon macOS 12+
             </a>
@@ -428,7 +431,7 @@
             macOS 11 Big Surの場合はBig Sur版を選んでください。2015年頃のMacBookは多くの場合Intel版です。
           </p>
           <div class="release-meta" aria-label="Build information">
-            <span>Windows最新版 <strong data-release-version>v0.1.12</strong></span>
+            <span>Windows最新版 <strong data-release-version>v0.1.13</strong></span>
             <span>Mac版 <strong>v0.1.9</strong></span>
             <span>バージョン <strong data-build-version>dev-local</strong></span>
             <span>更新日 <strong data-build-date>2026-06-20</strong></span>
@@ -454,6 +457,21 @@
         </div>
 
         <div class="history-list" aria-label="Degu Desktop version history">
+          <article class="history-item">
+            <div>
+              <strong class="history-version">v0.1.13</strong>
+              <span class="history-date">2026-06-28</span>
+            </div>
+            <div>
+              <h3>アップデート機能の安全性を強化</h3>
+              <ul>
+                <li>GitHub Releasesから取得した更新ファイルについて、サイズとSHA-256 digestが提供されている場合は展開前に検証するようにしました。</li>
+                <li>一時PowerShellスクリプトによる更新適用をやめ、DeguDesktop本体の制限付きヘルパーモードで置き換える方式にしました。</li>
+                <li>Windows ZIPにSECURITY.txtを同梱し、ReleaseにはSHA256SUMS.txtを公開できるようにしました。</li>
+              </ul>
+            </div>
+          </article>
+
           <article class="history-item">
             <div>
               <strong class="history-version">v0.1.12</strong>

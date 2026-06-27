@@ -134,7 +134,7 @@ Release assets use:
 - `DeguDesktop-macos-big-sur-arm64.zip`
 - `DeguDesktop-macos-big-sur-amd64.zip`
 
-The Windows app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, stage a temporary updater script, exit, replace `DeguDesktop.exe`, and restart. The macOS app is currently packaged as an ad-hoc-signed app bundle. Default ZIPs target macOS 12 Monterey or later, and optional Big Sur ZIPs target macOS 11 with Go 1.24. Developer ID signing and notarization are still separate release-operator steps.
+The Windows release workflow embeds file metadata, product metadata, a Windows 10+ manifest, and an app icon into `DeguDesktop.exe`. The Windows app checks `UDteach/DeguDesktop` Releases for the latest matching architecture zip; when a newer release is available, the tray menu can download the zip, verify GitHub-provided size and `sha256:` digest when present, run a constrained app-helper updater, replace only `DeguDesktop.exe`, and restart. Windows release ZIPs include `SECURITY.txt`, and the GitHub Release includes `SHA256SUMS.txt`. The macOS app is currently packaged as an ad-hoc-signed app bundle. Default ZIPs target macOS 12 Monterey or later, and optional Big Sur ZIPs target macOS 11 with Go 1.24. Developer ID signing and notarization are still separate release-operator steps.
 
 The GitHub Pages workflow also stamps the download area with the Pages build version, JST update date, and short commit ID.
 

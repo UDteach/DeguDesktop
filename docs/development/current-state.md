@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-26
+Last updated: 2026-06-28
 
 ## Repository
 
@@ -38,7 +38,11 @@ Last updated: 2026-06-26
 - Tray count quick actions cover every visible count from 1 to 10.
 - Pet height alignment can be switched between natural staggered lanes and a same-baseline row.
 - Startup tray notification and GitHub Release based update check/install flow from the tray menu or Updates settings tab.
+- Windows updater verifies GitHub-provided release asset size and `sha256:` digest when present, then applies updates through a constrained app-helper mode instead of writing or launching a PowerShell script.
 - GitHub Pages and GitHub Release workflows, with Pages download metadata for version, update date, and commit.
+- Windows Release workflow embeds Win32 version metadata, product metadata, a Windows 10+ manifest, and an app icon into `DeguDesktop.exe`.
+- Windows Release workflow publishes `SHA256SUMS.txt`; each Windows ZIP includes `DeguDesktop.exe`, `README.md`, and `SECURITY.txt`.
+- GitHub Pages links to GitHub Release assets for Windows downloads and no longer builds a separate stripped `docs/download` Windows ZIP.
 
 ## Current macOS Port
 
@@ -113,7 +117,7 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 
 ## Current Release State
 
-`v0.1.12` is the latest published Windows release line. It includes:
+`v0.1.13` is prepared as the next Windows release line. It builds on `v0.1.12` and includes:
 
 - A Windows tray menu action for temporarily hiding and restoring the pet overlay during the current session.
 - A non-persisted runtime flag and guards so keyboard, click reaction, and hover name behavior do not run while the overlay is hidden.
@@ -122,6 +126,10 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 - Segment-based pet placement so visible-count changes immediately distribute pets across selected multi-monitor spans.
 - Walking-range settings that default to all selected displays when entering multi-monitor span mode.
 - Walking-range summaries that describe the selected area in screen terms such as all selected displays, display 1 only, or part of displays 1-2 while keeping left/right fine adjustment available.
+- Updater hardening that verifies GitHub-provided asset size and optional `sha256:` digest before extraction.
+- A constrained app-helper update apply path instead of temporary PowerShell scripts or `ExecutionPolicy Bypass`.
+- Win32 resource metadata, product metadata, a Windows 10+ manifest, and app icon embedding in the Windows EXE.
+- Windows release packaging that includes per-ZIP `SECURITY.txt` and a release-level `SHA256SUMS.txt` manifest.
 
 The Mac download links currently remain on the existing `v0.1.9` artifacts until a separate macOS release sync is built and uploaded.
 

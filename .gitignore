@@ -3,6 +3,8 @@
 *.exe
 *.dll
 *.log
+cmd/degu/rsrc_windows_*.syso
+winres/icon.png
 dist/
 build/
 .agents/
