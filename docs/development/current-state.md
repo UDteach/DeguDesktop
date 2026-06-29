@@ -118,7 +118,9 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 
 ## Current Release State
 
-`v0.1.13` is prepared as the next Windows release line. It builds on `v0.1.12` and includes:
+`v0.1.14` is the current Windows release line. It builds on `v0.1.13` and includes the mixed-DPI multi-monitor overlay fix.
+
+`v0.1.13` added:
 
 - A Windows tray menu action for temporarily hiding and restoring the pet overlay during the current session.
 - A non-persisted runtime flag and guards so keyboard, click reaction, and hover name behavior do not run while the overlay is hidden.
@@ -133,6 +135,12 @@ The runtime draws the rotating front spokes and hub over that back layer, so the
 - A constrained app-helper update apply path instead of temporary PowerShell scripts or `ExecutionPolicy Bypass`.
 - Win32 resource metadata, product metadata, a Windows 10+ manifest, and app icon embedding in the Windows EXE.
 - Windows release packaging that includes per-ZIP `SECURITY.txt` and a release-level `SHA256SUMS.txt` manifest.
+
+`v0.1.14` adds:
+
+- Per-monitor layered-window overlay segments for selected multi-monitor spans.
+- Per-monitor DPI scaling for overlay height, vertical offset, wheel placement, forage props, pet sprites, click hit testing, name labels, and reaction bubbles.
+- Correct bottom alignment on mixed-height or mixed-DPI monitor layouts, reducing cases where secondary-screen pets appear missing.
 
 The Mac download links currently remain on the existing `v0.1.9` artifacts until a separate macOS release sync is built and uploaded.
 

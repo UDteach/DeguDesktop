@@ -1442,3 +1442,36 @@ The app arranged pets across monitor spans, but rendering still used one layered
 - `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
 - Launched `dist\DeguDesktop.exe` and confirmed it stayed running during a 3-second smoke check.
 - `git diff --check`
+
+## Iteration 42 - v0.1.14 Multi-Monitor Release Prep
+
+Date: 2026-06-29
+
+### Target
+
+Publish the mixed-DPI multi-monitor overlay fix as Windows `v0.1.14` and update GitHub Pages to describe it as the latest downloadable release.
+
+### Cause
+
+The fix was initially documented as a next-release improvement, but the user approved releasing it immediately. Pages needed to stop presenting the change as unreleased and the tag workflow needed release notes for `v0.1.14`.
+
+### Implementation
+
+- Updated GitHub Pages latest Windows version label and version history to `v0.1.14`.
+- Added `docs/releases/v0.1.14.md` so the tag workflow can publish release notes with the Windows ZIP assets.
+- Updated README and current-state notes to mention per-monitor overlay placement for mixed-height or mixed-DPI displays.
+
+### Verification
+
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./cmd/degu -run "TestOverlaySegments|TestRenderOverlaySegment|TestDrawReactionsSkipsPetsOutsideOverlaySegment" -count=1 -v`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui -X main.appVersion=v0.1.14" -o dist\DeguDesktop.exe ./cmd/degu`
+- Launched `dist\DeguDesktop.exe` and confirmed it stayed running during a 3-second smoke check.
+- Rendered local GitHub Pages screenshots:
+  - `.codex/qa/pages-v0.1.14-desktop.png`
+  - `.codex/qa/pages-v0.1.14-mobile.png`
+- Verified the local Pages HTML includes `v0.1.14`, `SHA256SUMS`, and the mixed-DPI multi-monitor release copy.
+- `git diff --check`

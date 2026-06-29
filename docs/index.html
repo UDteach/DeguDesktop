@@ -139,6 +139,23 @@
         font-weight: 650;
       }
 
+      .release-note {
+        margin-top: 14px;
+        border: 1px solid rgba(75, 122, 87, 0.32);
+        background: rgba(236, 244, 235, 0.72);
+        padding: 14px 16px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .release-note strong {
+        display: block;
+        margin-bottom: 3px;
+        color: var(--leaf-dark);
+        font-weight: 750;
+      }
+
       .button {
         display: inline-flex;
         max-width: 100%;
@@ -412,6 +429,7 @@
         }
 
         .release-meta span,
+        .release-note,
         .lead,
         article p,
         .english p {
@@ -469,11 +487,16 @@
             macOS 11 Big Surの場合はBig Sur版を選んでください。2015年頃のMacBookは多くの場合Intel版です。
           </p>
           <div class="release-meta" aria-label="Build information">
-            <span>Windows最新版 <strong data-release-version>v0.1.13</strong></span>
+            <span>Windows最新版 <strong data-release-version>v0.1.14</strong></span>
             <span>Mac版 <strong>v0.1.9</strong></span>
             <span>バージョン <strong data-build-version>dev-local</strong></span>
             <span>更新日 <strong data-build-date>2026-06-20</strong></span>
             <span>コミット <strong data-build-commit>local</strong></span>
+          </div>
+          <div class="release-note">
+            <strong>Windows v0.1.14を公開しました</strong>
+            複数モニター表示をモニターごとの透明オーバーレイに分け、画面の高さやDPIが違う環境でも、それぞれのタスクバー付近にデグーが出るように修正済みです。
+            Windows x64 / x86 ZIPとSHA256SUMS.txtは、上の最新版ダウンロードから取得できます。
           </div>
         </div>
 
@@ -495,6 +518,22 @@
         </div>
 
         <div class="history-list" aria-label="Degu Desktop version history">
+          <article class="history-item">
+            <div>
+              <strong class="history-version">v0.1.14</strong>
+              <span class="history-date">2026-06-29</span>
+            </div>
+            <div>
+              <h3>複数モニターとDPIの表示ずれを修正</h3>
+              <ul>
+                <li>複数モニター表示を、画面ごとの透明オーバーレイに分割して描画するようにしました。</li>
+                <li>高さやDPIが違うモニターをまたぐ場合でも、各画面の下端・タスクバー付近に合わせてデグーを表示します。</li>
+                <li>クリック判定、名前ラベル、吹き出し、回し車、ごはん表示も同じ座標系に合わせました。</li>
+                <li>Windows x64 / x86 ZIPとSHA256SUMS.txtをGitHub Releaseに公開しました。</li>
+              </ul>
+            </div>
+          </article>
+
           <article class="history-item">
             <div>
               <strong class="history-version">v0.1.13</strong>
@@ -742,6 +781,8 @@
         <p>
           On Windows, open settings from the system tray: right-click the Degu Desktop tray icon and choose Settings.
           The settings window includes tabs for pets, motion, display range, and updates.
+          Windows v0.1.14 includes a mixed-DPI multi-monitor overlay fix so pets align with each selected display instead
+          of drifting or disappearing on secondary screens.
         </p>
       </section>
     </main>
