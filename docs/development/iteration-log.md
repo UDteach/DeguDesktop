@@ -1474,4 +1474,13 @@ The fix was initially documented as a next-release improvement, but the user app
   - `.codex/qa/pages-v0.1.14-desktop.png`
   - `.codex/qa/pages-v0.1.14-mobile.png`
 - Verified the local Pages HTML includes `v0.1.14`, `SHA256SUMS`, and the mixed-DPI multi-monitor release copy.
+- Pushed tag `v0.1.14` and verified the GitHub Release workflow completed successfully.
+- Verified the public GitHub Release is not draft/prerelease and includes:
+  - `DeguDesktop-windows-amd64.zip`
+  - `DeguDesktop-windows-386.zip`
+  - `SHA256SUMS.txt`
+- Downloaded both public Windows ZIPs and `SHA256SUMS.txt`; verified ZIP SHA256 lines, inner `DeguDesktop.exe` SHA256 lines, and ZIP entries `DeguDesktop.exe`, `README.md`, and `SECURITY.txt`.
+- Verified extracted amd64 and 386 EXE `FileVersion` and `ProductVersion` are both `v0.1.14`.
+- Verified the live GitHub Pages site returns HTTP 200 and contains `v0.1.14` plus the mixed-DPI multi-monitor release copy.
+- Verified the Pages workflow completed successfully.
 - `git diff --check`
