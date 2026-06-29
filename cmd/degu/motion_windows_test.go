@@ -481,6 +481,98 @@ func TestCombinedDisplayAreaAppliesWalkRangeAcrossSelectedMonitors(t *testing.T)
 	}
 }
 
+func TestOverlaySegmentsUseEachMonitorBottomForMixedHeightSpan(t *testing.T) {
+	areas := []displayArea{
+		{Work: winRect(0, 0, 1920, 2080), Screen: winRect(0, 0, 1920, 2160), Primary: true, DPI: defaultDPI},
+		{Work: winRect(1920, 0, 3840, 1040), Screen: winRect(1920, 0, 3840, 1080), DPI: defaultDPI},
+	}
+	a := &petApp{
+		positionMode:   positionTaskbarEdge,
+		overlayOffsetY: defaultOverlayOffsetY,
+		walkRangeStart: defaultWalkRangeStart,
+		walkRangeEnd:   defaultWalkRangeEnd,
+		petScale:       defaultPetScalePercent,
+	}
+	display := combineDisplayAreas(areas)
+	overlay := a.overlayRectFor(display.Work, display.Screen)
+	segments := a.overlaySegmentsForAreas(areas, overlay)
+	if len(segments) != 2 {
+		t.Fatalf("segments = %d, want 2: %+v", len(segments), segments)
+	}
+	if got, want := segments[0].Rect.Top, int32(2080-sceneH+defaultOverlayOffsetY); got != want {
+		t.Fatalf("primary segment top = %d, want %d", got, want)
+	}
+	if got, want := segments[1].Rect.Top, int32(1040-sceneH+defaultOverlayOffsetY); got != want {
+		t.Fatalf("secondary segment top = %d, want %d", got, want)
+	}
+}
+
+func TestOverlaySegmentsClampScreenBottomPerMonitor(t *testing.T) {
+	areas := []displayArea{
+		{Work: winRect(0, 0, 1920, 1060), Screen: winRect(0, 0, 1920, 1080), Primary: true, DPI: defaultDPI},
+	}
+	a := &petApp{
+		positionMode:   positionTaskbarEdge,
+		overlayOffsetY: maxOverlayOffsetY,
+		walkRangeStart: defaultWalkRangeStart,
+		walkRangeEnd:   defaultWalkRangeEnd,
+		petScale:       defaultPetScalePercent,
+	}
+	overlay := a.overlayRectFor(areas[0].Work, areas[0].Screen)
+	segments := a.overlaySegmentsForAreas(areas, overlay)
+	if len(segments) != 1 {
+		t.Fatalf("segments = %d, want 1", len(segments))
+	}
+	if got, want := segments[0].Rect.Bottom, areas[0].Screen.Bottom; got != want {
+		t.Fatalf("segment bottom = %d, want clamped to screen bottom %d", got, want)
+	}
+}
+
+func TestOverlaySegmentsScaleHeightForHighDPIMonitor(t *testing.T) {
+	areas := []displayArea{
+		{Work: winRect(0, 0, 1920, 1040), Screen: winRect(0, 0, 1920, 1080), Primary: true, DPI: 144},
+	}
+	a := &petApp{
+		positionMode:   positionTaskbarEdge,
+		overlayOffsetY: defaultOverlayOffsetY,
+		walkRangeStart: defaultWalkRangeStart,
+		walkRangeEnd:   defaultWalkRangeEnd,
+		petScale:       defaultPetScalePercent,
+	}
+	overlay := a.overlayRectFor(areas[0].Work, areas[0].Screen)
+	segments := a.overlaySegmentsForAreas(areas, overlay)
+	if len(segments) != 1 {
+		t.Fatalf("segments = %d, want 1", len(segments))
+	}
+	wantHeight := int32(scaleForDPI(sceneH, 144))
+	if got := segments[0].Rect.Bottom - segments[0].Rect.Top; got != wantHeight {
+		t.Fatalf("high-DPI segment height = %d, want %d", got, wantHeight)
+	}
+	wantTop := int32(1040 - int(wantHeight) + scaleForDPI(defaultOverlayOffsetY, 144))
+	if got := segments[0].Rect.Top; got != wantTop {
+		t.Fatalf("high-DPI segment top = %d, want %d", got, wantTop)
+	}
+}
+
+func TestRenderOverlaySegmentScalesCanvasForHighDPI(t *testing.T) {
+	a := &petApp{sceneW: 1920, petScale: defaultPetScalePercent}
+	height := scaleForDPI(sceneH, 144)
+	segment := overlaySegment{
+		Rect:       winRect(0, 0, 1920, int32(height)),
+		Screen:     winRect(0, 0, 1920, 1080),
+		SceneLeft:  0,
+		SceneRight: 1920,
+		DPI:        144,
+	}
+	canvas := a.renderOverlaySegment(segment)
+	if got := canvas.Bounds().Dx(); got != 1920 {
+		t.Fatalf("high-DPI canvas width = %d, want 1920", got)
+	}
+	if got := canvas.Bounds().Dy(); got != height {
+		t.Fatalf("high-DPI canvas height = %d, want %d", got, height)
+	}
+}
+
 func TestPetScenePositionsDistributeFivePetsAcrossTwoDisplays(t *testing.T) {
 	positions := petScenePositions(3840, 5, spriteW, []sceneSegment{
 		{Left: 0, Right: 1920},
@@ -799,6 +891,17 @@ func TestDefaultOverlayOffsetSurvivesLegacySettings(t *testing.T) {
 
 func winRect(left, top, right, bottom int32) win.RECT {
 	return win.RECT{Left: left, Top: top, Right: right, Bottom: bottom}
+}
+
+func alphaSum(img *image.RGBA) int {
+	sum := 0
+	b := img.Bounds()
+	for y := b.Min.Y; y < b.Max.Y; y++ {
+		for x := b.Min.X; x < b.Max.X; x++ {
+			sum += int(img.RGBAAt(x, y).A)
+		}
+	}
+	return sum
 }
 
 func TestTrayCountCommandsSupportEveryVisibleCount(t *testing.T) {
@@ -1724,6 +1827,30 @@ func TestShowPetReactionRefreshesExistingBubble(t *testing.T) {
 	}
 	if a.reactions[0].ticks != reactionTicks {
 		t.Fatalf("reaction ticks = %d, want %d", a.reactions[0].ticks, reactionTicks)
+	}
+}
+
+func TestDrawReactionsSkipsPetsOutsideOverlaySegment(t *testing.T) {
+	a := &petApp{
+		sceneW:   200,
+		petScale: defaultPetScalePercent,
+		pets: []deguPet{
+			{x: 150, state: stateIdle},
+		},
+		reactions: []petReaction{
+			{pet: 0, kind: 0, ticks: reactionTicks},
+		},
+	}
+	leftCanvas := image.NewRGBA(image.Rect(0, 0, 100, sceneH))
+	a.drawReactions(leftCanvas, 0, 100, defaultDPI)
+	if got := alphaSum(leftCanvas); got != 0 {
+		t.Fatalf("left segment alpha sum = %d, want no reaction outside segment", got)
+	}
+
+	rightCanvas := image.NewRGBA(image.Rect(0, 0, 100, sceneH))
+	a.drawReactions(rightCanvas, 100, 200, defaultDPI)
+	if got := alphaSum(rightCanvas); got == 0 {
+		t.Fatalf("right segment alpha sum = 0, want reaction inside segment")
 	}
 }
 

@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-06-28
+Last updated: 2026-06-29
 
 ## Repository
 
@@ -35,6 +35,7 @@ Last updated: 2026-06-28
 - Optional cursor-hover name labels above visible degus.
 - Windows overlay position can be switched between the selected display's taskbar work area and the physical screen bottom, with a saved vertical offset for fine tuning.
 - Windows display settings include a monitor/span selector and a saved taskbar walking range, so users can constrain movement to a specific horizontal segment on one monitor or across selected multiple monitors.
+- Windows multi-monitor spans render through per-monitor overlay segments, including mixed-height and mixed-DPI monitor layouts.
 - Tray count quick actions cover every visible count from 1 to 10.
 - Pet height alignment can be switched between natural staggered lanes and a same-baseline row.
 - Startup tray notification and GitHub Release based update check/install flow from the tray menu or Updates settings tab.

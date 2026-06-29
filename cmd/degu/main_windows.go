@@ -424,6 +424,7 @@ type petApp struct {
 	nameText           string
 	hoverPet           int
 	temporarilyHidden  bool
+	overlayHwnds       []win.HWND
 	renameHwnd         win.HWND
 	renameEdit         win.HWND
 	renameIndex        int
@@ -463,6 +464,7 @@ var app *petApp
 
 var (
 	user32                  = syscall.NewLazyDLL("user32.dll")
+	shcore                  = syscall.NewLazyDLL("shcore.dll")
 	ntdll                   = syscall.NewLazyDLL("ntdll.dll")
 	procAppendMenuW         = user32.NewProc("AppendMenuW")
 	procGetDlgCtrlID        = user32.NewProc("GetDlgCtrlID")
@@ -470,13 +472,18 @@ var (
 	procSetWindowsHookExW   = user32.NewProc("SetWindowsHookExW")
 	procUnhookWindowsHook   = user32.NewProc("UnhookWindowsHookEx")
 	procCallNextHookExProc  = user32.NewProc("CallNextHookEx")
+	procSetProcessDPIAware  = user32.NewProc("SetProcessDPIAware")
+	procSetProcessDpiCtx    = user32.NewProc("SetProcessDpiAwarenessContext")
 	procUpdateLayeredWin    = user32.NewProc("UpdateLayeredWindow")
 	procEnumDisplayMonitors = user32.NewProc("EnumDisplayMonitors")
+	procGetDpiForMonitor    = shcore.NewProc("GetDpiForMonitor")
 	procRtlMoveMemory       = ntdll.NewProc("RtlMoveMemory")
 )
 
 const (
 	acSrcOver       = 0
+	defaultDPI      = 96
+	monitorDPIType  = 0
 	ulwAlpha        = 0x00000002
 	spiGetWorkArea  = 0x0030
 	sbsHorz         = 0x0000
@@ -493,12 +500,27 @@ const (
 	sbEndScroll     = 8
 )
 
+func enablePerMonitorDPIAwareness() {
+	// Keep local developer builds DPI-aware even before a release manifest is embedded.
+	if procSetProcessDpiCtx.Find() == nil {
+		const dpiAwarenessContextPerMonitorAwareV2 = ^uintptr(3)
+		ret, _, _ := procSetProcessDpiCtx.Call(dpiAwarenessContextPerMonitorAwareV2)
+		if ret != 0 {
+			return
+		}
+	}
+	if procSetProcessDPIAware.Find() == nil {
+		procSetProcessDPIAware.Call()
+	}
+}
+
 func main() {
 	if runUpdaterUtility(os.Args[1:]) {
 		return
 	}
 	cleanupDir := updateCleanupDir(os.Args[1:])
 
+	enablePerMonitorDPIAwareness()
 	runtime.LockOSThread()
 	rand.Seed(time.Now().UnixNano())
 
@@ -1138,24 +1160,49 @@ func (a *petApp) chooseRandomAction(p *deguPet) {
 func (a *petApp) render() {
 	if a.temporarilyHidden {
 		a.hideNameWindow()
-		if a.hwnd != 0 {
-			win.ShowWindow(a.hwnd, win.SW_HIDE)
-		}
+		a.hideOverlayWindows(0)
 		return
 	}
-	overlay := a.overlayRect()
+	areas, display := a.selectedDisplayAreasAndCombined()
+	overlay := a.overlayRectFor(display.Work, display.Screen)
 	a.syncScene(overlay)
-	canvas := image.NewRGBA(image.Rect(0, 0, a.sceneW, sceneH))
+	segments := a.overlaySegmentsForAreas(areas, overlay)
+	if len(segments) == 0 {
+		segments = []overlaySegment{{
+			Rect:       overlay,
+			Screen:     display.Screen,
+			SceneLeft:  0,
+			SceneRight: a.sceneW,
+			DPI:        display.DPI,
+		}}
+	}
+	for i, segment := range segments {
+		hwnd := a.overlayWindow(i)
+		if hwnd == 0 {
+			continue
+		}
+		canvas := a.renderOverlaySegment(segment)
+		updateLayeredWindow(hwnd, canvas, int(segment.Rect.Left), int(segment.Rect.Top))
+		win.ShowWindow(hwnd, win.SW_SHOWNOACTIVATE)
+	}
+	a.hideOverlayWindows(len(segments))
+}
+
+func (a *petApp) renderOverlaySegment(segment overlaySegment) *image.RGBA {
+	width := max(1, int(segment.Rect.Right-segment.Rect.Left))
+	height := max(1, int(segment.Rect.Bottom-segment.Rect.Top))
+	logicalWidth := max(1, unscaleForDPI(width, segment.DPI))
+	canvas := image.NewRGBA(image.Rect(0, 0, logicalWidth, sceneH))
 	draw.Draw(canvas, canvas.Bounds(), image.Transparent, image.Point{}, draw.Src)
 
 	wheelActive := a.wheelEnabled && a.hasWheelRunner()
-	wheelX := a.wheelX - wheelSize/2
+	wheelX := unscaleForDPI(a.wheelX-wheelSize/2-segment.SceneLeft, segment.DPI)
 	wheelY := sceneH - wheelSize - 2
 	if wheelActive {
 		drawWheelBack(canvas, wheelX, wheelY, a.wheel)
 	}
 
-	a.drawForageItems(canvas)
+	a.drawForageItems(canvas, segment.SceneLeft, segment.DPI)
 
 	petW, petH := a.petSpriteSize()
 	for i := range a.pets {
@@ -1166,17 +1213,18 @@ func (a *petApp) render() {
 		frame := currentFrame(p.state, p.frame)
 		src := a.frames[variants[a.petVariant(p)].ID][p.motionSet][frame]
 		y := sceneH - petH - p.laneOffset
-		drawPetSprite(canvas, src, p, p.x, y, petW, petH)
+		localX := unscaleForDPI(p.x-segment.SceneLeft, segment.DPI)
+		drawPetSprite(canvas, src, p, localX, y, petW, petH)
 		if p.state == stateCarry && p.carryKind != noItem {
-			propX := p.x + petW - a.scaleOffset(18)
+			propX := localX + petW - a.scaleOffset(18)
 			if p.dir < 0 {
-				propX = p.x + a.scaleOffset(18)
+				propX = localX + a.scaleOffset(18)
 			}
 			a.drawForageProp(canvas, propX, y+a.scaleOffset(35), p.carryKind)
 		} else if (p.state == stateEat || p.state == stateDig) && p.carryKind != noItem {
-			propX := p.x + petW - a.scaleOffset(20)
+			propX := localX + petW - a.scaleOffset(20)
 			if p.dir < 0 {
-				propX = p.x + a.scaleOffset(20)
+				propX = localX + a.scaleOffset(20)
 			}
 			a.drawForageProp(canvas, propX, y+a.scaleOffset(44), p.carryKind)
 		}
@@ -1194,8 +1242,11 @@ func (a *petApp) render() {
 		}
 		drawWheelFront(canvas, wheelX, wheelY, a.tickCount)
 	}
-	a.drawReactions(canvas)
-	updateLayeredWindow(a.hwnd, canvas, int(overlay.Left), int(overlay.Top))
+	a.drawReactions(canvas, segment.SceneLeft, segment.SceneRight, segment.DPI)
+	if width == logicalWidth && height == sceneH {
+		return canvas
+	}
+	return scaleImageTo(canvas, width, height)
 }
 
 func currentFrame(state behaviorState, frame int) int {
@@ -1301,34 +1352,58 @@ func (a *petApp) showPetReaction(index int) {
 }
 
 func (a *petApp) petAtScreenPoint(screenX, screenY int) int {
-	overlay := a.overlayRect()
-	sceneX := screenX - int(overlay.Left)
-	sceneY := screenY - int(overlay.Top)
-	return a.petAtScenePoint(sceneX, sceneY)
+	for _, segment := range a.overlaySegments() {
+		if screenX < int(segment.Rect.Left) || screenX >= int(segment.Rect.Right) ||
+			screenY < int(segment.Rect.Top) || screenY >= int(segment.Rect.Bottom) {
+			continue
+		}
+		localX := screenX - int(segment.Rect.Left)
+		localY := screenY - int(segment.Rect.Top)
+		return a.petAtSegmentPoint(segment, localX, localY)
+	}
+	return -1
 }
 
-func (a *petApp) petAtScenePoint(sceneX, sceneY int) int {
-	if sceneX < 0 || sceneX >= a.sceneW || sceneY < 0 || sceneY >= sceneH {
+func (a *petApp) petAtSegmentPoint(segment overlaySegment, localX, localY int) int {
+	if localX < 0 || localY < 0 || localX >= int(segment.Rect.Right-segment.Rect.Left) || localY >= int(segment.Rect.Bottom-segment.Rect.Top) {
 		return -1
 	}
 	for i := len(a.pets) - 1; i >= 0; i-- {
-		if a.scenePointInPet(a.pets[i], sceneX, sceneY) {
+		petW, petH := a.petSpriteSize()
+		scaledW := scaleForDPI(petW, segment.DPI)
+		scaledH := scaleForDPI(petH, segment.DPI)
+		scaledLaneOffset := scaleForDPI(a.pets[i].laneOffset, segment.DPI)
+		petX := a.pets[i].x - segment.SceneLeft
+		petY := scaleForDPI(sceneH, segment.DPI) - scaledH - scaledLaneOffset
+		if scenePointInPet(a.pets[i], localX, localY, scaledW, scaledH, petX, petY) {
 			return i
 		}
 	}
 	return -1
 }
 
-func (a *petApp) scenePointInPet(p deguPet, sceneX, sceneY int) bool {
+func (a *petApp) petAtScenePoint(sceneX, sceneY int) int {
+	if sceneX < 0 || sceneX >= a.sceneW || sceneY < 0 || sceneY >= sceneH {
+		return -1
+	}
+	petW, petH := a.petSpriteSize()
+	for i := len(a.pets) - 1; i >= 0; i-- {
+		y := sceneH - petH - a.pets[i].laneOffset
+		if scenePointInPet(a.pets[i], sceneX, sceneY, petW, petH, a.pets[i].x, y) {
+			return i
+		}
+	}
+	return -1
+}
+
+func scenePointInPet(p deguPet, sceneX, sceneY int, w int, h int, petX int, petY int) bool {
 	if p.state == stateWheel {
 		return false
 	}
-	petW, petH := a.petSpriteSize()
-	insetX := a.scaleOffset(6)
-	topInset := a.scaleOffset(8)
-	bottomInset := a.scaleOffset(4)
-	y := sceneH - petH - p.laneOffset
-	return sceneX >= p.x+insetX && sceneX <= p.x+petW-insetX && sceneY >= y+topInset && sceneY <= y+petH-bottomInset
+	insetX := min(max(1, w*6/spriteW), max(0, w/4))
+	topInset := min(max(1, h*8/spriteH), max(0, h/4))
+	bottomInset := min(max(1, h*4/spriteH), max(0, h/4))
+	return sceneX >= petX+insetX && sceneX <= petX+w-insetX && sceneY >= petY+topInset && sceneY <= petY+h-bottomInset
 }
 
 func (a *petApp) updateHoverName() {
@@ -1379,9 +1454,16 @@ func (a *petApp) showNameWindow(index int) {
 	w := clamp(34+len(runes)*12, 72, 220)
 	h := 30
 	petW, petH := a.petSpriteSize()
-	baseY := sceneH - petH - p.laneOffset
-	x := int(overlay.Left) + p.x + petW/2 - w/2
-	y := int(overlay.Top) + baseY - h - 8
+	segment, ok := a.overlaySegmentForSceneX(p.x + petW/2)
+	if ok {
+		overlay = segment.Rect
+		screen = segment.Screen
+	}
+	scaledPetW := scaleForDPI(petW, segment.DPI)
+	scaledPetH := scaleForDPI(petH, segment.DPI)
+	scaledBaseY := scaleForDPI(sceneH, segment.DPI) - scaledPetH - scaleForDPI(p.laneOffset, segment.DPI)
+	x := int(overlay.Left) + p.x - segment.SceneLeft + scaledPetW/2 - w/2
+	y := int(overlay.Top) + scaledBaseY - h - scaleForDPI(8, segment.DPI)
 	x = clamp(x, int(overlay.Left), int(overlay.Right)-w)
 	y = clamp(y, int(screen.Top), int(screen.Bottom)-h)
 	if a.nameHwnd == 0 {
@@ -1488,8 +1570,18 @@ func (a *petApp) normalizeDisplaySelection(count int) {
 }
 
 func (a *petApp) overlayRectFor(work, screen win.RECT) win.RECT {
+	base := a.applyWalkRange(a.overlayBaseFor(work, screen))
+	y := a.overlayYForBase(base, screen)
+	return win.RECT{
+		Left:   base.Left,
+		Top:    int32(y),
+		Right:  base.Right,
+		Bottom: int32(y + sceneH),
+	}
+}
+
+func (a *petApp) overlayBaseFor(work, screen win.RECT) win.RECT {
 	mode := normalizeOverlayPositionMode(int(a.positionMode))
-	offset := normalizeOverlayOffset(a.overlayOffsetY)
 	base := work
 	if mode == positionScreenBottom {
 		base = screen
@@ -1502,17 +1594,20 @@ func (a *petApp) overlayRectFor(work, screen win.RECT) win.RECT {
 		base.Top = screen.Top
 		base.Bottom = screen.Bottom
 	}
-	base = a.applyWalkRange(base)
-	y := int(base.Bottom) - sceneH + offset
+	return base
+}
+
+func (a *petApp) overlayYForBase(base, screen win.RECT) int {
+	return a.overlayYForBaseDPI(base, screen, defaultDPI)
+}
+
+func (a *petApp) overlayYForBaseDPI(base, screen win.RECT, dpi int) int {
+	height := scaleForDPI(sceneH, dpi)
+	offset := normalizeOverlayOffset(a.overlayOffsetY)
+	y := int(base.Bottom) - height + scaleForDPI(offset, dpi)
 	minY := int(screen.Top)
-	maxY := max(minY, int(screen.Bottom)-sceneH)
-	y = clamp(y, minY, maxY)
-	return win.RECT{
-		Left:   base.Left,
-		Top:    int32(y),
-		Right:  base.Right,
-		Bottom: int32(y + sceneH),
-	}
+	maxY := max(minY, int(screen.Bottom)-height)
+	return clamp(y, minY, maxY)
 }
 
 func (a *petApp) applyWalkRange(base win.RECT) win.RECT {
@@ -2280,17 +2375,17 @@ func (a *petApp) hasWheelRunner() bool {
 	return false
 }
 
-func (a *petApp) drawForageItems(dst *image.RGBA) {
+func (a *petApp) drawForageItems(dst *image.RGBA, sceneLeft int, dpi int) {
 	y := sceneH - 9
 	for _, item := range a.forage {
 		if !item.active {
 			continue
 		}
-		a.drawForageProp(dst, item.x, y, item.kind)
+		a.drawForageProp(dst, unscaleForDPI(item.x-sceneLeft, dpi), y, item.kind)
 	}
 }
 
-func (a *petApp) drawReactions(dst *image.RGBA) {
+func (a *petApp) drawReactions(dst *image.RGBA, sceneLeft, sceneRight int, dpi int) {
 	for _, reaction := range a.reactions {
 		if reaction.pet < 0 || reaction.pet >= len(a.pets) {
 			continue
@@ -2301,7 +2396,12 @@ func (a *petApp) drawReactions(dst *image.RGBA) {
 		}
 		petW, petH := a.petSpriteSize()
 		baseY := sceneH - petH - p.laneOffset
-		x := clamp(p.x+petW/2-18, 2, max(2, a.sceneW-42))
+		scaledPetW := scaleForDPI(petW, dpi)
+		globalX := p.x + scaledPetW/2 - scaleForDPI(18, dpi)
+		if globalX+scaleForDPI(42, dpi) <= sceneLeft || globalX >= sceneRight {
+			continue
+		}
+		x := clamp(unscaleForDPI(globalX-sceneLeft, dpi), 2, max(2, dst.Bounds().Dx()-42))
 		y := clamp(baseY-26-(reactionTicks-reaction.ticks)/8, 0, sceneH-32)
 		drawReactionBubble(dst, x, y, reaction.kind, reaction.ticks)
 	}
@@ -5396,11 +5496,43 @@ func (a *petApp) setTemporarilyHidden(hidden bool) {
 		return
 	}
 	if hidden {
-		win.ShowWindow(a.hwnd, win.SW_HIDE)
+		a.hideOverlayWindows(0)
 		return
 	}
 	win.ShowWindow(a.hwnd, win.SW_SHOWNOACTIVATE)
 	a.render()
+}
+
+func (a *petApp) overlayWindow(index int) win.HWND {
+	if index <= 0 {
+		return a.hwnd
+	}
+	for len(a.overlayHwnds) < index {
+		hwnd := win.CreateWindowEx(
+			win.WS_EX_LAYERED|win.WS_EX_TOPMOST|win.WS_EX_TOOLWINDOW|win.WS_EX_TRANSPARENT,
+			syscall.StringToUTF16Ptr(windowClass),
+			syscall.StringToUTF16Ptr(appName),
+			win.WS_POPUP,
+			0, 0, 1, 1,
+			0, 0, a.hinst, nil,
+		)
+		if hwnd == 0 {
+			return 0
+		}
+		a.overlayHwnds = append(a.overlayHwnds, hwnd)
+	}
+	return a.overlayHwnds[index-1]
+}
+
+func (a *petApp) hideOverlayWindows(used int) {
+	if used <= 0 && a.hwnd != 0 {
+		win.ShowWindow(a.hwnd, win.SW_HIDE)
+	}
+	for i, hwnd := range a.overlayHwnds {
+		if hwnd != 0 && i+1 >= used {
+			win.ShowWindow(hwnd, win.SW_HIDE)
+		}
+	}
 }
 
 func (a *petApp) showTrayMenu() {
@@ -5609,6 +5741,12 @@ func (a *petApp) cleanup() {
 		win.DestroyWindow(a.nameHwnd)
 		a.nameHwnd = 0
 	}
+	for _, hwnd := range a.overlayHwnds {
+		if hwnd != 0 {
+			win.DestroyWindow(hwnd)
+		}
+	}
+	a.overlayHwnds = nil
 	if a.keyHook != 0 {
 		unhookWindowsHookEx(a.keyHook)
 	}
@@ -5799,6 +5937,15 @@ type displayArea struct {
 	Work    win.RECT
 	Screen  win.RECT
 	Primary bool
+	DPI     int
+}
+
+type overlaySegment struct {
+	Rect       win.RECT
+	Screen     win.RECT
+	SceneLeft  int
+	SceneRight int
+	DPI        int
 }
 
 var (
@@ -5817,24 +5964,109 @@ func monitorEnumProc(hMonitor win.HMONITOR, _ win.HDC, _ *win.RECT, lParam uintp
 			Work:    info.RcWork,
 			Screen:  info.RcMonitor,
 			Primary: info.DwFlags&monitorPrimaryFlag != 0,
+			DPI:     monitorDPI(hMonitor),
 		})
 	}
 	return 1
 }
 
+func monitorDPI(hMonitor win.HMONITOR) int {
+	if hMonitor == 0 || procGetDpiForMonitor.Find() != nil {
+		return defaultDPI
+	}
+	var dpiX uint32
+	var dpiY uint32
+	ret, _, _ := procGetDpiForMonitor.Call(uintptr(hMonitor), monitorDPIType, uintptr(unsafe.Pointer(&dpiX)), uintptr(unsafe.Pointer(&dpiY)))
+	if ret != 0 || dpiX == 0 {
+		return defaultDPI
+	}
+	return clamp(int(dpiX), 72, 384)
+}
+
 func (a *petApp) selectedDisplayArea() displayArea {
+	_, combined := a.selectedDisplayAreasAndCombined()
+	return combined
+}
+
+func (a *petApp) selectedDisplayAreasAndCombined() ([]displayArea, displayArea) {
 	areas := displayAreaForScope(a.displayScope)
 	if len(areas) == 0 {
-		return displayArea{Work: workArea(), Screen: screenArea(), Primary: true}
+		fallback := displayArea{Work: workArea(), Screen: screenArea(), Primary: true, DPI: defaultDPI}
+		return []displayArea{fallback}, fallback
 	}
 	scope, start, end := a.normalizedDisplaySelection(len(areas))
 	a.displayScope = scope
 	a.displayIndex = start
 	a.displaySpanEnd = end
+	selected := append([]displayArea(nil), areas[start:end+1]...)
 	if scope == displayScopeSpan {
-		return combineDisplayAreas(areas[start : end+1])
+		return selected, combineDisplayAreas(selected)
 	}
-	return areas[start]
+	return selected, selected[0]
+}
+
+func (a *petApp) overlaySegments() []overlaySegment {
+	areas, display := a.selectedDisplayAreasAndCombined()
+	overlay := a.overlayRectFor(display.Work, display.Screen)
+	return a.overlaySegmentsForAreas(areas, overlay)
+}
+
+func (a *petApp) overlaySegmentsForAreas(areas []displayArea, overlay win.RECT) []overlaySegment {
+	if overlay.Right <= overlay.Left {
+		return nil
+	}
+	segments := make([]overlaySegment, 0, len(areas))
+	for _, area := range areas {
+		base := a.overlayBaseFor(area.Work, area.Screen)
+		left := max(int(base.Left), int(overlay.Left))
+		right := min(int(base.Right), int(overlay.Right))
+		if right-left < a.petSpriteW() {
+			continue
+		}
+		dpi := normalizeDPI(area.DPI)
+		height := scaleForDPI(sceneH, dpi)
+		y := a.overlayYForBaseDPI(base, area.Screen, dpi)
+		segments = append(segments, overlaySegment{
+			Rect: win.RECT{
+				Left:   int32(left),
+				Top:    int32(y),
+				Right:  int32(right),
+				Bottom: int32(y + height),
+			},
+			Screen:     area.Screen,
+			SceneLeft:  left - int(overlay.Left),
+			SceneRight: right - int(overlay.Left),
+			DPI:        dpi,
+		})
+	}
+	return segments
+}
+
+func (a *petApp) overlaySegmentForSceneX(sceneX int) (overlaySegment, bool) {
+	segments := a.overlaySegments()
+	for _, segment := range segments {
+		if sceneX >= segment.SceneLeft && sceneX < segment.SceneRight {
+			return segment, true
+		}
+	}
+	if len(segments) == 0 {
+		return overlaySegment{}, false
+	}
+	nearest := segments[0]
+	bestDistance := abs(sceneX - nearest.SceneLeft)
+	for _, segment := range segments {
+		distance := 0
+		if sceneX < segment.SceneLeft {
+			distance = segment.SceneLeft - sceneX
+		} else if sceneX >= segment.SceneRight {
+			distance = sceneX - segment.SceneRight + 1
+		}
+		if distance < bestDistance {
+			nearest = segment
+			bestDistance = distance
+		}
+	}
+	return nearest, true
 }
 
 func monitorAreas() []displayArea {
@@ -5901,7 +6133,7 @@ func findDisplayAreaIndex(areas []displayArea, target displayArea) int {
 
 func combineDisplayAreas(areas []displayArea) displayArea {
 	if len(areas) == 0 {
-		return displayArea{}
+		return displayArea{DPI: defaultDPI}
 	}
 	screen := areas[0].Screen
 	workLeft := areas[0].Work.Left
@@ -5909,6 +6141,7 @@ func combineDisplayAreas(areas []displayArea) displayArea {
 	workTop := areas[0].Work.Top
 	workBottom := areas[0].Work.Bottom
 	primary := areas[0].Primary
+	dpi := normalizeDPI(areas[0].DPI)
 	for _, area := range areas[1:] {
 		screen.Left = min32(screen.Left, area.Screen.Left)
 		screen.Top = min32(screen.Top, area.Screen.Top)
@@ -5918,13 +6151,16 @@ func combineDisplayAreas(areas []displayArea) displayArea {
 		workRight = max32(workRight, area.Work.Right)
 		workTop = max32(workTop, area.Work.Top)
 		workBottom = min32(workBottom, area.Work.Bottom)
+		if area.Primary {
+			dpi = normalizeDPI(area.DPI)
+		}
 		primary = primary || area.Primary
 	}
 	work := win.RECT{Left: workLeft, Top: workTop, Right: workRight, Bottom: workBottom}
 	if work.Right <= work.Left || work.Bottom <= work.Top {
 		work = screen
 	}
-	return displayArea{Work: work, Screen: screen, Primary: primary}
+	return displayArea{Work: work, Screen: screen, Primary: primary, DPI: dpi}
 }
 
 func workArea() win.RECT {
@@ -6343,6 +6579,39 @@ func abs(v int) int {
 		return -v
 	}
 	return v
+}
+
+func normalizeDPI(dpi int) int {
+	if dpi <= 0 {
+		return defaultDPI
+	}
+	return clamp(dpi, 72, 384)
+}
+
+func scaleForDPI(v int, dpi int) int {
+	dpi = normalizeDPI(dpi)
+	if v == 0 || dpi == defaultDPI {
+		return v
+	}
+	sign := 1
+	if v < 0 {
+		sign = -1
+		v = -v
+	}
+	return sign * max(1, int(math.Round(float64(v)*float64(dpi)/float64(defaultDPI))))
+}
+
+func unscaleForDPI(v int, dpi int) int {
+	dpi = normalizeDPI(dpi)
+	if v == 0 || dpi == defaultDPI {
+		return v
+	}
+	sign := 1
+	if v < 0 {
+		sign = -1
+		v = -v
+	}
+	return sign * max(1, int(math.Round(float64(v)*float64(defaultDPI)/float64(dpi))))
 }
 
 func clamp(v, lo, hi int) int {

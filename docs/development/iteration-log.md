@@ -813,6 +813,7 @@ The existing display controls were mixed into the motion tab and only adjusted v
 
 - `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go`
 - `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./cmd/degu -run "TestOverlaySegments|TestRenderOverlaySegment|TestDrawReactionsSkipsPetsOutsideOverlaySegment" -count=1 -v`
 - `go test -buildvcs=false ./...`
 - `go vet -buildvcs=false ./...`
 - `go run ./cmd/importsheet`
@@ -1409,4 +1410,35 @@ The Windows app had Japanese/English settings text but no tray shortcut for swit
   - `.codex/qa/pages-v0.1.13-language-scale-desktop.png`
   - `.codex/qa/pages-v0.1.13-language-scale-mobile.png`
 - Verified the local Pages HTML includes `v0.1.13`, `SHA256SUMS`, `Language`, and the 75%/100%/125%/150% scale note.
+- `git diff --check`
+
+## Iteration 41 - Mixed-DPI Multi-Monitor Overlay Fix
+
+Date: 2026-06-29
+
+### Target
+
+Port the AnimalsDesktop mixed-DPI multi-monitor overlay fix into DeguDesktop.
+
+### Cause
+
+The app arranged pets across monitor spans, but rendering still used one layered window and one vertical position. On mixed-height or mixed-DPI monitor layouts, pets could align to the wrong monitor bottom or disappear from the secondary display.
+
+### Implementation
+
+- Enabled per-monitor DPI awareness at startup for local builds as well as release-manifest builds.
+- Split Windows overlay rendering into per-monitor layered-window segments.
+- Added per-monitor DPI scaling for overlay height, vertical offset, wheel position, forage props, pet sprites, click hit testing, name labels, and reaction bubbles.
+- Kept the existing monitor/span selector and walking-range behavior, using the combined overlay range while placing each segment on its own monitor bottom.
+- Added cleanup for extra overlay windows created for multi-monitor spans.
+
+### Verification
+
+- `gofmt -w cmd\degu\main_windows.go cmd\degu\motion_windows_test.go`
+- `go test -buildvcs=false ./cmd/degu`
+- `go test -buildvcs=false ./...`
+- `go vet -buildvcs=false ./...`
+- `go run ./cmd/importsheet`
+- `go build -buildvcs=false -ldflags="-H=windowsgui" -o dist\DeguDesktop.exe ./cmd/degu`
+- Launched `dist\DeguDesktop.exe` and confirmed it stayed running during a 3-second smoke check.
 - `git diff --check`
